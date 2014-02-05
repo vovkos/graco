@@ -1,0 +1,78 @@
+//.............................................................................
+//
+// grammar
+//
+//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+generate "TestParser.h" using "TestParserFrame.h";
+
+//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+class CBase
+{
+	int m_x;
+	int m_y;
+};
+
+//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+class CDerived: CBase
+{
+	int m_z;
+};
+
+//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+CBase
+program
+	: unary <1, 2, 3> { printf ("program\n") }
+	;
+
+class: CDerived
+{
+	int m_w;
+}
+unary <int $a, int $b, int $c>
+	local
+	{
+		int $i, $j, $k;
+	}
+
+	enter 
+	{
+		printf ("unary::enter (%d, %d, %d)\n", $a, $b, $c);
+		$.m_x = $a * 10;
+		$.m_y = $b * 10;
+		$.m_z = $c * 10;
+		$i = $a * -10;
+		$j = $b * -10;
+		$k = $c * -10;
+	}
+
+	leave
+	{
+		printf (
+			"unary::leave ()\n"
+			"m_x = %d m_y = %d m_z = %d\n"
+			"i = %d j = %d k = %d\n", 
+			$.m_x, $.m_y, $.m_z, 
+			$i, $j, $k
+			);
+	}
+
+	: EToken_Integer 
+		{ 
+			printf (
+				"unary <%d, %d, %d>\n"
+				"m_x = %d m_y = %d m_z = %d\n"
+				"i = %d j = %d k = %d\n"
+				"EToken_Integer = %d\n",
+				$a, $b, $c,
+				$.m_x, $.m_y, $.m_z,
+				$i, $j, $k,
+				$1.m_Data.m_Integer
+				) ;
+		}
+	;	
+
+//.............................................................................

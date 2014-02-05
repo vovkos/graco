@@ -1,0 +1,81 @@
+//.............................................................................
+//
+// grammar
+//
+//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+generate "TestParser.h" using "TestParserFrame.h";
+
+HuiCount = 10;
+ParserClassName = CMySukaParser;
+
+program 
+	: ?? ($1.m_Data.m_String == "hui") EToken_Identifier { printf ("hui=%s\n", $1.m_Data.m_String) }
+	| EToken_Identifier $x { printf ("id=%s\n", $x.m_Data.m_String) }
+	| unary <10, 20>
+	;
+
+class CUnary <int $a, int $b>
+{
+	ast
+	{
+		int $m_x;
+		int $m_y;
+	};
+
+	local
+	{
+		int $i;
+		int $j;
+	};
+
+	enter
+	{
+		$i = $a;
+		$j = $b;
+		$m_x = $a * 10;
+		$m_y = $b * 10;
+	};
+
+	leave
+	{
+		printf ("a = %d b = %d i = %d j = %d m_x = %d m_y = %d\n", $a, $b, $i, $j, $m_x, $m_y);
+	};
+};
+
+unary <int $d>
+	ast
+	{
+		int $m_z;
+	}
+	local
+	{
+		int $k;
+	}
+	enter
+	{		
+		$k = $d;
+		$m_z = $d * 10;
+	}
+	leave
+	{
+		printf ("custom leave");		
+	}
+	: '!' { printf ("unary <%d, %d>\n", $m_x, $m_y); }
+	;
+
+//.............................................................................
+
+class CSymbol
+{
+	int m_x;
+	int m_y;
+};
+
+class CSymbolInstance
+{
+	int a;
+	int b;
+	int i;
+	int j;
+};

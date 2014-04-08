@@ -32,7 +32,7 @@ set (
 	llkc_DefineMgr.cpp
 	llkc_Generator.cpp
 	llkc_LaDfaBuilder.cpp
-	llkc_Lexer.rl.cpp
+	llkc_Lexer.cpp
 	llkc_Module.cpp
 	llkc_Node.cpp
 	llkc_NodeMgr.cpp
@@ -46,15 +46,6 @@ set (
 	llkc_Lexer.rl
 	)
 
-push_and_set (CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
-add_ragel_step (
-	llkc_Lexer.rl.cpp
-	llkc_Lexer.rl
-	)
-
-pop (CMAKE_CURRENT_BINARY_DIR)
-
 source_virtual_folder (
 	app
 	${APP_H_LIST}
@@ -64,19 +55,31 @@ source_virtual_folder (
 
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
-# frame folder
+# gen folder
 #
 
-set (
-	FRAME_LUAF_LIST
-	${GEPARD_FRAME_DIR}/llk_ParserFrame.h.luaf
+set (LLKC_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+
+push_and_set (CMAKE_CURRENT_BINARY_DIR ${LLKC_GEN_DIR})
+
+add_ragel_step (
+	llkc_Lexer.rl.cpp
+	llkc_Lexer.rl
 	)
+
+set (
+	GEN_RL_CPP_LIST
+	${LLKC_GEN_DIR}/llkc_Lexer.rl.cpp
+	)
+
+pop (CMAKE_CURRENT_BINARY_DIR)
+
+exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
 
 source_virtual_folder (
-	frame
-	${FRAME_LUAF_LIST}
+	gen
+	${GEN_RL_CPP_LIST}
 	)
-
 
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
@@ -97,6 +100,21 @@ source_virtual_folder (
 	llk
 	${LLK_H_LIST}
 	${LLK_CPP_LIST}
+	)
+
+# . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+#
+# frame folder
+#
+
+set (
+	FRAME_LIST
+	${GEPARD_FRAME_DIR}/llk_Parser.h.frame
+	)
+
+source_virtual_folder (
+	frame
+	${FRAME_LIST}
 	)
 
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -122,6 +140,7 @@ include_directories (
 	${PATH_LUA_INC_DIR}
 	${PATH_AXL_INC_DIR}
 	${PATH_GEPARD_INC_DIR}
+	${LLKC_GEN_DIR}
 	)
 
 link_directories (
@@ -136,8 +155,9 @@ add_executable (
 	${APP_H_LIST}
 	${APP_CPP_LIST}
 	${APP_RL_LIST}
-	${FRAME_LUAF_LIST}
+	${GEN_RL_CPP_LIST}
 	${LLK_H_LIST}
+	${FRAME_LIST}
 	)
 
 target_link_libraries (

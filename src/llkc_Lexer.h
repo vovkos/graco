@@ -13,7 +13,7 @@ enum EToken
 	EToken_Identifier = 256,
 	EToken_Integer,
 	EToken_Literal,
-	EToken_LL,
+	EToken_Lookahead,
 	EToken_Import,
 	EToken_Using,
 	EToken_Class,
@@ -44,7 +44,7 @@ AXL_LEX_BEGIN_TOKEN_NAME_MAP (CTokenName)
 	AXL_LEX_TOKEN_NAME (EToken_Identifier,   "identifier")
 	AXL_LEX_TOKEN_NAME (EToken_Integer,      "integer-constant")
 	AXL_LEX_TOKEN_NAME (EToken_Literal,      "string-literal")
-	AXL_LEX_TOKEN_NAME (EToken_LL,           "LL")
+	AXL_LEX_TOKEN_NAME (EToken_Lookahead,    "lookahead")
 	AXL_LEX_TOKEN_NAME (EToken_Import,       "import")
 	AXL_LEX_TOKEN_NAME (EToken_Using,        "using")
 	AXL_LEX_TOKEN_NAME (EToken_Class,        "class")

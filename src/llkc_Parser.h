@@ -68,7 +68,7 @@ protected:
 	Program ();
 
 	bool
-	LLStatement ();
+	LookaheadStatement ();
 
 	bool
 	ImportStatement ();

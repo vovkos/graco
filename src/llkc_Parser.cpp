@@ -84,8 +84,8 @@ CParser::Program ()
 
 		switch (pToken->m_Token)
 		{
-		case EToken_LL:
-			Result = LLStatement ();
+		case EToken_Lookahead:
+			Result = LookaheadStatement ();
 			if (!Result)
 				return false;
 
@@ -133,14 +133,14 @@ CParser::Program ()
 }
 
 bool
-CParser::LLStatement ()
+CParser::LookaheadStatement ()
 {
 	const CToken* pToken = GetToken ();
-	ASSERT (pToken->m_Token == EToken_LL);
+	ASSERT (pToken->m_Token == EToken_Lookahead);
 
 	NextToken ();
 
-	pToken = ExpectToken ('(');
+	pToken = ExpectToken ('=');
 	if (!pToken)
 		return false;
 
@@ -157,12 +157,6 @@ CParser::LLStatement ()
 	}
 
 	m_pModule->m_LookaheadLimit = pToken->m_Data.m_Integer;
-
-	NextToken ();
-
-	pToken = ExpectToken (')');
-	if (!pToken)
-		return false;
 
 	NextToken ();
 

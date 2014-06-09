@@ -93,7 +93,7 @@ any            ;
 
 main := |*
 
-'LL'           { CreateToken (EToken_LL); };
+'lookahead'    { CreateToken (EToken_Lookahead); };
 'import'       { CreateToken (EToken_Import); };
 'using'        { CreateToken (EToken_Using); };
 'class'        { CreateToken (EToken_Class); };

@@ -61,6 +61,7 @@ source_virtual_folder (
 set (LLKC_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
 
 push_and_set (CMAKE_CURRENT_BINARY_DIR ${LLKC_GEN_DIR})
+file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_ragel_step (
 	llkc_Lexer.rl.cpp
@@ -141,6 +142,7 @@ include_directories (
 	${PATH_AXL_INC_DIR}
 	${PATH_GEPARD_INC_DIR}
 	${LLKC_GEN_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
 link_directories (

@@ -20,17 +20,17 @@ CNodeMgr::CNodeMgr ()
 
 	m_AnyTokenNode.m_Kind = ENode_Token;
 	m_AnyTokenNode.m_Flags = ESymbolNodeFlag_AnyToken;
-	m_AnyTokenNode.m_Name = "<any>";
+	m_AnyTokenNode.m_Name = "any";
 	m_AnyTokenNode.m_Index = 1;
 	m_AnyTokenNode.m_MasterIndex = 1;
 
 	m_EpsilonNode.m_Kind = ENode_Epsilon;
 	m_EpsilonNode.m_Flags |= EGrammarNodeFlag_Nullable;
-	m_EpsilonNode.m_Name = "<epsilon>";
+	m_EpsilonNode.m_Name = "epsilon";
 	m_EpsilonNode.m_MasterIndex = 0; 
 
 	m_StartPragmaSymbol.m_Flags |= ESymbolNodeFlag_Pragma;
-	m_StartPragmaSymbol.m_Name = "<pragma>";
+	m_StartPragmaSymbol.m_Name = "pragma";
 }
 
 void
@@ -221,13 +221,17 @@ CNodeMgr::CreateQuantifierNode (
 		return NULL;
 	}
 
+	CGrammarNode* pResultNode;
+
 	switch (Kind)
 	{
 	case '?':
 		pTempAlt = CreateTempSymbolNode ();
 		pTempAlt->AddProduction (pNode);
 		pTempAlt->AddProduction (&m_EpsilonNode);
-		return pTempAlt;
+		
+		pResultNode = pTempAlt;
+		break;
 
 	case '*':
 		pTempAlt = CreateTempSymbolNode ();
@@ -238,20 +242,26 @@ CNodeMgr::CreateQuantifierNode (
 
 		pTempAlt->AddProduction (pTempSeq);
 		pTempAlt->AddProduction (&m_EpsilonNode);
-
-		return pTempAlt;
+		
+		pResultNode = pTempAlt;
+		break;
 		
 	case '+': 
 		pTempSeq = CreateSequenceNode ();
 		pTempSeq->Append (pNode);
 		pTempSeq->Append (CreateQuantifierNode (pNode, '*'));
 
-		return pTempSeq;
+		pResultNode = pTempSeq;
+		break;
 
 	default:
 		ASSERT (false);
 		return NULL;
 	}
+
+	pResultNode->m_QuantifierKind = Kind;
+	pResultNode->m_pQuantifiedNode = pNode;
+	return pResultNode;
 }
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

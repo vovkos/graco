@@ -37,7 +37,7 @@ enum ENode
 enum ENodeFlag
 {
 	ENodeFlag_RecursionStopper = 0x0001,
-	ENodeFlag_Reachable      = 0x0002,
+	ENodeFlag_Reachable        = 0x0002,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -86,6 +86,13 @@ public:
 	{
 		return m_Name;
 	}
+
+	virtual
+	rtl::CString
+	GetBnfString ()
+	{
+		return m_Name;
+	}
 };
 
 //.............................................................................
@@ -103,6 +110,9 @@ class CGrammarNode: public CNode
 public:
 	lex::CSrcPos m_SrcPos;
 
+	int m_QuantifierKind; // '?' '*' '+'
+	CGrammarNode* m_pQuantifiedNode;
+
 	rtl::CArrayT <CSymbolNode*> m_FirstArray;
 	rtl::CArrayT <CSymbolNode*> m_FollowArray;
 	
@@ -110,6 +120,11 @@ public:
 	rtl::CBitMap m_FollowSet;
 
 public:
+	CGrammarNode ()
+	{
+		m_QuantifierKind = 0;
+	}
+
 	virtual 
 	void
 	Trace ();
@@ -131,6 +146,13 @@ public:
 
 	bool
 	MarkFinal ();
+
+	CGrammarNode*
+	StripBeacon ();
+
+	virtual
+	rtl::CString
+	GetBnfString ();
 
 protected:
 	void
@@ -201,6 +223,10 @@ public:
 	virtual 
 	void
 	Export (lua::CLuaState* pLuaState);
+
+	virtual
+	rtl::CString
+	GetBnfString ();
 };
 
 //.............................................................................
@@ -231,6 +257,10 @@ public:
 	virtual 
 	rtl::CString 
 	GetProductionString ();
+
+	virtual
+	rtl::CString
+	GetBnfString ();
 };
 
 //.............................................................................
@@ -269,6 +299,13 @@ public:
 	virtual 
 	void
 	Export (lua::CLuaState* pLuaState);
+
+	virtual
+	rtl::CString
+	GetBnfString ()
+	{
+		return rtl::CString ();
+	}
 };
 
 //.............................................................................
@@ -289,14 +326,21 @@ public:
 	virtual 
 	void
 	Export (lua::CLuaState* pLuaState);
+
+	virtual
+	rtl::CString
+	GetBnfString ()
+	{
+		return rtl::CString ();
+	}
 };
 
 //.............................................................................
 
 enum EBeaconNodeFlag
 {
-	EBeaconNodeFlag_Added   = 0x100,
-	EBeaconNodeFlag_Deleted = 0x200,
+	EBeaconNodeFlag_Added   = 0x0100,
+	EBeaconNodeFlag_Deleted = 0x0200,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -324,6 +368,13 @@ public:
 	virtual 
 	void
 	Export (lua::CLuaState* pLuaState);
+
+	virtual
+	rtl::CString
+	GetBnfString ()
+	{
+		return m_pTarget ? m_pTarget->GetBnfString () : m_Name;
+	}
 };
 
 //.............................................................................

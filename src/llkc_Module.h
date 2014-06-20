@@ -41,6 +41,12 @@ public:
 	void
 	Trace ();
 
+	rtl::CString 
+	GenerateBnfString ();
+
+	bool
+	WriteBnfFile (const char* pFileName);
+
 protected:
 	void
 	ExportDefines (lua::CLuaState* pLuaState);

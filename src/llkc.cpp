@@ -26,6 +26,7 @@ PrintUsage ()
 		"Usage:\n"
 		"llkc [options] <grammar_file>\n"
 		"    -?, -h, -H        print this usage and exit\n"
+		"    -b <bnf_file>     generate \"clean\" EBNF grammar file <bnf_file>\n"
 		"    -o <output_file>  generate <output_file> (multiple allowed)\n"
 		"    -O <output_dir>   set output directory to <output_dir>\n"
 		"    -f <frame_file>   use LUA frame <frame_file> (multiple allowed)\n"
@@ -63,6 +64,7 @@ main (
 
 	rtl::CString SrcFileName;
 	rtl::CString TraceFileName;
+	rtl::CString BnfFileName;
 	rtl::CStdArrayListT <CTarget> TargetList;
 
 	size_t OutputCount = 0;
@@ -80,6 +82,10 @@ main (
 			case '?': case 'h': case 'H':
 				PrintUsage ();
 				return EError_Success;
+
+			case 'b':
+				BnfFileName = argv [i] [2] ? &argv [i] [2] : ++i < argc ? argv [i] : NULL;
+				break;
 
 			case 'o':
 				pTarget = TargetList.Get (OutputCount++);
@@ -184,6 +190,16 @@ main (
 			}
 
 			FilePathSet.Goto (ImportFilePath);
+		}
+	}
+
+	if (!BnfFileName.IsEmpty ())
+	{
+		Result = Module.WriteBnfFile (BnfFileName);
+		if (!Result)
+		{
+			printf ("%s\n", err::GetError ()->GetDescription ().cc ());
+			return EError_BuildFailure;
 		}
 	}
 

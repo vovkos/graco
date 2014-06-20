@@ -127,8 +127,74 @@ CModule::Build (CConfig* pConfig)
 void
 CModule::Trace ()
 {
-	printf ("LL (%d)\n", m_Lookahead);
+	printf ("lookahead = %d\n", m_Lookahead);
 	m_NodeMgr.Trace ();
+}
+
+bool
+CModule::WriteBnfFile (const char* pFileName)
+{
+	rtl::CString BufferString;
+
+	io::CFile File;
+	bool Result = 
+		File.Open (pFileName) &&
+		File.SetSize (0);
+
+	if (!Result)
+		return false;
+
+	rtl::CString String = GenerateBnfString ();
+	File.Write (String, String.GetLength ());
+	return true;
+}
+
+rtl::CString 
+CModule::GenerateBnfString ()
+{
+	rtl::CString String;
+	rtl::CString SequenceString;
+
+	String.Format ("lookahead = %d;\n\n", m_LookaheadLimit);
+
+	rtl::CIteratorT <CSymbolNode> Node = m_NodeMgr.m_NamedSymbolList.GetHead ();
+	for (; Node; Node++)
+	{
+		CSymbolNode* pSymbol = *Node;
+		if (pSymbol->m_ProductionArray.IsEmpty ())
+			continue;
+
+		if (pSymbol->m_Flags & ESymbolNodeFlag_Start)
+			String.Append ("start\n");
+
+		if (pSymbol->m_Flags & ESymbolNodeFlag_Nullable)
+			String.Append ("nullable\n");
+
+		if (pSymbol->m_Flags & ESymbolNodeFlag_Pragma)
+			String.Append ("pragma\n");
+
+		String.Append (pSymbol->m_Name);
+		String.Append ('\n');
+
+		size_t ProductionCount = pSymbol->m_ProductionArray.GetCount ();
+
+		if (pSymbol->m_QuantifierKind)
+		{
+			String.Append ("\t:\t");
+			String.Append (pSymbol->CGrammarNode::GetBnfString ());
+			String.Append ('\n');
+		}
+		else for (size_t i = 0; i < ProductionCount; i++)
+		{
+			String.Append (i ? "\t|\t" : "\t:\t");
+			String.Append (pSymbol->m_ProductionArray [i]->GetBnfString ());
+			String.Append ('\n');
+		}
+
+		String.Append ("\t;\n\n");
+	}
+
+	return String;
 }
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

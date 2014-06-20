@@ -76,6 +76,54 @@ CGrammarNode::ExportSrcPos (
 	pLuaState->SetMemberInteger ("Col", LineCol.m_Col);
 }
 
+CGrammarNode*
+CGrammarNode::StripBeacon ()
+{
+	return m_Kind == ENode_Beacon ? ((CBeaconNode*) this)->m_pTarget : this;
+}
+
+static
+bool 
+IsParenthesNeeded (const char* p)
+{
+	int Level = 0;
+
+	for (;; p++)
+		switch (*p)
+		{
+		case 0:
+			return false;
+
+		case ' ':
+			if (!Level)
+				return true;
+
+		case '(':
+			Level++;
+			break;
+
+		case ')':
+			Level--;
+			break;
+		}
+}
+
+rtl::CString
+CGrammarNode::GetBnfString ()
+{
+	if (!m_QuantifierKind)
+		return m_Name;
+
+	ASSERT (m_pQuantifiedNode);
+	rtl::CString String = m_pQuantifiedNode->GetBnfString ();
+
+	return rtl::CString::Format_s (
+		IsParenthesNeeded (String) ? "(%s)%c" : "%s%c", 
+		String.cc (), 
+		m_QuantifierKind
+		);
+}
+
 //.............................................................................
 
 CSymbolNode::CSymbolNode ()
@@ -105,9 +153,19 @@ CSymbolNode::AddProduction (CGrammarNode* pNode)
 	if (pNode->m_Kind == ENode_Symbol && 
 		!(pNode->m_Flags & ESymbolNodeFlag_Named) && 
 		!((CSymbolNode*) pNode)->m_pResolver)
+	{
+		if (m_Flags & ESymbolNodeFlag_Named)
+		{
+			m_QuantifierKind = pNode->m_QuantifierKind;
+			m_pQuantifiedNode = pNode->m_pQuantifiedNode;
+		}
+
 		m_ProductionArray.Append (((CSymbolNode*) pNode)->m_ProductionArray); // merge temp symbol productions
+	}
 	else
+	{
 		m_ProductionArray.Append (pNode);
+	}
 }
 
 bool
@@ -231,6 +289,31 @@ CSymbolNode::Export (lua::CLuaState* pLuaState)
 	pLuaState->SetMember ("ProductionTable");
 }
 
+rtl::CString
+CSymbolNode::GetBnfString ()
+{
+	if (m_Kind == ENode_Token || (m_Flags & ESymbolNodeFlag_Named))
+		return m_Name;
+
+	if (m_QuantifierKind)
+		return CGrammarNode::GetBnfString ();
+
+	size_t ProductionCount = m_ProductionArray.GetCount ();
+	if (ProductionCount == 1)
+		return m_ProductionArray [0]->StripBeacon ()->GetBnfString ();
+
+	rtl::CString String = "(";
+	String += m_ProductionArray [0]->StripBeacon ()->GetBnfString ();
+	for (size_t i = 1; i < ProductionCount; i++)
+	{
+		String += " | ";
+		String += m_ProductionArray [i]->StripBeacon ()->GetBnfString ();
+	}
+
+	String += ")";
+	return String;
+}
+
 //.............................................................................
 
 CSequenceNode::CSequenceNode ()
@@ -296,6 +379,34 @@ CSequenceNode::GetProductionString ()
 		m_Name.cc (), 
 		NodeArrayToString (&m_Sequence).cc ()
 		);
+}
+
+rtl::CString 
+CSequenceNode::GetBnfString ()
+{
+	if (m_QuantifierKind)
+		return CGrammarNode::GetBnfString ();
+
+	rtl::CString SequenceString;
+
+	size_t SequenceLength = m_Sequence.GetCount ();
+	ASSERT (SequenceLength > 1);
+
+	for (size_t i = 0; i < SequenceLength; i++)
+	{
+		CGrammarNode* pSequenceEntry = m_Sequence [i]->StripBeacon ();
+
+		rtl::CString EntryString = pSequenceEntry->GetBnfString ();
+		if (EntryString.IsEmpty ())
+			continue;
+
+		if (!SequenceString.IsEmpty ())
+			SequenceString.Append (' ');
+
+		SequenceString.Append (EntryString);
+	}
+	
+	return SequenceString;
 }
 
 //.............................................................................

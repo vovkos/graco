@@ -2,6 +2,12 @@
 #include "llkc_Node.h"
 #include "llkc_ClassMgr.h"
 
+// unfortunately, GCC loses warning suppression pragmas from precompiled header
+
+#if (_AXL_CPP == AXL_CPP_GCC)
+#	pragma GCC diagnostic ignored "-Wformat"
+#endif
+
 //.............................................................................
 
 CNode::CNode ()
@@ -14,7 +20,7 @@ CNode::CNode ()
 
 void
 CNode::Trace ()
-{	
+{
 	printf ("%s\n", m_Name.cc ()); // thanks a lot gcc
 }
 
@@ -36,8 +42,8 @@ CGrammarNode::Trace ()
 	printf (
 		"%s\n"
 		"\t  FIRST:  %s%s\n"
-		"\t  FOLLOW: %s%s\n", 
-		m_Name.cc (), 
+		"\t  FOLLOW: %s%s\n",
+		m_Name.cc (),
 		NodeArrayToString (&m_FirstArray).cc (),
 		IsNullable () ? " <eps>" : "",
 		NodeArrayToString (&m_FollowArray).cc (),
@@ -83,7 +89,7 @@ CGrammarNode::StripBeacon ()
 }
 
 static
-bool 
+bool
 IsParenthesNeeded (const char* p)
 {
 	int Level = 0;
@@ -118,8 +124,8 @@ CGrammarNode::GetBnfString ()
 	rtl::CString String = m_pQuantifiedNode->GetBnfString ();
 
 	return rtl::CString::Format_s (
-		IsParenthesNeeded (String) ? "(%s)%c" : "%s%c", 
-		String.cc (), 
+		IsParenthesNeeded (String) ? "(%s)%c" : "%s%c",
+		String.cc (),
 		m_QuantifierKind
 		);
 }
@@ -150,8 +156,8 @@ CSymbolNode::GetArgName (size_t Index)
 void
 CSymbolNode::AddProduction (CGrammarNode* pNode)
 {
-	if (pNode->m_Kind == ENode_Symbol && 
-		!(pNode->m_Flags & ESymbolNodeFlag_Named) && 
+	if (pNode->m_Kind == ENode_Symbol &&
+		!(pNode->m_Flags & ESymbolNodeFlag_Named) &&
 		!((CSymbolNode*) pNode)->m_pResolver)
 	{
 		if (m_Flags & ESymbolNodeFlag_Named)
@@ -181,7 +187,7 @@ CSymbolNode::MarkReachable ()
 		m_pClass->m_Flags |= EClassFlag_Reachable;
 
 	size_t Count = m_ProductionArray.GetCount ();
-	for (size_t i = 0; i < Count; i++) 
+	for (size_t i = 0; i < Count; i++)
 	{
 		CNode* pChild = m_ProductionArray [i];
 		pChild->MarkReachable ();
@@ -199,17 +205,17 @@ CSymbolNode::Trace ()
 		return;
 
 	if (m_pResolver)
-		printf ("\t  RSLVR:  %s\n", m_pResolver->m_Name.cc ()); 
+		printf ("\t  RSLVR:  %s\n", m_pResolver->m_Name.cc ());
 
 	if (m_pClass)
-		printf ("\t  CLASS:  %s\n", m_pClass->m_Name.cc ()); 
+		printf ("\t  CLASS:  %s\n", m_pClass->m_Name.cc ());
 
 	size_t ChildrenCount = m_ProductionArray.GetCount ();
 
 	for (size_t i = 0; i < ChildrenCount; i++)
 	{
-		CNode* pChild = m_ProductionArray [i];		
-		printf ("\t  -> %s\n", pChild->GetProductionString ().cc ()); 
+		CNode* pChild = m_ProductionArray [i];
+		printf ("\t  -> %s\n", pChild->GetProductionString ().cc ());
 	}
 }
 
@@ -226,7 +232,7 @@ CSymbolNode::Export (lua::CLuaState* pLuaState)
 			pLuaState->SetMemberBoolean ("IsAnyToken", true);
 		else if (m_Flags & ESymbolNodeFlag_Named)
 			pLuaState->SetMemberString ("Name", m_Name);
-		else 
+		else
 			pLuaState->SetMemberInteger ("Token", m_CharToken);
 
 		return;
@@ -324,7 +330,7 @@ CSequenceNode::CSequenceNode ()
 void
 CSequenceNode::Append (CGrammarNode* pNode)
 {
-	if (pNode->m_Kind == ENode_Sequence) 
+	if (pNode->m_Kind == ENode_Sequence)
 		m_Sequence.Append (((CSequenceNode*) pNode)->m_Sequence); // merge sequences
 	else
 		m_Sequence.Append (pNode);
@@ -337,7 +343,7 @@ CSequenceNode::MarkReachable ()
 		return false;
 
 	size_t Count = m_Sequence.GetCount ();
-	for (size_t i = 0; i < Count; i++) 
+	for (size_t i = 0; i < Count; i++)
 	{
 		CNode* pChild = m_Sequence [i];
 		pChild->MarkReachable ();
@@ -350,7 +356,7 @@ void
 CSequenceNode::Trace ()
 {
 	CGrammarNode::Trace ();
-	printf ("\t  %s\n", NodeArrayToString (&m_Sequence).cc ()); 
+	printf ("\t  %s\n", NodeArrayToString (&m_Sequence).cc ());
 }
 
 void
@@ -371,17 +377,17 @@ CSequenceNode::Export (lua::CLuaState* pLuaState)
 	pLuaState->SetMember ("Sequence");
 }
 
-rtl::CString 
+rtl::CString
 CSequenceNode::GetProductionString ()
 {
 	return rtl::CString::Format_s (
-		"%s: %s", 
-		m_Name.cc (), 
+		"%s: %s",
+		m_Name.cc (),
 		NodeArrayToString (&m_Sequence).cc ()
 		);
 }
 
-rtl::CString 
+rtl::CString
 CSequenceNode::GetBnfString ()
 {
 	if (m_QuantifierKind)
@@ -405,7 +411,7 @@ CSequenceNode::GetBnfString ()
 
 		SequenceString.Append (EntryString);
 	}
-	
+
 	return SequenceString;
 }
 
@@ -433,8 +439,8 @@ CActionNode::Trace ()
 		"%s\n"
 		"\t  SYMBOL:     %s\n"
 		"\t  DISPATCHER: %s\n"
-		"\t  { %s }\n", 
-		m_Name.cc (), 
+		"\t  { %s }\n",
+		m_Name.cc (),
 		m_pProductionSymbol->m_Name.cc (),
 		m_pDispatcher ? m_pDispatcher->m_Name.cc () : "NONE",
 		m_UserCode.cc ()
@@ -479,7 +485,7 @@ CArgumentNode::Trace ()
 		"\t  DISPATCHER: %s\n"
 		"\t  TARGET SYMBOL: %s\n"
 		"\t  <",
-		m_Name.cc (), 
+		m_Name.cc (),
 		m_pProductionSymbol->m_Name.cc (),
 		m_pDispatcher ? m_pDispatcher->m_Name.cc () : "NONE",
 		m_pTargetSymbol->m_Name.cc ()
@@ -488,10 +494,10 @@ CArgumentNode::Trace ()
 	rtl::CBoxIteratorT <rtl::CString> It = m_ArgValueList.GetHead ();
 	ASSERT (It); // empty argument should have been eliminated
 
-	printf ("%s", It->cc ()); 
+	printf ("%s", It->cc ());
 
 	for (It++; It; It++)
-		printf (", %s", It->cc ()); 
+		printf (", %s", It->cc ());
 
 	printf (">\n");
 }
@@ -556,9 +562,9 @@ CBeaconNode::Trace ()
 	CGrammarNode::Trace ();
 
 	printf (
-		"\t  $%d => %s\n", 
-		m_SlotIndex, 
-		m_pTarget->m_Name.cc () 
+		"\t  $%d => %s\n",
+		m_SlotIndex,
+		m_pTarget->m_Name.cc ()
 		);
 }
 
@@ -581,10 +587,10 @@ CDispatcherNode::Trace ()
 		"%s\n"
 		"\t  @ %s\n"
 		"\t  %s\n",
-		m_Name.cc (), 
+		m_Name.cc (),
 		m_pSymbol->m_Name.cc (),
 		NodeArrayToString (&m_BeaconArray).cc ()
-		);		
+		);
 }
 
 void
@@ -637,9 +643,9 @@ CConflictNode::Trace ()
 		"\t  on %s in %s\n"
 		"\t  DFA:      %s\n"
 		"\t  POSSIBLE:\n",
-		m_Name.cc (), 
+		m_Name.cc (),
 		m_pToken->m_Name.cc (),
-		m_pSymbol->m_Name.cc (), 
+		m_pSymbol->m_Name.cc (),
 		m_pResultNode ? m_pResultNode->m_Name.cc () : "<none>"
 		);
 
@@ -647,7 +653,7 @@ CConflictNode::Trace ()
 	for (size_t i = 0; i < Count; i++)
 	{
 		CNode* pNode = m_ProductionArray [i];
-		printf ("\t  \t-> %s\n", pNode->GetProductionString ().cc ()); 
+		printf ("\t  \t-> %s\n", pNode->GetProductionString ().cc ());
 	}
 }
 
@@ -667,9 +673,9 @@ void
 CLaDfaNode::Trace ()
 {
 	printf (
-		"%s%s\n", 
-		m_Name.cc (), 
-		(m_Flags & ELaDfaNodeFlag_Leaf) ? "*" : 
+		"%s%s\n",
+		m_Name.cc (),
+		(m_Flags & ELaDfaNodeFlag_Leaf) ? "*" :
 		(m_Flags & ELaDfaNodeFlag_Resolved) ? "~" : ""
 		);
 
@@ -678,7 +684,7 @@ CLaDfaNode::Trace ()
 		printf (
 			"\t  if resolver (%s) %s\n"
 			"\t  else %s\n",
-			m_pResolver->m_Name.cc (), 
+			m_pResolver->m_Name.cc (),
 			m_pProduction->GetProductionString ().cc (),
 			m_pResolverElse->GetProductionString ().cc ()
 			);
@@ -690,8 +696,8 @@ CLaDfaNode::Trace ()
 		{
 			CLaDfaNode* pChild = m_TransitionArray [i];
 			printf (
-				"\t  %s -> %s\n", 
-				pChild->m_pToken->m_Name.cc (), 
+				"\t  %s -> %s\n",
+				pChild->m_pToken->m_Name.cc (),
 				pChild->GetProductionString ().cc ()
 				);
 		}
@@ -699,8 +705,8 @@ CLaDfaNode::Trace ()
 		if (m_pProduction)
 		{
 			printf (
-				"\t  . -> %s\n", 
-				m_pProduction->GetProductionString ().cc () 
+				"\t  . -> %s\n",
+				m_pProduction->GetProductionString ().cc ()
 				);
 		}
 	}
@@ -713,7 +719,7 @@ GetTransitionIndex (CNode* pNode)
 {
 	if (pNode->m_Kind != ENode_LaDfa || !(pNode->m_Flags & ELaDfaNodeFlag_Leaf))
 		return pNode->m_MasterIndex;
-	
+
 	CLaDfaNode* pLaDfaNode = (CLaDfaNode*) pNode;
 	ASSERT (pLaDfaNode->m_pProduction && pLaDfaNode->m_pProduction->m_Kind != ENode_LaDfa);
 	return pLaDfaNode->m_pProduction->m_MasterIndex;
@@ -747,7 +753,7 @@ CLaDfaNode::Export (lua::CLuaState* pLuaState)
 	pLuaState->CreateTable (0, 2);
 
 	pLuaState->CreateTable (ChildrenCount);
-			
+
 	for (size_t i = 0; i < ChildrenCount; i++)
 	{
 		CLaDfaNode* pChild = m_TransitionArray [i];

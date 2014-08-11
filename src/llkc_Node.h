@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "axl_g_WarningSuppression.h" // gcc loses warning suppression from pch
+
 //.............................................................................
 
 // forwards
@@ -60,11 +62,11 @@ public:
 	{
 	}
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
-	virtual 
+	virtual
 	void
 	Export (lua::CLuaState* pLuaState)
 	{
@@ -72,7 +74,7 @@ public:
 
 	bool
 	IsReachable ()
-	{ 
+	{
 		return (m_Flags & ENodeFlag_Reachable) != 0;
 	}
 
@@ -80,8 +82,8 @@ public:
 	bool
 	MarkReachable ();
 
-	virtual 
-	rtl::CString 
+	virtual
+	rtl::CString
 	GetProductionString ()
 	{
 		return m_Name;
@@ -115,7 +117,7 @@ public:
 
 	rtl::CArrayT <CSymbolNode*> m_FirstArray;
 	rtl::CArrayT <CSymbolNode*> m_FollowArray;
-	
+
 	rtl::CBitMap m_FirstSet;
 	rtl::CBitMap m_FollowSet;
 
@@ -125,19 +127,19 @@ public:
 		m_QuantifierKind = 0;
 	}
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
 	bool
 	IsNullable ()
-	{ 
+	{
 		return (m_Flags & EGrammarNodeFlag_Nullable) != 0;
 	}
 
 	bool
 	IsFinal ()
-	{ 
+	{
 		return (m_Flags & EGrammarNodeFlag_Final) != 0;
 	}
 
@@ -216,11 +218,11 @@ public:
 	bool
 	MarkReachable ();
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
-	virtual 
+	virtual
 	void
 	Export (lua::CLuaState* pLuaState);
 
@@ -246,16 +248,16 @@ public:
 	bool
 	MarkReachable ();
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
-	virtual 
+	virtual
 	void
 	Export (lua::CLuaState* pLuaState);
 
-	virtual 
-	rtl::CString 
+	virtual
+	rtl::CString
 	GetProductionString ();
 
 	virtual
@@ -292,11 +294,11 @@ public:
 public:
 	CActionNode ();
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
-	virtual 
+	virtual
 	void
 	Export (lua::CLuaState* pLuaState);
 
@@ -319,11 +321,11 @@ public:
 public:
 	CArgumentNode ();
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
-	virtual 
+	virtual
 	void
 	Export (lua::CLuaState* pLuaState);
 
@@ -361,11 +363,11 @@ public:
 	bool
 	MarkReachable ();
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
-	virtual 
+	virtual
 	void
 	Export (lua::CLuaState* pLuaState);
 
@@ -391,11 +393,11 @@ public:
 		m_Kind = ENode_Dispatcher;
 	}
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
-	virtual 
+	virtual
 	void
 	Export (lua::CLuaState* pLuaState);
 };
@@ -413,11 +415,11 @@ public:
 public:
 	CConflictNode ();
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
-	virtual 
+	virtual
 	void
 	Export (lua::CLuaState* pLuaState)
 	{
@@ -428,7 +430,7 @@ public:
 	PushError ()
 	{
 		err::PushFormatStringError (
-			"conflict at '%s':'%s'", 
+			"conflict at '%s':'%s'",
 			m_pSymbol->m_Name.cc (), // thanks a lot gcc
 			m_pToken->m_Name.cc ()
 			);
@@ -440,7 +442,7 @@ public:
 enum ELaDfaNodeFlag
 {
 	ELaDfaNodeFlag_Leaf     = 0x100,
-	ELaDfaNodeFlag_Resolved = 0x200,	
+	ELaDfaNodeFlag_Resolved = 0x200,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -459,11 +461,11 @@ public:
 public:
 	CLaDfaNode ();
 
-	virtual 
+	virtual
 	void
 	Trace ();
 
-	virtual 
+	virtual
 	void
 	Export (lua::CLuaState* pLuaState);
 
@@ -475,9 +477,9 @@ protected:
 //.............................................................................
 
 template <typename T>
-void 
+void
 TraceNodeList (
-	const char* pName, 
+	const char* pName,
 	rtl::CIteratorT <T> Node
 	)
 {
@@ -495,9 +497,9 @@ TraceNodeList (
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 template <typename T>
-void 
+void
 TraceNodeArray (
-	const char* pName, 
+	const char* pName,
 	const rtl::CArrayT <T*>* pArray
 	)
 {
@@ -528,10 +530,10 @@ NodeArrayToString (const rtl::CArrayT <T*>* pArray)
 	for (size_t i = 1; i < Count; i++)
 	{
 		CNode* pNode = (*pArray) [i];
-		String += ' ';				
+		String += ' ';
 		String += pNode->m_Name;
 	}
-		
+
 	return String;
 }
 

@@ -2,7 +2,7 @@
 #include "llkc_LaDfaBuilder.h"
 
 //.............................................................................
-	
+
 CLaDfaThread::CLaDfaThread ()
 {
 	m_Match = ELaDfaThreadMatch_None;
@@ -73,7 +73,7 @@ CLaDfaState::CalcResolved ()
 	return true;
 }
 
-CNode* 
+CNode*
 CLaDfaState::GetResolvedProduction ()
 {
 	CLaDfaThread* pActiveThread = *m_ActiveThreadList.GetHead ();
@@ -81,7 +81,7 @@ CLaDfaState::GetResolvedProduction ()
 	CLaDfaThread* pEpsilonThread = *m_EpsilonThreadList.GetHead ();
 
 	if (IsAnyTokenIgnored ())
-		return 
+		return
 			pActiveThread && pActiveThread->m_Match != ELaDfaThreadMatch_AnyToken ? pActiveThread->m_pProduction :
 			pCompleteThread && pCompleteThread->m_Match != ELaDfaThreadMatch_AnyToken ? pCompleteThread->m_pProduction :
 			pEpsilonThread ? pEpsilonThread->m_pProduction : NULL;
@@ -93,13 +93,13 @@ CLaDfaState::GetResolvedProduction ()
 
 }
 
-CNode* 
+CNode*
 CLaDfaState::GetDefaultProduction ()
 {
 	CLaDfaThread* pCompleteThread = *m_CompleteThreadList.GetHead ();
 	CLaDfaThread* pEpsilonThread = *m_EpsilonThreadList.GetHead ();
 
-	return 
+	return
 		pCompleteThread ? pCompleteThread->m_pProduction :
 		pEpsilonThread ? pEpsilonThread->m_pProduction :
 		m_pFromState ? m_pFromState->GetDefaultProduction () : NULL;
@@ -107,7 +107,7 @@ CLaDfaState::GetDefaultProduction ()
 
 //.............................................................................
 
-CLaDfaBuilder::CLaDfaBuilder (	
+CLaDfaBuilder::CLaDfaBuilder (
 	CNodeMgr* pNodeMgr,
 	rtl::CArrayT <CNode*>* pParseTable,
 	size_t LookeaheadLimit
@@ -131,8 +131,8 @@ CmpResolverThreadPriority (
 
 	// sort from highest priority to lowest
 
-	return 
-		pThread1->m_ResolverPriority < pThread2->m_ResolverPriority ? 1 : 
+	return
+		pThread1->m_ResolverPriority < pThread2->m_ResolverPriority ? 1 :
 		pThread1->m_ResolverPriority > pThread2->m_ResolverPriority ? -1 : 0;
 }
 
@@ -158,7 +158,7 @@ CLaDfaBuilder::Build (
 		CNode* pProduction = pConflict->m_ProductionArray [i];
 		CLaDfaThread* pThread = pState0->CreateThread ();
 		pThread->m_pProduction = pProduction;
-		
+
 		if (pProduction->m_Kind == ENode_Symbol)
 		{
 			CSymbolNode* pSymbolNode = (CSymbolNode*) pProduction;
@@ -184,13 +184,13 @@ CLaDfaBuilder::Build (
 		rtl::CArrayT <CLaDfaState*> StateArray;
 		StateArray.Append (pState1);
 
-		while (!StateArray.IsEmpty () && Lookahead < m_LookeaheadLimit) 
+		while (!StateArray.IsEmpty () && Lookahead < m_LookeaheadLimit)
 		{
 			Lookahead++;
 
 			rtl::CArrayT <CLaDfaState*> NextStateArray;
 
-			size_t StateCount = StateArray.GetCount ();		
+			size_t StateCount = StateArray.GetCount ();
 			for (size_t j = 0; j < StateCount; j++)
 			{
 				CLaDfaState* pState = StateArray [j];
@@ -198,15 +198,15 @@ CLaDfaBuilder::Build (
 				for (size_t k = 0; k < TokenCount; k++)
 				{
 					CSymbolNode* pToken = m_pNodeMgr->m_TokenArray [k];
-			
-					CLaDfaState* pNewState = Transition (pState, pToken);				
+
+					CLaDfaState* pNewState = Transition (pState, pToken);
 					if (pNewState && !pNewState->IsResolved ())
 						NextStateArray.Append (pNewState);
 				}
 			}
 
 			StateArray = NextStateArray;
-		} 
+		}
 
 		if (!StateArray.IsEmpty ())
 		{
@@ -249,12 +249,12 @@ CLaDfaBuilder::Build (
 	{
 		CLaDfaState* pState = *State;
 
-		if (pState->m_CompleteThreadList.GetCount () > 1 || 
+		if (pState->m_CompleteThreadList.GetCount () > 1 ||
 			pState->m_EpsilonThreadList.GetCount () > 1)
 		{
 			err::SetFormatStringError (
-				"conflict at %s:%s: multiple productions complete with %s", 
-				pConflict->m_pSymbol->m_Name.cc (), 
+				"conflict at %s:%s: multiple productions complete with %s",
+				pConflict->m_pSymbol->m_Name.cc (),
 				pConflict->m_pToken->m_Name.cc (),
 				pState->m_pToken->m_Name.cc ()
 				);
@@ -270,7 +270,7 @@ CLaDfaBuilder::Build (
 			ResolverThreadArray.SetCount (Count);
 
 			rtl::CIteratorT <CLaDfaThread> ResolverThread = pState->m_ResolverThreadList.GetHead ();
-			for (size_t i = 0; ResolverThread; ResolverThread++, i++) 
+			for (size_t i = 0; ResolverThread; ResolverThread++, i++)
 				ResolverThreadArray [i] = *ResolverThread;
 
 			qsort (ResolverThreadArray, Count, sizeof (CLaDfaThread*), CmpResolverThreadPriority);
@@ -304,7 +304,7 @@ CLaDfaBuilder::Build (
 			{
 				CLaDfaNode* pUplink = pState->m_pDfaNode->m_pResolverUplink;
 
-				if (!pState->m_pDfaNode->m_pProduction || 
+				if (!pState->m_pDfaNode->m_pProduction ||
 					pState->m_pDfaNode->m_pProduction == pUplink->m_pProduction)
 				{
 					// here we handle situation like
@@ -337,7 +337,7 @@ CLaDfaBuilder::Build (
 		// can happen on active-vs-complete-vs-epsion conflicts
 
 		pState0->m_pDfaNode->m_Flags |= ELaDfaNodeFlag_Leaf; // don't index state0
-		return pState1->m_pDfaNode->m_pProduction; 
+		return pState1->m_pDfaNode->m_pProduction;
 	}
 
 	return pState0->m_pDfaNode;
@@ -350,17 +350,17 @@ CLaDfaBuilder::Trace ()
 	for (; State; State++)
 	{
 		CLaDfaState* pState = *State;
-		
+
 		printf (
-			"%3d %s %d/%d/%d/%d (a/r/c/e)\n", 
-			pState->m_Index, 
+			"%3d %s %d/%d/%d/%d (a/r/c/e)\n",
+			pState->m_Index,
 			pState->IsResolved () ? "*" : " ",
 			pState->m_ActiveThreadList.GetCount (),
 			pState->m_ResolverThreadList.GetCount (),
 			pState->m_CompleteThreadList.GetCount (),
 			pState->m_EpsilonThreadList.GetCount ()
 			);
- 
+
 		rtl::CIteratorT <CLaDfaThread> Thread;
 
 		if (!pState->m_ActiveThreadList.IsEmpty ())
@@ -369,18 +369,18 @@ CLaDfaBuilder::Trace ()
 
 			Thread = pState->m_ActiveThreadList.GetHead ();
 			for (; Thread; Thread++)
-				printf ("%s ", Thread->m_pProduction->m_Name.cc ()); 
+				printf ("%s ", Thread->m_pProduction->m_Name.cc ());
 
 			printf ("\n");
 		}
-				
+
 		if (!pState->m_ResolverThreadList.IsEmpty ())
 		{
 			printf ("\tRESOLVER: ");
 
 			Thread = pState->m_ResolverThreadList.GetHead ();
 			for (; Thread; Thread++)
-				printf ("%s ", Thread->m_pProduction->m_Name.cc ()); 
+				printf ("%s ", Thread->m_pProduction->m_Name.cc ());
 
 			printf ("\n");
 		}
@@ -391,7 +391,7 @@ CLaDfaBuilder::Trace ()
 
 			Thread = pState->m_CompleteThreadList.GetHead ();
 			for (; Thread; Thread++)
-				printf ("%s ", Thread->m_pProduction->m_Name.cc ()); 
+				printf ("%s ", Thread->m_pProduction->m_Name.cc ());
 
 			printf ("\n");
 		}
@@ -402,7 +402,7 @@ CLaDfaBuilder::Trace ()
 
 			Thread = pState->m_EpsilonThreadList.GetHead ();
 			for (; Thread; Thread++)
-				printf ("%s ", Thread->m_pProduction->m_Name.cc ()); 
+				printf ("%s ", Thread->m_pProduction->m_Name.cc ());
 
 			printf ("\n");
 		}
@@ -414,8 +414,8 @@ CLaDfaBuilder::Trace ()
 			{
 				CLaDfaState* pMoveTo = pState->m_TransitionArray [i];
 				printf (
-					"\t%s -> %d\n", 
-					pMoveTo->m_pToken->m_Name.cc (), 
+					"\t%s -> %d\n",
+					pMoveTo->m_pToken->m_Name.cc (),
 					pMoveTo->m_Index
 					);
 			}
@@ -423,7 +423,7 @@ CLaDfaBuilder::Trace ()
 	}
 }
 
-CLaDfaState* 
+CLaDfaState*
 CLaDfaBuilder::CreateState ()
 {
 	CLaDfaState* pState = AXL_MEM_NEW (CLaDfaState);
@@ -456,7 +456,7 @@ CLaDfaBuilder::Transition (
 	{
 		CLaDfaThread* pThread = *Thread++;
 
-		if (pThread->m_Match == ELaDfaThreadMatch_AnyToken && pNewState->IsAnyTokenIgnored ()) 
+		if (pThread->m_Match == ELaDfaThreadMatch_AnyToken && pNewState->IsAnyTokenIgnored ())
 		{
 			pNewState->m_ActiveThreadList.Delete (pThread); // delete anytoken thread in favor of concrete token
 		}
@@ -503,7 +503,7 @@ CLaDfaBuilder::ProcessThread (CLaDfaThread* pThread)
 		CNode* pProduction;
 		CSymbolNode* pSymbol;
 		CConflictNode* pConflict;
-		CSequenceNode* pSequence;		
+		CSequenceNode* pSequence;
 		size_t ChildrenCount;
 
 		switch (pNode->m_Kind)
@@ -525,7 +525,7 @@ CLaDfaBuilder::ProcessThread (CLaDfaThread* pThread)
 			{
 				pThread->m_pState->m_ActiveThreadList.Delete (pThread);
 				return;
-			} 
+			}
 
 			pThread->m_Stack.Pop ();
 			pThread->m_Match = ELaDfaThreadMatch_Token;
@@ -554,7 +554,7 @@ CLaDfaBuilder::ProcessThread (CLaDfaThread* pThread)
 				pThread->m_pState->m_ResolverThreadList.InsertTail (pThread);
 				return;
 			}
-					
+
 			pThread->m_Stack.Pop ();
 
 			if (pProduction->m_Kind != ENode_Epsilon)
@@ -569,7 +569,7 @@ CLaDfaBuilder::ProcessThread (CLaDfaThread* pThread)
 				return;
 
 			pThread->m_Stack.Pop ();
-			
+
 			pSequence = (CSequenceNode*) pNode;
 			ChildrenCount = pSequence->m_Sequence.GetCount ();
 			for (intptr_t i = ChildrenCount - 1; i >= 0; i--)
@@ -585,8 +585,8 @@ CLaDfaBuilder::ProcessThread (CLaDfaThread* pThread)
 			pThread->m_Stack.Append (((CBeaconNode*) pNode)->m_pTarget);
 			break;
 
-		case ENode_Action: 
-		case ENode_Argument: 
+		case ENode_Action:
+		case ENode_Argument:
 			pThread->m_Stack.Pop ();
 			break;
 

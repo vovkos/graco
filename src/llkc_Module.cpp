@@ -4,6 +4,12 @@
 #include "llkc_ParseTableBuilder.h"
 #include "llkc_LaDfaBuilder.h"
 
+// unfortunately, GCC loses warning suppression pragmas from precompiled header
+
+#if (_AXL_CPP == AXL_CPP_GCC)
+#	pragma GCC diagnostic ignored "-Wformat"
+#endif
+
 //.............................................................................
 
 CModule::CModule ()
@@ -71,10 +77,10 @@ CModule::Build (CConfig* pConfig)
 			pProduction = ProductionBuilder.Build (*Symbol, pProduction);
 			if (!pProduction)
 				return false;
-			
+
 			Symbol->m_ProductionArray [i] = pProduction;
 		}
-	}	
+	}
 
 	m_NodeMgr.IndexBeacons (); // index only after unneeded beacons have been removed
 	m_NodeMgr.IndexDispatchers ();
@@ -137,7 +143,7 @@ CModule::WriteBnfFile (const char* pFileName)
 	rtl::CString BufferString;
 
 	io::CFile File;
-	bool Result = 
+	bool Result =
 		File.Open (pFileName) &&
 		File.SetSize (0);
 
@@ -149,7 +155,7 @@ CModule::WriteBnfFile (const char* pFileName)
 	return true;
 }
 
-rtl::CString 
+rtl::CString
 CModule::GenerateBnfString ()
 {
 	rtl::CString String;
@@ -265,7 +271,7 @@ CModule::ExportParseTable (lua::CLuaState* pLuaState)
 			CNode* pProduction = m_ParseTable [k];
 			pLuaState->SetArrayElementInteger (j + 1, pProduction ? pProduction->m_MasterIndex : -1);
 		}
-		
+
 		pLuaState->SetArrayElement (i + 1);
 	}
 

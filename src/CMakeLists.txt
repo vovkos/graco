@@ -174,6 +174,7 @@ if (UNIX)
 	target_link_libraries (
 		llkc
 		dl
+		rt
 		pthread
 		)
 endif ()

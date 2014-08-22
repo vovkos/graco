@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "llkc_NodeMgr.h"
-#include "llkc_Config.h"
+#include "NodeMgr.h"
+#include "Config.h"
 
 class CLaDfaState;
 

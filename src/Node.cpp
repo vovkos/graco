@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "llkc_Node.h"
-#include "llkc_ClassMgr.h"
+#include "Node.h"
+#include "ClassMgr.h"
 
 // unfortunately, GCC loses warning suppression pragmas from precompiled header
 

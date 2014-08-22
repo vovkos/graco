@@ -1,14 +1,10 @@
 #include "pch.h"
-#include "llkc_Module.h"
-#include "llkc_ProductionBuilder.h"
-#include "llkc_ParseTableBuilder.h"
-#include "llkc_LaDfaBuilder.h"
+#include "Module.h"
+#include "ProductionBuilder.h"
+#include "ParseTableBuilder.h"
+#include "LaDfaBuilder.h"
 
-// unfortunately, GCC loses warning suppression pragmas from precompiled header
-
-#if (_AXL_CPP == AXL_CPP_GCC)
-#	pragma GCC diagnostic ignored "-Wformat"
-#endif
+#include "axl_g_WarningSuppression.h" // gcc loses warning suppression from pch
 
 //.............................................................................
 

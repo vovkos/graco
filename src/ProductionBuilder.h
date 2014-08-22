@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "llkc_NodeMgr.h"
-#include "llkc_Lexer.h"
+#include "NodeMgr.h"
+#include "Lexer.h"
 
 //.............................................................................
 

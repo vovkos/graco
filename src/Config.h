@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "llkc_DefineMgr.h"
-
 //.............................................................................
 
 enum EConfigFlag

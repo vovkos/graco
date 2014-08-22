@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "llkc_DefineMgr.h"
+#include "DefineMgr.h"
 
 //.............................................................................
 	

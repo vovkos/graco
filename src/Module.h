@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "llkc_NodeMgr.h"
-#include "llkc_DefineMgr.h"
-#include "llkc_ClassMgr.h"
-#include "llkc_Config.h"
+#include "NodeMgr.h"
+#include "DefineMgr.h"
+#include "ClassMgr.h"
+#include "Config.h"
 
 //.............................................................................
 

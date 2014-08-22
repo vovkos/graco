@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "llkc_Parser.h"
-#include "llkc_Generator.h"
-#include "llkc_Config.h"
+#include "Parser.h"
+#include "Generator.h"
+#include "Config.h"
 
 //.............................................................................
 
@@ -22,7 +22,7 @@ void
 PrintUsage ()
 {
 	printf (
-		"Gepard LL(k) grammar compiler\n"
+		"Bulldozer - builder of LL parsers\n"
 		"Usage:\n"
 		"llkc [options] <grammar_file>\n"
 		"    -?, -h, -H        print this usage and exit\n"

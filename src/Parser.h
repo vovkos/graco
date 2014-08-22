@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "llkc_Lexer.h"
-#include "llkc_Module.h"
-#include "llkc_Config.h"
+#include "Lexer.h"
+#include "Module.h"
+#include "Config.h"
 
 //.............................................................................
 

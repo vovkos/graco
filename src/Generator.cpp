@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "llkc_Generator.h"
-#include "llkc_Module.h"
+#include "Generator.h"
+#include "Module.h"
 
 //.............................................................................
 

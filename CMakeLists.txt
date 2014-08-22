@@ -1,10 +1,10 @@
-# This file is part of Gepard project
+# This file is part of Bulldozer project
 # Tibbo Technology Inc (C) 2004-2013. All rights reserved
 # Author: Vladimir Gladkov
 
 #..............................................................................
 
-project (gepard)
+project (bulldozer)
 
 cmake_minimum_required (VERSION 2.8)
 
@@ -57,20 +57,15 @@ message (STATUS "Path to AXL libraries:      ${PATH_AXL_LIB_DIR}")
 # main
 #
 
-set (GEPARD_ROOT_DIR  ${CMAKE_CURRENT_LIST_DIR})
-set (GEPARD_INC_DIR   ${GEPARD_ROOT_DIR}/include)
-set (GEPARD_FRAME_DIR ${GEPARD_ROOT_DIR}/frame)
-
-option (
-	GEPARD_USE_PCH
-	"Use precompiled headers when building Gepard project"
-	ON
-	)
+set (ROOT_DIR  ${CMAKE_CURRENT_LIST_DIR})
+set (INC_DIR   ${ROOT_DIR}/include)
+set (FRAME_DIR ${ROOT_DIR}/frame)
 
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 enable_testing ()
+
 add_subdirectory (src)
 
 #..............................................................................

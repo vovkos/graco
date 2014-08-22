@@ -2,7 +2,9 @@
 # Tibbo Technology Inc (C) 2004-2013. All rights reserved
 # Author: Vladimir Gladkov
 
-project_virtual_folder (llkc)
+#..............................................................................
+
+set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
 
 #..............................................................................
 #
@@ -11,39 +13,39 @@ project_virtual_folder (llkc)
 
 set (
 	APP_H_LIST
-	llkc_ClassMgr.h
-	llkc_Config.h
-	llkc_DefineMgr.h
-	llkc_Generator.h
-	llkc_LaDfaBuilder.h
-	llkc_Lexer.h
-	llkc_Module.h
-	llkc_Node.h
-	llkc_NodeMgr.h
-	llkc_Parser.h
-	llkc_ParseTableBuilder.h
-	llkc_ProductionBuilder.h
+	ClassMgr.h
+	Config.h
+	DefineMgr.h
+	Generator.h
+	LaDfaBuilder.h
+	Lexer.h
+	Module.h
+	Node.h
+	NodeMgr.h
+	Parser.h
+	ParseTableBuilder.h
+	ProductionBuilder.h
 	)
 
 set (
 	APP_CPP_LIST
-	llkc.cpp
-	llkc_ClassMgr.cpp
-	llkc_DefineMgr.cpp
-	llkc_Generator.cpp
-	llkc_LaDfaBuilder.cpp
-	llkc_Lexer.cpp
-	llkc_Module.cpp
-	llkc_Node.cpp
-	llkc_NodeMgr.cpp
-	llkc_Parser.cpp
-	llkc_ParseTableBuilder.cpp
-	llkc_ProductionBuilder.cpp
+	main.cpp
+	ClassMgr.cpp
+	DefineMgr.cpp
+	Generator.cpp
+	LaDfaBuilder.cpp
+	Lexer.cpp
+	Module.cpp
+	Node.cpp
+	NodeMgr.cpp
+	Parser.cpp
+	ParseTableBuilder.cpp
+	ProductionBuilder.cpp
 	)
 
 set (
 	APP_RL_LIST
-	llkc_Lexer.rl
+	Lexer.rl
 	)
 
 source_virtual_folder (
@@ -58,19 +60,17 @@ source_virtual_folder (
 # gen folder
 #
 
-set (LLKC_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
-
-push_and_set (CMAKE_CURRENT_BINARY_DIR ${LLKC_GEN_DIR})
+push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
 file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_ragel_step (
-	llkc_Lexer.rl.cpp
-	llkc_Lexer.rl
+	Lexer.rl.cpp
+	Lexer.rl
 	)
 
 set (
 	GEN_RL_CPP_LIST
-	${LLKC_GEN_DIR}/llkc_Lexer.rl.cpp
+	${GEN_DIR}/Lexer.rl.cpp
 	)
 
 pop (CMAKE_CURRENT_BINARY_DIR)
@@ -89,18 +89,15 @@ source_virtual_folder (
 
 set (
 	LLK_H_LIST
-	${GEPARD_INC_DIR}/llk_Ast.h
-	${GEPARD_INC_DIR}/llk_Node.h
-	${GEPARD_INC_DIR}/llk_Parser.h
-	${GEPARD_INC_DIR}/llk_Pch.h
+	${INC_DIR}/llk_Ast.h
+	${INC_DIR}/llk_Node.h
+	${INC_DIR}/llk_Parser.h
+	${INC_DIR}/llk_Pch.h
 	)
-
-set (LLK_CPP_LIST)
 
 source_virtual_folder (
 	llk
 	${LLK_H_LIST}
-	${LLK_CPP_LIST}
 	)
 
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -110,7 +107,7 @@ source_virtual_folder (
 
 set (
 	FRAME_LIST
-	${GEPARD_FRAME_DIR}/llk_Parser.h.frame
+	${FRAME_DIR}/llk_Parser.h.frame
 	)
 
 source_virtual_folder (
@@ -134,14 +131,14 @@ source_virtual_folder (
 
 #..............................................................................
 #
-# gepard llk grammar compiler
+# bulldozer llk grammar compiler
 #
 
 include_directories (
 	${PATH_LUA_INC_DIR}
 	${PATH_AXL_INC_DIR}
-	${PATH_GEPARD_INC_DIR}
-	${LLKC_GEN_DIR}
+	${INC_DIR}
+	${GEN_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
@@ -151,7 +148,7 @@ link_directories (
 	)
 
 add_executable (
-	llkc
+	bulldozer
 	${PCH_H}
 	${PCH_CPP}
 	${APP_H_LIST}
@@ -162,8 +159,14 @@ add_executable (
 	${FRAME_LIST}
 	)
 
+set_pch (
+	bulldozer
+	${PCH_H}
+	${PCH_CPP}
+	)
+
 target_link_libraries (
-	llkc
+	bulldozer
 	axl_core
 	axl_io
 	axl_lua
@@ -172,18 +175,10 @@ target_link_libraries (
 
 if (UNIX)
 	target_link_libraries (
-		llkc
+		bulldozer
 		dl
 		rt
 		pthread
-		)
-endif ()
-
-if (GEPARD_USE_PCH)
-	set_pch (
-		llkc
-		${PCH_H}
-		${PCH_CPP}
 		)
 endif ()
 

@@ -6,7 +6,7 @@
 
 #include "Lexer.h"
 #include "Module.h"
-#include "Config.h"
+#include "CmdLine.h"
 
 //.............................................................................
 
@@ -35,20 +35,20 @@ protected:
 protected:
 	rtl::CString m_Dir;
 	CModule* m_pModule;
-	const CConfig* m_pConfig;
+	const TCmdLine* m_pCmdLine;
 	CProductionSpecifiers m_DefaultProductionSpecifiers;
 
 public:
 	CParser ()
 	{
 		m_pModule = NULL;
-		m_pConfig = NULL;
+		m_pCmdLine = NULL;
 	}
 
 	bool
 	Parse (
 		CModule* pModule,
-		const CConfig* pConfig,
+		const TCmdLine* pCmdLine,
 		const rtl::CString& FilePath,
 		const char* pSource,
 		size_t Length = -1
@@ -57,7 +57,7 @@ public:
 	bool
 	ParseFile (
 		CModule* pModule,
-		CConfig* pConfig,
+		TCmdLine* pCmdLine,
 		const rtl::CString& FilePath
 		);
 

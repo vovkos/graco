@@ -14,7 +14,7 @@ set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
 set (
 	APP_H_LIST
 	ClassMgr.h
-	Config.h
+	CmdLine.h
 	DefineMgr.h
 	Generator.h
 	LaDfaBuilder.h
@@ -25,11 +25,14 @@ set (
 	Parser.h
 	ParseTableBuilder.h
 	ProductionBuilder.h
+	Version.h
+	Version.h.in
 	)
 
 set (
 	APP_CPP_LIST
 	main.cpp
+	CmdLine.cpp
 	ClassMgr.cpp
 	DefineMgr.cpp
 	Generator.cpp
@@ -117,6 +120,21 @@ source_virtual_folder (
 
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
+# res folder
+#
+
+set (
+	RES_RC_LIST
+	res.rc
+	)
+
+source_virtual_folder (
+	res
+	${RES_RC_LIST}
+	)
+
+# . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+#
 # pch folder
 #
 
@@ -157,6 +175,7 @@ add_executable (
 	${GEN_RL_CPP_LIST}
 	${LLK_H_LIST}
 	${FRAME_LIST}
+	${RES_RC_LIST}
 	)
 
 set_pch (

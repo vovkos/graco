@@ -6,7 +6,7 @@
 bool
 CParser::ParseFile (
 	CModule* pModule,
-	CConfig* pConfig,
+	TCmdLine* pCmdLine,
 	const rtl::CString& FilePath
 	)
 {
@@ -37,13 +37,13 @@ CParser::ParseFile (
 		return false;
 	}
 
-	return Parse (pModule, pConfig, FilePath, p, Size);
+	return Parse (pModule, pCmdLine, FilePath, p, Size);
 }
 
 bool
 CParser::Parse (
 	CModule* pModule,
-	const CConfig* pConfig,
+	const TCmdLine* pCmdLine,
 	const rtl::CString& FilePath,
 	const char* pSource,
 	size_t Length
@@ -52,7 +52,7 @@ CParser::Parse (
 	bool Result;
 
 	m_pModule = pModule;
-	m_pConfig = pConfig;
+	m_pCmdLine = pCmdLine;
 	m_Dir = io::GetDir (FilePath);
 
 	m_DefaultProductionSpecifiers.Reset ();
@@ -183,7 +183,7 @@ CParser::ImportStatement ()
 	rtl::CString FilePath = io::FindFilePath (
 		pToken->m_Data.m_String,
 		m_Dir,
-		m_pConfig ? &m_pConfig->m_ImportDirList : NULL,
+		m_pCmdLine ? &m_pCmdLine->m_ImportDirList : NULL,
 		true
 		);
 

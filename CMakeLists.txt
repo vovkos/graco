@@ -57,6 +57,8 @@ message (STATUS "Path to AXL libraries:      ${PATH_AXL_LIB_DIR}")
 # main
 #
 
+include (version.cmake)
+
 set (ROOT_DIR  ${CMAKE_CURRENT_LIST_DIR})
 set (INC_DIR   ${ROOT_DIR}/include)
 set (FRAME_DIR ${ROOT_DIR}/frame)
@@ -65,6 +67,11 @@ set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 enable_testing ()
+
+configure_file (
+	src/Version.h.in
+	${CMAKE_CURRENT_LIST_DIR}/src/Version.h
+	)
 
 add_subdirectory (src)
 

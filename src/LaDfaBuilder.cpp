@@ -138,7 +138,7 @@ CmpResolverThreadPriority (
 
 CNode*
 CLaDfaBuilder::Build (
-	CConfig* pConfig,
+	TCmdLine* pCmdLine,
 	CConflictNode* pConflict,
 	size_t* pLookahead
 	)
@@ -328,7 +328,7 @@ CLaDfaBuilder::Build (
 		}
 	}
 
-	if (pConfig->m_Flags & EConfigFlag_Verbose)
+	if (pCmdLine->m_Flags & ECmdLineFlag_Verbose)
 		Trace ();
 
 	if (pState1->m_ResolverThreadList.IsEmpty () &&

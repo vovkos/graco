@@ -5,7 +5,7 @@
 #pragma once
 
 #include "NodeMgr.h"
-#include "Config.h"
+#include "CmdLine.h"
 
 class CLaDfaState;
 
@@ -118,7 +118,7 @@ public:
 
 	CNode*
 	Build (
-		CConfig* pConfig,
+		TCmdLine* pCmdLine,
 		CConflictNode* pConflict,
 		size_t* pLookahead = NULL
 		); // returns DFA or immediate production

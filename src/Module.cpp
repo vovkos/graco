@@ -27,7 +27,7 @@ CModule::Clear ()
 }
 
 bool
-CModule::Build (CConfig* pConfig)
+CModule::Build (TCmdLine* pCmdLine)
 {
 	bool Result;
 
@@ -99,7 +99,7 @@ CModule::Build (CConfig* pConfig)
 	{
 		CConflictNode* pConflict = *Conflict;
 
-		pConflict->m_pResultNode = Builder.Build (pConfig, pConflict);
+		pConflict->m_pResultNode = Builder.Build (pCmdLine, pConflict);
 		if (!pConflict->m_pResultNode)
 			return false;
 	}

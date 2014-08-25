@@ -4,18 +4,9 @@
 
 #pragma once
 
-#include "Config.h"
+struct TCmdLine;
 
 //.............................................................................
-
-class CTarget: public rtl::TListLink
-{
-public:
-	rtl::CString m_FileName;
-	rtl::CString m_FrameFileName;
-};
-
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 class CGenerator
 {
@@ -24,12 +15,12 @@ protected:
 	rtl::CString m_Buffer;
 
 public:
-	const CConfig* m_pConfig;
+	const TCmdLine* m_pCmdLine;
 
 public:
 	CGenerator ()
 	{
-		m_pConfig = NULL;
+		m_pCmdLine = NULL;
 	}
 
 	void
@@ -40,15 +31,6 @@ public:
 		const char* pFileName,
 		const char* pFrameFileName
 		);
-
-	bool
-	Generate (CTarget* pTarget)
-	{
-		return Generate (pTarget->m_FileName, pTarget->m_FrameFileName);
-	}
-
-	bool
-	GenerateList (rtl::CIteratorT <CTarget> Target);
 };
 
 //.............................................................................

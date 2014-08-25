@@ -1,16 +1,15 @@
 #include "pch.h"
 #include "Parser.h"
 #include "Generator.h"
-#include "Config.h"
+#include "CmdLine.h"
+#include "Version.h"
 
 //.............................................................................
 
 enum EError
 {
 	EError_Success = 0,
-	EError_NoGrammarFile,
-	EError_InvalidSwitch,
-	EError_FrameCountMismatch,
+	EError_InvalidCmdLine,
 	EError_ParseFailure,
 	EError_BuildFailure,
 	EError_GenerateFailure,
@@ -19,26 +18,27 @@ enum EError
 //.............................................................................
 
 void
-PrintUsage ()
+PrintVersion ()
 {
 	printf (
-		"Bulldozer - builder of LL parsers\n"
-		"Usage:\n"
-		"llkc [options] <grammar_file>\n"
-		"    -?, -h, -H        print this usage and exit\n"
-		"    -b <bnf_file>     generate \"clean\" EBNF grammar file <bnf_file>\n"
-		"    -o <output_file>  generate <output_file> (multiple allowed)\n"
-		"    -O <output_dir>   set output directory to <output_dir>\n"
-		"    -f <frame_file>   use LUA frame <frame_file> (multiple allowed)\n"
-		"    -F <frame_dir>    add frame file directory <frame_dir> (multiple allowed)\n"
-		"    -I <import_dir>   add import file directory <import_dir> (multiple allowed)\n"
-		"    -t <trace_file>   write debug information into <trace_file>\n"
-		"    -l                suppress #line preprocessor directives\n"
-		"    -v                verbose mode\n"
+		"Bulldozer (%s) v%d.%d.%d\n",
+		_AXL_CPU_STRING,
+		VERSION_MAJOR,
+		VERSION_MINOR,
+		VERSION_REVISION
 		);
 }
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+void
+PrintUsage ()
+{
+	PrintVersion ();
+
+	rtl::CString HelpString = CCmdLineSwitchTable::GetHelpString ();
+	printf ("Usage: bulldozer [<options>...] <source_file>\n%s", HelpString.cc ());
+}
+
+//.............................................................................
 
 #if (_AXL_ENV == AXL_ENV_WIN)
 int
@@ -58,100 +58,24 @@ main (
 
 	err::CParseErrorProvider::Register ();
 
-	CConfig Config;
+	TCmdLine CmdLine;
+	CCmdLineParser CmdLineParser (&CmdLine);
+	Result = CmdLineParser.Parse (argc, argv);
+	if (!Result)
+		return false;
 
-	// analyze command line
-
-	rtl::CString SrcFileName;
-	rtl::CString TraceFileName;
-	rtl::CString BnfFileName;
-	rtl::CStdArrayListT <CTarget> TargetList;
-
-	size_t OutputCount = 0;
-	size_t FrameCount = 0;
-
-	CTarget* pTarget;
-	rtl::CString String;
-
-	for (int i = 1; i < argc; i++)
-	{
-		if (argv [i] [0] == '-') // switch
-		{
-			switch (argv [i] [1])
-			{
-			case '?': case 'h': case 'H':
-				PrintUsage ();
-				return EError_Success;
-
-			case 'b':
-				BnfFileName = argv [i] [2] ? &argv [i] [2] : ++i < argc ? argv [i] : NULL;
-				break;
-
-			case 'o':
-				pTarget = TargetList.Get (OutputCount++);
-				pTarget->m_FileName = argv [i] [2] ? &argv [i] [2] : ++i < argc ? argv [i] : NULL;
-				break;
-
-			case 'O':
-				Config.m_OutputDir = argv [i] [2] ? &argv [i] [2] : ++i < argc ? argv [i] : NULL;
-				break;
-
-			case 'f':
-				pTarget = TargetList.Get (FrameCount++);
-				pTarget->m_FrameFileName = argv [i] [2] ? &argv [i] [2] : ++i < argc ? argv [i] : NULL;
-				break;
-
-			case 'F':
-				String = argv [i] [2] ? &argv [i] [2] : ++i < argc ? argv [i] : NULL;
-				Config.m_FrameDirList.InsertTail (String);
-				break;
-
-			case 'I':
-				String = argv [i] [2] ? &argv [i] [2] : ++i < argc ? argv [i] : NULL;
-				Config.m_ImportDirList.InsertTail (String);
-				break;
-
-			case 't':
-				TraceFileName = argv [i] [2] ? &argv [i] [2] : ++i < argc ? argv [i] : NULL;
-				break;
-
-			case 'v':
-				Config.m_Flags |= EConfigFlag_Verbose;
-				break;
-
-			case 'l':
-				Config.m_Flags |= EConfigFlag_NoPpLine;
-				break;
-
-			default:
-				printf ("unknown switch '-%c'\n", argv [i] [1]);
-				return EError_InvalidSwitch;
-			}
-		}
-		else
-		{
-			SrcFileName = argv [i];
-		}
-	}
-
-	if (SrcFileName.IsEmpty ())
+	if (CmdLine.m_InputFileName.IsEmpty ())
 	{
 		PrintUsage ();
-		return EError_NoGrammarFile;
+		return EError_Success;
 	}
 
-	if (OutputCount != FrameCount)
-	{
-		printf ("output-file-count vs frame-file-count mismatch\n");
-		return EError_FrameCountMismatch;
-	}
-
-	rtl::CString SrcFilePath = io::GetFullFilePath (SrcFileName);
+	rtl::CString SrcFilePath = io::GetFullFilePath (CmdLine.m_InputFileName);
 	if (SrcFilePath.IsEmpty ())
 	{
 		printf (
 			"Cannot get full file path of '%s': %s\n",
-			SrcFileName.cc (), // thanks a lot gcc
+			CmdLine.m_InputFileName.cc (), // thanks a lot gcc
 			err::GetError ()->GetDescription ().cc ()
 			);
 		return EError_ParseFailure;
@@ -163,7 +87,7 @@ main (
 	CModule Module;
 	CParser Parser;
 
-	Result = Parser.ParseFile (&Module, &Config, SrcFilePath);
+	Result = Parser.ParseFile (&Module, &CmdLine, SrcFilePath);
 	if (!Result)
 	{
 		printf ("%s\n", err::GetError ()->GetDescription ().cc ());
@@ -182,7 +106,7 @@ main (
 			if (FilePathSet.Find (ImportFilePath))
 				continue;
 
-			Result = Parser.ParseFile (&Module, &Config, ImportFilePath);
+			Result = Parser.ParseFile (&Module, &CmdLine, ImportFilePath);
 			if (!Result)
 			{
 				printf ("%s\n", err::GetError ()->GetDescription ().cc ());
@@ -193,9 +117,9 @@ main (
 		}
 	}
 
-	if (!BnfFileName.IsEmpty ())
+	if (!CmdLine.m_BnfFileName.IsEmpty ())
 	{
-		Result = Module.WriteBnfFile (BnfFileName);
+		Result = Module.WriteBnfFile (CmdLine.m_BnfFileName);
 		if (!Result)
 		{
 			printf ("%s\n", err::GetError ()->GetDescription ().cc ());
@@ -203,23 +127,27 @@ main (
 		}
 	}
 
-	Result = Module.Build (&Config);
+	Result = Module.Build (&CmdLine);
 	if (!Result)
 	{
 		printf ("%s\n", err::GetError ()->GetDescription ().cc ());
 		return EError_BuildFailure;
 	}
 
-	if (Config.m_Flags & EConfigFlag_Verbose)
+	if (CmdLine.m_Flags & ECmdLineFlag_Verbose)
 		Module.Trace ();
 
 	CGenerator Generator;
 	Generator.Prepare (&Module);
-	Generator.m_pConfig = &Config;
+	Generator.m_pCmdLine = &CmdLine;
 
-	if (!TargetList.IsEmpty ())
+	ASSERT (CmdLine.m_OutputFileNameList.GetCount () == CmdLine.m_FrameFileNameList.GetCount ());
+	rtl::CBoxIteratorT <rtl::CString> OutputFileNameIt = CmdLine.m_OutputFileNameList.GetHead ();
+	rtl::CBoxIteratorT <rtl::CString> FrameFileNameIt = CmdLine.m_FrameFileNameList.GetHead ();
+
+	for (; OutputFileNameIt && FrameFileNameIt; OutputFileNameIt++, FrameFileNameIt++)
 	{
-		Result = Generator.GenerateList (TargetList.GetHead ());
+		Result = Generator.Generate (*OutputFileNameIt, *FrameFileNameIt);
 		if (!Result)
 		{
 			printf ("%s\n", err::GetError ()->GetDescription ().cc ());

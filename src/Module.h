@@ -7,7 +7,7 @@
 #include "NodeMgr.h"
 #include "DefineMgr.h"
 #include "ClassMgr.h"
-#include "Config.h"
+#include "CmdLine.h"
 
 //.............................................................................
 
@@ -33,7 +33,7 @@ public:
 	Clear ();
 
 	bool
-	Build (CConfig* pConfig);
+	Build (TCmdLine* pCmdLine);
 
 	void
 	Export (lua::CLuaState* pLuaState);

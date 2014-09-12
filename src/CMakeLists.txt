@@ -1,10 +1,6 @@
-# This file is part of AXL (R) Library
+# This file is part of Bulldozer project
 # Tibbo Technology Inc (C) 2004-2013. All rights reserved
 # Author: Vladimir Gladkov
-
-#..............................................................................
-
-set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
 
 #..............................................................................
 #
@@ -25,7 +21,6 @@ set (
 	Parser.h
 	ParseTableBuilder.h
 	ProductionBuilder.h
-	Version.h
 	Version.h.in
 	)
 
@@ -51,8 +46,9 @@ set (
 	Lexer.rl
 	)
 
-source_virtual_folder (
+source_group (
 	app
+	FILES
 	${APP_H_LIST}
 	${APP_CPP_LIST}
 	${APP_RL_LIST}
@@ -63,8 +59,20 @@ source_virtual_folder (
 # gen folder
 #
 
-push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
 file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+
+configure_file (
+	Version.h.in
+	${GEN_DIR}/Version.h
+	)
+
+set (
+	GEN_H_LIST
+	${GEN_DIR}/Version.h
+	)
 
 add_ragel_step (
 	Lexer.rl.cpp
@@ -80,9 +88,11 @@ pop (CMAKE_CURRENT_BINARY_DIR)
 
 exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
 
-source_virtual_folder (
+source_group (
 	gen
+	FILES
 	${GEN_RL_CPP_LIST}
+	${GEN_H_LIST}
 	)
 
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -92,14 +102,15 @@ source_virtual_folder (
 
 set (
 	LLK_H_LIST
-	${INC_DIR}/llk_Ast.h
-	${INC_DIR}/llk_Node.h
-	${INC_DIR}/llk_Parser.h
-	${INC_DIR}/llk_Pch.h
+	${BULLDOZER_INC_DIR}/llk_Ast.h
+	${BULLDOZER_INC_DIR}/llk_Node.h
+	${BULLDOZER_INC_DIR}/llk_Parser.h
+	${BULLDOZER_INC_DIR}/llk_Pch.h
 	)
 
-source_virtual_folder (
+source_group (
 	llk
+	FILES
 	${LLK_H_LIST}
 	)
 
@@ -110,11 +121,12 @@ source_virtual_folder (
 
 set (
 	FRAME_LIST
-	${FRAME_DIR}/llk_Parser.h.frame
+	${BULLDOZER_FRAME_DIR}/llk_Parser.h.frame
 	)
 
-source_virtual_folder (
+source_group (
 	frame
+	FILES
 	${FRAME_LIST}
 	)
 
@@ -128,8 +140,9 @@ set (
 	res.rc
 	)
 
-source_virtual_folder (
+source_group (
 	res
+	FILES
 	${RES_RC_LIST}
 	)
 
@@ -141,8 +154,9 @@ source_virtual_folder (
 set (PCH_H   pch.h)
 set (PCH_CPP pch.cpp)
 
-source_virtual_folder (
+source_group (
 	pch
+	FILES
 	${PCH_H}
 	${PCH_CPP}
 	)
@@ -153,16 +167,15 @@ source_virtual_folder (
 #
 
 include_directories (
-	${PATH_LUA_INC_DIR}
-	${PATH_AXL_INC_DIR}
+	${LUA_INC_DIR}
+	${AXL_INC_DIR}
 	${INC_DIR}
 	${GEN_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
 link_directories (
-	${PATH_LUA_LIB_DIR}
-	${PATH_AXL_LIB_DIR}
+	${LUA_LIB_DIR}
+	${AXL_LIB_DIR}
 	)
 
 add_executable (
@@ -172,6 +185,7 @@ add_executable (
 	${APP_H_LIST}
 	${APP_CPP_LIST}
 	${APP_RL_LIST}
+	${GEN_H_LIST}
 	${GEN_RL_CPP_LIST}
 	${LLK_H_LIST}
 	${FRAME_LIST}

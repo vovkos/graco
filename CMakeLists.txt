@@ -24,8 +24,14 @@ configure_file (
 	)
 
 configure_file (
-	cmake/latest/bulldozer-cpu.cmake.in
+	cmake/bulldozer.cmake.in
 	${CMAKE_CURRENT_LIST_DIR}/cmake/latest/bulldozer-${TARGET_CPU}.cmake
+	@ONLY
+	)
+
+configure_file (
+	cmake/bulldozer-latest.cmake.in
+	${CMAKE_CURRENT_LIST_DIR}/cmake/latest/bulldozer.cmake
 	)
 
 include (${CMAKE_CURRENT_BINARY_DIR}/cmake/bulldozer.cmake)

@@ -32,6 +32,7 @@ configure_file (
 configure_file (
 	cmake/bulldozer-latest.cmake.in
 	${CMAKE_CURRENT_LIST_DIR}/cmake/latest/bulldozer.cmake
+	@ONLY
 	)
 
 include (${CMAKE_CURRENT_BINARY_DIR}/cmake/bulldozer.cmake)

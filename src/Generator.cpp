@@ -25,15 +25,13 @@ CGenerator::Generate (
 			err::SetFormatStringError ("frame file '%s' not found", pFrameFileName);
 			return false;
 		}
-
-		pFrameFileName = FrameFilePath;
 	}
 
 	bool Result;
 
 	io::CMappedFile FrameFile;
 
-	Result = FrameFile.Open (pFrameFileName, io::EFileFlag_ReadOnly);
+	Result = FrameFile.Open (FrameFilePath, io::EFileFlag_ReadOnly);
 	if (!Result)
 		return false;
 
@@ -45,11 +43,14 @@ CGenerator::Generate (
 	m_Buffer.Reserve (Size);
 
 	rtl::CString TargetFilePath = io::GetFullFilePath (pFileName);
+	rtl::CString FrameDir = io::GetDir (FrameFilePath);
 
 	m_StringTemplate.m_LuaState.SetGlobalString ("TargetFilePath", TargetFilePath);
+	m_StringTemplate.m_LuaState.SetGlobalString ("FrameFilePath", FrameFilePath);
+	m_StringTemplate.m_LuaState.SetGlobalString ("FrameDir", FrameDir);
 	m_StringTemplate.m_LuaState.SetGlobalBoolean ("NoPpLine", (m_pCmdLine->m_Flags & ECmdLineFlag_NoPpLine) != 0);
-
-	Result = m_StringTemplate.Process (&m_Buffer, pFrameFileName, p, Size);
+	
+	Result = m_StringTemplate.Process (&m_Buffer, FrameFilePath, p, Size);
 	if (!Result)
 		return false;
 

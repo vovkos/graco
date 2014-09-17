@@ -1,0 +1,365 @@
+%{ dofile (FrameDir .. "CppParserUtils.lua") }
+
+$CppIncludes
+
+// warning C4065: switch statement contains 'default' but no 'case' labels
+
+#pragma warning (disable: 4065)
+
+$OpenNamespace
+
+//.............................................................................
+
+size_t*
+$ParserClassName::GetParseTable ()
+{
+	static
+	size_t _ParseTable [] =
+	{
+		%{
+			for i = 1, SymbolCount do
+				Row = ParseTable [i]
+				for j = 1, TokenCount do
+					Emit (Row [j], ", ")
+				end }
+		%{ end }
+		-1
+	};
+
+	return _ParseTable;
+}
+
+size_t*
+$ParserClassName::GetSequence (size_t Index)
+{
+	static
+	size_t _SequenceTable [] =
+	{
+		%{
+			for i = 1, SequenceCount do
+				Sequence = SequenceTable [i].Sequence
+				for j = #Sequence, 1, -1 do
+					Emit (Sequence [j], ", ")
+				end } -1, // $(i - 1)
+		%{ end }
+		-1
+	};
+
+	static
+	size_t _SequenceIndexTable [] =
+	{
+		%{
+			j = 0;
+			for i = 1, SequenceCount do
+				Sequence = SequenceTable [i].Sequence
+				Emit (j, ", ")
+				j = j + #Sequence + 1 -- to account left side & terminating -1
+			end
+		}
+		-1
+	};
+
+	ASSERT (Index < SequenceCount);
+	return _SequenceTable + _SequenceIndexTable [Index];
+}
+
+size_t
+$ParserClassName::GetTokenIndex (int Token)
+{
+	switch (Token)
+	{
+	case 0:
+		return EofToken;
+
+	%{
+		for i = 3, TokenCount do
+			Token = TokenTable [i]
+			TokenString = GetTokenString (Token)
+	}
+	case $TokenString:
+		return $(i - 1);
+	%{ end }
+	default:
+		return AnyToken;
+	}
+}
+
+int
+$ParserClassName::GetTokenFromIndex (size_t Index)
+{
+	static
+	const int _TokenTable [] =
+	{
+		0,  // eof
+		0,  // any token
+		%{
+		for i = 3, TokenCount do
+			Token = TokenTable [i]
+			TokenString = GetTokenString (Token)
+			Emit (TokenString, ", ")
+		}
+		%{end}
+		0
+	};
+
+	ASSERT (Index < TokenCount);
+	return _TokenTable [Index];
+}
+
+const char*
+$ParserClassName::GetSymbolName (size_t Index)
+{
+	static
+	const char* _SymbolNameTable [NamedSymbolCount] =
+	{
+		%{
+		for i = 1, NamedSymbolCount do
+			Symbol = SymbolTable [i]
+		}"$(Symbol.Name)",
+		%{end}
+	};
+
+	ASSERT (Index < NamedSymbolCount);
+	return _SymbolNameTable [Index];
+}
+
+$ParserClassName::CSymbolNode*
+$ParserClassName::CreateSymbolNode (size_t Index)
+{
+	CSymbolNode* pNode;
+
+	switch (Index)
+	{
+	%{
+	for i = 1, NamedSymbolCount do
+		Symbol = SymbolTable [i]
+		if Symbol.IsCustom then
+	}
+	case ESymbol_$(Symbol.Name):
+		pNode = AXL_MEM_NEW (CSymbolNode_$(Symbol.Name));
+		%{	if Symbol.Class then }
+		pNode->m_pAstNode = AXL_MEM_NEW ($(Symbol.Class));
+		%{ elseif not Symbol.IsNoAst then }
+		pNode->m_pAstNode = AXL_MEM_NEW (CAstNode);
+		%{ end }
+		break;
+		%{ elseif Symbol.Enter or Symbol.Leave or Symbol.Class or Symbol.IsNoAst then }
+	case ESymbol_$(Symbol.Name):
+		pNode = CreateStdSymbolNode (Index);
+		pNode->m_Flags |= llk::ESymbolNodeFlag_Named;
+			%{ if Symbol.Enter then }
+		pNode->m_Flags |= llk::ESymbolNodeFlag_HasEnter;
+			%{ end
+				if Symbol.Leave then }
+		pNode->m_Flags |= llk::ESymbolNodeFlag_HasLeave;
+			%{ end
+				if Symbol.Class then }
+		pNode->m_pAstNode = AXL_MEM_NEW ($(Symbol.Class));
+			%{ elseif not Symbol.IsNoAst then }
+		pNode->m_pAstNode = AXL_MEM_NEW (CAstNode);
+			%{ end }
+		break;
+		%{ end }
+	%{ end }
+	default:
+		pNode = CreateStdSymbolNode (Index);
+		pNode->m_pAstNode = AXL_MEM_NEW (CAstNode);
+	};
+
+	if (pNode->m_pAstNode)
+		pNode->m_pAstNode->m_Kind = (int) Index;
+
+	return pNode;
+}
+
+size_t*
+$ParserClassName::GetBeacon (size_t Index)
+{
+	static
+	size_t _BeaconTable [] [2] =
+	{
+		%{
+			for i = 1, BeaconCount do
+				local Beacon = BeaconTable [i]
+		}
+		{ $(Beacon.Slot), $(Beacon.Target) },
+		%{ end }
+		{ 0 }
+	};
+
+	ASSERT (Index < BeaconCount);
+	return _BeaconTable [Index];
+}
+
+bool
+$ParserClassName::Action (size_t Index)
+{
+	switch (Index)
+	{
+	%{
+		for i = 1, ActionCount do
+			Action = ActionTable [i]
+			ProductionSymbol = Action.ProductionSymbol;
+	}
+	case $(i - 1):
+		{
+		$(GetSymbolDeclaration (ProductionSymbol, SymbolVariableName, "GetSymbolTop ()"))
+		$(GetAstDeclaration (ProductionSymbol, AstNodeVariableName, SymbolVariableName))
+$PpLinePrefix #line $(GetPpLine (Action.SrcPos.FilePath, Action.SrcPos.Line))
+		$(ProcessActionUserCode (Action.UserCode, Action.Dispatcher, SymbolVariableName, AstNodeVariableName));
+$PpLinePrefix #line $(GetPpLineDefault ())
+		}
+
+		return true;
+	%{ end }
+	default:
+		ASSERT (false);
+		return true;
+	}
+}
+
+void
+$ParserClassName::Argument (
+	size_t Index,
+	CSymbolNode* pSymbol
+	)
+{
+	switch (Index)
+	{
+	%{
+		for i = 1, ArgumentCount do
+			Argument = ArgumentTable [i]
+			TargetSymbol = Argument.TargetSymbol
+			ProductionSymbol = Argument.ProductionSymbol
+			ValueTable = Argument.ValueTable
+		}
+	case $(i - 1):
+		{
+		$(GetSymbolDeclaration (TargetSymbol, "__pTarget", "pSymbol"))
+		$(GetSymbolDeclaration (ProductionSymbol, SymbolVariableName, "GetSymbolTop ()"))
+		$(GetAstDeclaration (ProductionSymbol, AstNodeVariableName, SymbolVariableName))
+		%{ for j = 1, #ValueTable do
+			ArgumentName = TargetSymbol.ArgNameTable [j]
+			ArgumentValue = ProcessActionUserCode (ValueTable [j], Argument.Dispatcher, SymbolVariableName, AstNodeVariableName)
+			}
+$PpLinePrefix #line $(GetPpLine (Argument.SrcPos.FilePath, Argument.SrcPos.Line))
+		__pTarget->m_Arg.$ArgumentName = $ArgumentValue;
+$PpLinePrefix #line $(GetPpLineDefault ())
+		%{ end }
+		}
+		break;
+	%{ end }
+	default:
+		ASSERT (false);
+	}
+}
+
+bool
+$ParserClassName::Enter (size_t Index)
+{
+	switch (Index)
+	{
+	%{
+	for i = 1, NamedSymbolCount do
+		Symbol = SymbolTable [i]
+		if (Symbol.Enter) then }
+	case ESymbol_$(Symbol.Name):
+		{
+			$(GetSymbolDeclaration (Symbol, SymbolVariableName, "GetSymbolTop ()"))
+			$(GetAstDeclaration (Symbol, AstNodeVariableName, SymbolVariableName))
+$PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.EnterLine))
+			$(ProcessActionUserCode (Symbol.Enter, nil, SymbolVariableName, AstNodeVariableName));
+$PpLinePrefix #line $(GetPpLineDefault ())
+		}
+		return true;
+		%{ end }
+	%{ end }
+	default:
+		return true;
+	}
+}
+
+bool
+$ParserClassName::Leave (size_t Index)
+{
+	switch (Index)
+	{
+	%{
+	for i = 1, NamedSymbolCount do
+		Symbol = SymbolTable [i]
+		if (Symbol.Leave) then }
+	case ESymbol_$(Symbol.Name):
+		{
+			$(GetSymbolDeclaration (Symbol, SymbolVariableName, "GetSymbolTop ()"))
+			$(GetAstDeclaration (Symbol, AstNodeVariableName, SymbolVariableName))
+$PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.LeaveLine))
+			$(ProcessActionUserCode (Symbol.Leave, nil, SymbolVariableName, AstNodeVariableName));
+$PpLinePrefix #line $(GetPpLineDefault ())
+		}
+		return true;
+		%{ end }
+	%{ end }
+	default:
+		return true;
+	}
+}
+
+$ParserClassName::ELaDfaResult
+$ParserClassName::LaDfa (
+	size_t Index,
+	int LookaheadToken,
+	TLaDfaTransition* pTransition
+	)
+{
+	switch (Index)
+	{
+	%{ for i = 1, LaDfaCount do
+			DfaNode = LaDfaTable [i]	}
+	case $(i - 1):
+		%{ if DfaNode.Resolver then }
+		pTransition->m_ProductionIndex = $(DfaNode.Production);
+		pTransition->m_ResolverIndex = $(DfaNode.Resolver);
+		pTransition->m_ResolverElseIndex = $(DfaNode.ResolverElse);
+			%{ if DfaNode.HasChainedResolver then }
+		pTransition->m_Flags = llk::ELaDfaNodeFlag_HasChainedResolver;
+			%{ end }
+		return ELaDfaResult_Resolver;
+		%{ else }
+		switch (LookaheadToken)
+		{
+		%{ TransitionTable = DfaNode.TransitionTable
+			for j = 1, #TransitionTable do
+				local Transition = TransitionTable [j]
+				local TokenString = GetTokenString (Transition.Token) }
+		case $TokenString:
+				%{ if (Transition.Resolver) then }
+			pTransition->m_ProductionIndex = $(Transition.Production);
+			pTransition->m_ResolverIndex = $(Transition.Resolver);
+			pTransition->m_ResolverElseIndex = $(Transition.ResolverElse);
+					%{ if Transition.HasChainedResolver then }
+			pTransition->m_Flags = llk::ELaDfaNodeFlag_HasChainedResolver;
+					%{ end }
+			return ELaDfaResult_Resolver;
+				%{ else }
+			pTransition->m_ProductionIndex = $(Transition.Production);
+			return ELaDfaResult_Production;
+				%{ end	}
+		%{ end }
+		default:
+				%{ if (DfaNode.DefaultProduction) then }
+			pTransition->m_ProductionIndex = $(DfaNode.DefaultProduction);
+			return ELaDfaResult_Production;
+				%{ else }
+			return ELaDfaResult_Fail;
+				%{ end	}
+		}
+		%{ end }
+	%{ end }
+	default:
+		return ELaDfaResult_Fail;
+	}
+}
+
+//.............................................................................
+
+$CloseNamespace

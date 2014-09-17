@@ -1,0 +1,193 @@
+%{ dofile (FrameDir .. "CppParserUtils.lua") }
+
+#pragma once
+
+$Includes
+
+// warning C4065: switch statement contains 'default' but no 'case' labels
+
+#pragma warning (disable: 4065)
+
+$OpenNamespace
+
+//.............................................................................
+
+enum ESymbol
+{
+	%{
+	for i = 1, NamedSymbolCount do
+		Symbol = SymbolTable [i]
+		Emit ("ESymbol_", Symbol.Name, " = ", i - 1, ", ")
+	}
+	%{ end }
+};
+
+//.............................................................................
+
+class $ParserClassName: public llk::CParserT <$ParserClassName, CToken>
+{
+public:
+	enum
+	{
+		Lookahead          = $Lookahead,
+
+		StartSymbol        = $StartSymbol,
+		StartPragmaSymbol  = $StartPragmaSymbol,
+		EofToken           = 0,
+		AnyToken           = 1,
+
+		TokenCount         = $TokenCount,
+		SymbolCount        = $SymbolCount,
+		SequenceCount      = $SequenceCount,
+		ActionCount        = $ActionCount,
+		ArgumentCount      = $ArgumentCount,
+		BeaconCount        = $BeaconCount,
+		LaDfaCount         = $LaDfaCount,
+
+		TotalCount         = $TotalCount,
+
+		NamedSymbolCount   = $NamedSymbolCount,
+
+		TokenFirst         = 0,
+		TokenEnd           = $TokenEnd,
+		SymbolFirst        = $TokenEnd,
+		NamedSymbolEnd     = $NamedSymbolEnd,
+		SymbolEnd          = $SymbolEnd,
+		SequenceFirst      = $SymbolEnd,
+		SequenceEnd        = $SequenceEnd,
+		ActionFirst        = $SequenceEnd,
+		ActionEnd          = $ActionEnd,
+		ArgumentFirst      = $ActionEnd,
+		ArgumentEnd        = $ArgumentEnd,
+		BeaconFirst        = $ArgumentEnd,
+		BeaconEnd          = $BeaconEnd,
+		LaDfaFirst         = $BeaconEnd,
+		LaDfaEnd           = $LaDfaEnd,
+	};
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+	$Members
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+	%{
+	for i = 1, ClassCount do
+		Class = ClassTable [i]
+		if Class.BaseClass then
+			BaseClass = Class.BaseClass
+		else
+			BaseClass = "CAstNode"
+		end
+	}
+	class $(Class.Name): public $BaseClass
+	{
+	public:
+$PpLinePrefix #line $(GetPpLine (Class.SrcPos.FilePath, Class.SrcPos.Line))
+		$(Class.Members);
+$PpLinePrefix #line $(GetPpLineDefault ())
+	};
+	%{ end }
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+	%{
+	for i = 1, NamedSymbolCount do
+		Symbol = SymbolTable [i]
+		if Symbol.IsCustom then }
+	class CSymbolNode_$(Symbol.Name): public CSymbolNode
+	{
+	public:
+			%{ if Symbol.Arg then }
+		struct
+		{
+$PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.ArgLine))
+			$((string.gsub (Symbol.Arg, ",", ";")));
+$PpLinePrefix #line $(GetPpLineDefault ())
+		} m_Arg;
+			%{ end
+			if Symbol.Local then }
+		struct
+		{
+$PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.LocalLine))
+			$(Symbol.Local);
+$PpLinePrefix #line $(GetPpLineDefault ())
+		} m_Local;
+			%{ end }
+		CSymbolNode_$(Symbol.Name) ()
+		{
+			m_Flags = llk::ESymbolNodeFlag_Named;
+			m_Index = ESymbol_$(Symbol.Name);
+			%{ if Symbol.Enter then }
+			m_Flags |= llk::ESymbolNodeFlag_HasEnter;
+			%{ end
+				if Symbol.Leave then }
+			m_Flags |= llk::ESymbolNodeFlag_HasLeave;
+			%{ end }
+		}
+	};
+		%{ end }
+	%{ end }
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+	$Members2
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+	static
+	size_t*
+	GetParseTable ();
+
+	static
+	size_t*
+	GetSequence (size_t Index);
+
+	static
+	size_t
+	GetTokenIndex (int Token);
+
+	static
+	int
+	GetTokenFromIndex (size_t Index);
+
+	static
+	const char*
+	GetSymbolName (size_t Index);
+
+	static
+	CSymbolNode*
+	CreateSymbolNode (size_t Index);
+
+	static
+	size_t*
+	GetBeacon (size_t Index);
+
+	bool
+	Action (size_t Index);
+
+	void
+	Argument (
+		size_t Index,
+		CSymbolNode* pSymbol
+		);
+
+	bool
+	Enter (size_t Index);
+
+	bool
+	Leave (size_t Index);
+
+	ELaDfaResult
+	LaDfa (
+		size_t Index,
+		int LookaheadToken,
+		TLaDfaTransition* pTransition
+		);
+};
+
+//.............................................................................
+
+$CloseNamespace
+
+#pragma warning (default: 4065)

@@ -121,7 +121,9 @@ source_group (
 
 set (
 	FRAME_LIST
-	${BULLDOZER_FRAME_DIR}/llk_Parser.h.frame
+	${BULLDOZER_FRAME_DIR}/CppParser.h.in
+	${BULLDOZER_FRAME_DIR}/CppParser.cpp.in
+	${BULLDOZER_FRAME_DIR}/CppParserUtils.lua
 	)
 
 source_group (

@@ -1,4 +1,4 @@
-%{ dofile (FrameDir .. "CppParserUtils.lua") }
+%{ dofile (FrameDir .. "/CppParserUtils.lua") }
 
 #pragma once
 

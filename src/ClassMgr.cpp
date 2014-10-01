@@ -4,71 +4,71 @@
 //.............................................................................
 
 void 
-CClass::Export (lua::CLuaState* pLuaState)
+Class::luaExport (lua::LuaState* luaState)
 {
-	pLuaState->CreateTable (0, 2);
-	pLuaState->SetMemberString ("Name", m_Name);
-	if (m_pBaseClass)
-		pLuaState->SetMemberString ("BaseClass", m_pBaseClass->m_Name);
+	luaState->createTable (0, 2);
+	luaState->setMemberString ("Name", m_name);
+	if (m_baseClass)
+		luaState->setMemberString ("BaseClass", m_baseClass->m_name);
 
-	pLuaState->SetMemberString ("Members", m_Members);
+	luaState->setMemberString ("Members", m_members);
 
-	pLuaState->CreateTable (0, 3);
-	pLuaState->SetMemberString ("FilePath", m_SrcPos.m_FilePath);
-	pLuaState->SetMemberInteger ("Line", m_SrcPos.m_Line);
-	pLuaState->SetMemberInteger ("Col", m_SrcPos.m_Col);
-	pLuaState->SetMember ("SrcPos");
+	luaState->createTable (0, 3);
+	luaState->setMemberString ("FilePath", m_srcPos.m_filePath);
+	luaState->setMemberInteger ("Line", m_srcPos.m_line);
+	luaState->setMemberInteger ("Col", m_srcPos.m_col);
+	luaState->setMember ("SrcPos");
 
 }
 
 //.............................................................................
 
-CClass*
-CClassMgr::GetClass (const rtl::CString& Name)
+Class*
+ClassMgr::getClass (const rtl::String& name)
 {
-	rtl::CStringHashTableMapIteratorT <CClass*> It = m_ClassMap.Goto (Name);
-	if (It->m_Value)
-		return It->m_Value;
+	rtl::StringHashTableMapIterator <Class*> it = m_classMap.visit (name);
+	if (it->m_value)
+		return it->m_value;
 
-	CClass* pClass = AXL_MEM_NEW (CClass);
-	pClass->m_Flags |= EClassFlag_Named;
-	pClass->m_Name = Name;
-	m_ClassList.InsertTail (pClass);
-	It->m_Value = pClass;
-	return pClass;
+	Class* cls = AXL_MEM_NEW (Class);
+	cls->m_flags |= ClassFlagKind_Named;
+	cls->m_name = name;
+	m_classList.insertTail (cls);
+	it->m_value = cls;
+	return cls;
 }
 
-CClass*
-CClassMgr::CreateUnnamedClass ()
+Class*
+ClassMgr::createUnnamedClass ()
 {
-	CClass* pClass = AXL_MEM_NEW (CClass);
-	pClass->m_Name.Format ("_cls%d", m_ClassList.GetCount () + 1);
-	m_ClassList.InsertTail (pClass); // don't add to class map
-	return pClass;
+	Class* cls = AXL_MEM_NEW (Class);
+	cls->m_name.format ("_cls%d", m_classList.getCount () + 1);
+	m_classList.insertTail (cls); // don't add to class map
+	return cls;
 }
 
 void
-CClassMgr::DeleteClass (CClass* pClass)
+ClassMgr::deleteClass (Class* cls)
 {
-	if (pClass->m_Flags & EClassFlag_Named)
-		m_ClassMap.DeleteByKey (pClass->m_Name);
+	if (cls->m_flags & ClassFlagKind_Named)
+		m_classMap.eraseByKey (cls->m_name);
 
-	m_ClassList.Delete (pClass);		
+	m_classList.erase (cls);		
 }
 
 bool
-CClassMgr::Verify ()
+ClassMgr::verify ()
 {
-	rtl::CIteratorT <CClass> Class = m_ClassList.GetHead ();
-	for (; Class; Class++)
+	rtl::Iterator <Class> it = m_classList.getHead ();
+	for (; it; it++)
 	{
-		CClass* pClass = *Class;
+		Class* cls = *it;
 
-		if ((pClass->m_Flags & EClassFlag_Used) && !(pClass->m_Flags & EClassFlag_Defined))
+		if ((cls->m_flags & ClassFlagKind_Used) && !(cls->m_flags & ClassFlagKind_Defined))
 		{
-			err::SetFormatStringError (
+			err::setFormatStringError (
 				"class '%s' is not defined", 
-				pClass->m_Name.cc () // thans a lot gcc
+				cls->m_name.cc () // thans a lot gcc
 				);
 			return false;
 		}
@@ -78,26 +78,26 @@ CClassMgr::Verify ()
 }
 
 void
-CClassMgr::DeleteUnusedClasses ()
+ClassMgr::deleteUnusedClasses ()
 {
-	rtl::CIteratorT <CClass> Class = m_ClassList.GetHead ();
-	while (Class)
+	rtl::Iterator <Class> it = m_classList.getHead ();
+	while (it)
 	{
-		CClass* pClass = *Class++;
-		if (!(pClass->m_Flags & EClassFlag_Used))
-			DeleteClass (pClass);
+		Class* cls = *it++;
+		if (!(cls->m_flags & ClassFlagKind_Used))
+			deleteClass (cls);
 	}
 }
 
 void
-CClassMgr::DeleteUnreachableClasses ()
+ClassMgr::deleteUnreachableClasses ()
 {
-	rtl::CIteratorT <CClass> Class = m_ClassList.GetHead ();
-	while (Class)
+	rtl::Iterator <Class> it = m_classList.getHead ();
+	while (it)
 	{
-		CClass* pClass = *Class++;
-		if (!(pClass->m_Flags & EClassFlag_Reachable))
-			DeleteClass (pClass);
+		Class* cls = *it++;
+		if (!(cls->m_flags & ClassFlagKind_Reachable))
+			deleteClass (cls);
 	}
 }
 

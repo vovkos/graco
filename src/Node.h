@@ -10,487 +10,487 @@
 
 // forwards
 
-class CClass;
-class CGrammarNode;
-class CSymbolNode;
-class CBeaconNode;
-class CDispatcherNode;
-class CLaDfaNode;
+class Class;
+class GrammarNode;
+class SymbolNode;
+class BeaconNode;
+class DispatcherNode;
+class LaDfaNode;
 
 //.............................................................................
 
-enum ENode
+enum NodeKind
 {
-	ENode_Undefined = 0,
-	ENode_Epsilon,
-	ENode_Token,
-	ENode_Symbol,
-	ENode_Sequence,
-	ENode_Action,
-	ENode_Argument,
-	ENode_Beacon,
-	ENode_Dispatcher,
-	ENode_Conflict,
-	ENode_LaDfa,
+	NodeKind_Undefined = 0,
+	NodeKind_Epsilon,
+	NodeKind_Token,
+	NodeKind_Symbol,
+	NodeKind_Sequence,
+	NodeKind_Action,
+	NodeKind_Argument,
+	NodeKind_Beacon,
+	NodeKind_Dispatcher,
+	NodeKind_Conflict,
+	NodeKind_LaDfa,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum ENodeFlag
+enum NodeFlagKind
 {
-	ENodeFlag_RecursionStopper = 0x0001,
-	ENodeFlag_Reachable        = 0x0002,
+	NodeFlagKind_RecursionStopper = 0x0001,
+	NodeFlagKind_Reachable        = 0x0002,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CNode: public rtl::TListLink
+class Node: public rtl::ListLink
 {
 public:
-	ENode m_Kind;
-	size_t m_Index;
-	size_t m_MasterIndex;
+	NodeKind m_kind;
+	size_t m_index;
+	size_t m_masterIndex;
 
-	rtl::CString m_Name;
-	int m_Flags;
+	rtl::String m_name;
+	int m_flags;
 
 public:
-	CNode ();
+	Node ();
 
 	virtual
-	~CNode ()
+	~Node ()
 	{
 	}
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	virtual
 	void
-	Export (lua::CLuaState* pLuaState)
+	luaExport (lua::LuaState* luaState)
 	{
 	}
 
 	bool
-	IsReachable ()
+	isReachable ()
 	{
-		return (m_Flags & ENodeFlag_Reachable) != 0;
+		return (m_flags & NodeFlagKind_Reachable) != 0;
 	}
 
 	virtual
 	bool
-	MarkReachable ();
+	markReachable ();
 
 	virtual
-	rtl::CString
-	GetProductionString ()
+	rtl::String
+	getProductionString ()
 	{
-		return m_Name;
+		return m_name;
 	}
 
 	virtual
-	rtl::CString
-	GetBnfString ()
+	rtl::String
+	getBnfString ()
 	{
-		return m_Name;
+		return m_name;
 	}
 };
 
 //.............................................................................
 
-enum EGrammarNodeFlag
+enum GrammarNodeFlagKind
 {
-	EGrammarNodeFlag_Nullable = 0x0010,
-	EGrammarNodeFlag_Final    = 0x0020,
+	GrammarNodeFlagKind_Nullable = 0x0010,
+	GrammarNodeFlagKind_Final    = 0x0020,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CGrammarNode: public CNode
+class GrammarNode: public Node
 {
 public:
-	lex::CSrcPos m_SrcPos;
+	lex::SrcPos m_srcPos;
 
-	int m_QuantifierKind; // '?' '*' '+'
-	CGrammarNode* m_pQuantifiedNode;
+	int m_quantifierKind; // '?' '*' '+'
+	GrammarNode* m_quantifiedNode;
 
-	rtl::CArrayT <CSymbolNode*> m_FirstArray;
-	rtl::CArrayT <CSymbolNode*> m_FollowArray;
+	rtl::Array <SymbolNode*> m_firstArray;
+	rtl::Array <SymbolNode*> m_followArray;
 
-	rtl::CBitMap m_FirstSet;
-	rtl::CBitMap m_FollowSet;
+	rtl::BitMap m_firstSet;
+	rtl::BitMap m_followSet;
 
 public:
-	CGrammarNode ()
+	GrammarNode ()
 	{
-		m_QuantifierKind = 0;
+		m_quantifierKind = 0;
 	}
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	bool
-	IsNullable ()
+	isNullable ()
 	{
-		return (m_Flags & EGrammarNodeFlag_Nullable) != 0;
+		return (m_flags & GrammarNodeFlagKind_Nullable) != 0;
 	}
 
 	bool
-	IsFinal ()
+	isFinal ()
 	{
-		return (m_Flags & EGrammarNodeFlag_Final) != 0;
+		return (m_flags & GrammarNodeFlagKind_Final) != 0;
 	}
 
 	bool
-	MarkNullable ();
+	markNullable ();
 
 	bool
-	MarkFinal ();
+	markFinal ();
 
-	CGrammarNode*
-	StripBeacon ();
+	GrammarNode*
+	stripBeacon ();
 
 	virtual
-	rtl::CString
-	GetBnfString ();
+	rtl::String
+	getBnfString ();
 
 protected:
 	void
-	ExportSrcPos (
-		lua::CLuaState* pLuaState,
-		const lex::CLineCol& LineCol
+	luaExportSrcPos (
+		lua::LuaState* luaState,
+		const lex::LineCol& lineCol
 		);
 };
 
 //.............................................................................
 
-enum ESymbolNodeFlag
+enum SymbolNodeFlagKind
 {
-	ESymbolNodeFlag_Named        = 0x0100,
-	ESymbolNodeFlag_EofToken     = 0x0200,
-	ESymbolNodeFlag_AnyToken     = 0x0400,
-	ESymbolNodeFlag_Pragma       = 0x0800,
-	ESymbolNodeFlag_Start        = 0x1000,
-	ESymbolNodeFlag_NoAst        = 0x2000,
-	ESymbolNodeFlag_ResolverUsed = 0x4000,
-	ESymbolNodeFlag_Nullable     = 0x8000,
+	SymbolNodeFlagKind_Named        = 0x0100,
+	SymbolNodeFlagKind_EofToken     = 0x0200,
+	SymbolNodeFlagKind_AnyToken     = 0x0400,
+	SymbolNodeFlagKind_Pragma       = 0x0800,
+	SymbolNodeFlagKind_Start        = 0x1000,
+	SymbolNodeFlagKind_NoAst        = 0x2000,
+	SymbolNodeFlagKind_ResolverUsed = 0x4000,
+	SymbolNodeFlagKind_Nullable     = 0x8000,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CSymbolNode: public CGrammarNode
+class SymbolNode: public GrammarNode
 {
 public:
-	int m_CharToken;
+	int m_charToken;
 
-	CClass* m_pClass;
-	CGrammarNode* m_pResolver;
-	size_t m_ResolverPriority;
-	rtl::CArrayT <CGrammarNode*> m_ProductionArray;
+	Class* m_class;
+	GrammarNode* m_resolver;
+	size_t m_resolverPriority;
+	rtl::Array <GrammarNode*> m_productionArray;
 
-	rtl::CString m_Arg;
-	rtl::CString m_Local;
-	rtl::CString m_Enter;
-	rtl::CString m_Leave;
+	rtl::String m_arg;
+	rtl::String m_local;
+	rtl::String m_enter;
+	rtl::String m_leave;
 
-	lex::CLineCol m_ArgLineCol;
-	lex::CLineCol m_LocalLineCol;
-	lex::CLineCol m_EnterLineCol;
-	lex::CLineCol m_LeaveLineCol;
+	lex::LineCol m_argLineCol;
+	lex::LineCol m_localLineCol;
+	lex::LineCol m_enterLineCol;
+	lex::LineCol m_leaveLineCol;
 
-	rtl::CBoxListT <rtl::CString> m_ArgNameList;
-	rtl::CBoxListT <rtl::CString> m_LocalNameList;
-	rtl::CStringHashTable m_ArgNameSet;
-	rtl::CStringHashTable m_LocalNameSet;
+	rtl::BoxList <rtl::String> m_argNameList;
+	rtl::BoxList <rtl::String> m_localNameList;
+	rtl::StringHashTable m_argNameSet;
+	rtl::StringHashTable m_localNameSet;
 
 public:
-	CSymbolNode ();
+	SymbolNode ();
 
-	rtl::CString
-	GetArgName (size_t Index);
+	rtl::String
+	getArgName (size_t index);
 
 	void
-	AddProduction (CGrammarNode* pNode);
+	addProduction (GrammarNode* node);
 
 	virtual
 	bool
-	MarkReachable ();
+	markReachable ();
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	virtual
 	void
-	Export (lua::CLuaState* pLuaState);
+	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::CString
-	GetBnfString ();
+	rtl::String
+	getBnfString ();
 };
 
 //.............................................................................
 
-class CSequenceNode: public CGrammarNode
+class SequenceNode: public GrammarNode
 {
 public:
-	rtl::CArrayT <CGrammarNode*> m_Sequence;
+	rtl::Array <GrammarNode*> m_sequence;
 
 public:
-	CSequenceNode ();
+	SequenceNode ();
 
 	void
-	Append (CGrammarNode* pNode);
+	append (GrammarNode* node);
 
 	virtual
 	bool
-	MarkReachable ();
+	markReachable ();
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	virtual
 	void
-	Export (lua::CLuaState* pLuaState);
+	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::CString
-	GetProductionString ();
+	rtl::String
+	getProductionString ();
 
 	virtual
-	rtl::CString
-	GetBnfString ();
+	rtl::String
+	getBnfString ();
 };
 
 //.............................................................................
 
-enum EUserNodeFlag
+enum UserNodeFlagKind
 {
-	EUserNodeFlag_UserCodeProcessed = 0x010000, // prevent double processing in '+' quantifier
+	UserNodeFlagKind_UserCodeProcessed = 0x010000, // prevent double processing in '+' quantifier
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CUserNode: public CGrammarNode
+class UserNode: public GrammarNode
 {
 public:
-	CSymbolNode* m_pProductionSymbol;
-	CDispatcherNode* m_pDispatcher;
-	CGrammarNode* m_pResolver;
+	SymbolNode* m_productionSymbol;
+	DispatcherNode* m_dispatcher;
+	GrammarNode* m_resolver;
 
-	CUserNode ();
+	UserNode ();
 };
 
 //.............................................................................
 
-class CActionNode: public CUserNode
+class ActionNode: public UserNode
 {
 public:
-	rtl::CString m_UserCode;
+	rtl::String m_userCode;
 
 public:
-	CActionNode ();
+	ActionNode ();
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	virtual
 	void
-	Export (lua::CLuaState* pLuaState);
+	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::CString
-	GetBnfString ()
+	rtl::String
+	getBnfString ()
 	{
-		return rtl::CString ();
+		return rtl::String ();
 	}
 };
 
 //.............................................................................
 
-class CArgumentNode: public CUserNode
+class ArgumentNode: public UserNode
 {
 public:
-	CSymbolNode* m_pTargetSymbol;
-	rtl::CBoxListT <rtl::CString> m_ArgValueList;
+	SymbolNode* m_targetSymbol;
+	rtl::BoxList <rtl::String> m_argValueList;
 
 public:
-	CArgumentNode ();
+	ArgumentNode ();
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	virtual
 	void
-	Export (lua::CLuaState* pLuaState);
+	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::CString
-	GetBnfString ()
+	rtl::String
+	getBnfString ()
 	{
-		return rtl::CString ();
+		return rtl::String ();
 	}
 };
 
 //.............................................................................
 
-enum EBeaconNodeFlag
+enum BeaconNodeFlagKind
 {
-	EBeaconNodeFlag_Added   = 0x0100,
-	EBeaconNodeFlag_Deleted = 0x0200,
+	BeaconNodeFlagKind_Added   = 0x0100,
+	BeaconNodeFlagKind_Deleted = 0x0200,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CBeaconNode: public CGrammarNode
+class BeaconNode: public GrammarNode
 {
 public:
-	rtl::CString m_Label;
-	size_t m_SlotIndex;
-	CSymbolNode* m_pTarget;
-	CArgumentNode* m_pArgument;
-	CGrammarNode* m_pResolver;
+	rtl::String m_label;
+	size_t m_slotIndex;
+	SymbolNode* m_target;
+	ArgumentNode* m_argument;
+	GrammarNode* m_resolver;
 
 public:
-	CBeaconNode ();
+	BeaconNode ();
 
 	virtual
 	bool
-	MarkReachable ();
+	markReachable ();
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	virtual
 	void
-	Export (lua::CLuaState* pLuaState);
+	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::CString
-	GetBnfString ()
+	rtl::String
+	getBnfString ()
 	{
-		return m_pTarget ? m_pTarget->GetBnfString () : m_Name;
+		return m_target ? m_target->getBnfString () : m_name;
 	}
 };
 
 //.............................................................................
 
-class CDispatcherNode: public CNode
+class DispatcherNode: public Node
 {
 public:
-	CSymbolNode* m_pSymbol;
-	rtl::CArrayT <CBeaconNode*> m_BeaconArray;
+	SymbolNode* m_symbol;
+	rtl::Array <BeaconNode*> m_beaconArray;
 
 public:
-	CDispatcherNode ()
+	DispatcherNode ()
 	{
-		m_Kind = ENode_Dispatcher;
+		m_kind = NodeKind_Dispatcher;
 	}
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	virtual
 	void
-	Export (lua::CLuaState* pLuaState);
+	luaExport (lua::LuaState* luaState);
 };
 
 //.............................................................................
 
-class CConflictNode: public CNode
+class ConflictNode: public Node
 {
 public:
-	CSymbolNode* m_pSymbol;
-	CSymbolNode* m_pToken;
-	CNode* m_pResultNode; // lookahead DFA or immediate production
-	rtl::CArrayT <CGrammarNode*> m_ProductionArray;
+	SymbolNode* m_symbol;
+	SymbolNode* m_token;
+	Node* m_resultNode; // lookahead DFA or immediate production
+	rtl::Array <GrammarNode*> m_productionArray;
 
 public:
-	CConflictNode ();
+	ConflictNode ();
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	virtual
 	void
-	Export (lua::CLuaState* pLuaState)
+	luaExport (lua::LuaState* luaState)
 	{
 		ASSERT (false); // all the conflicts should be resolved
 	}
 
 	void
-	PushError ()
+	pushError ()
 	{
-		err::PushFormatStringError (
+		err::pushFormatStringError (
 			"conflict at '%s':'%s'",
-			m_pSymbol->m_Name.cc (), // thanks a lot gcc
-			m_pToken->m_Name.cc ()
+			m_symbol->m_name.cc (), // thanks a lot gcc
+			m_token->m_name.cc ()
 			);
 	}
 };
 
 //.............................................................................
 
-enum ELaDfaNodeFlag
+enum LaDfaNodeFlagKind
 {
-	ELaDfaNodeFlag_Leaf     = 0x100,
-	ELaDfaNodeFlag_Resolved = 0x200,
+	LaDfaNodeFlagKind_Leaf     = 0x100,
+	LaDfaNodeFlagKind_Resolved = 0x200,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CLaDfaNode: public CNode
+class LaDfaNode: public Node
 {
 public:
-	CSymbolNode* m_pToken;
-	CGrammarNode* m_pResolver;
-	CNode* m_pResolverElse;
-	CLaDfaNode* m_pResolverUplink;
-	CNode* m_pProduction;
+	SymbolNode* m_token;
+	GrammarNode* m_resolver;
+	Node* m_resolverElse;
+	LaDfaNode* m_resolverUplink;
+	Node* m_production;
 
-	rtl::CArrayT <CLaDfaNode*> m_TransitionArray;
+	rtl::Array <LaDfaNode*> m_transitionArray;
 
 public:
-	CLaDfaNode ();
+	LaDfaNode ();
 
 	virtual
 	void
-	Trace ();
+	trace ();
 
 	virtual
 	void
-	Export (lua::CLuaState* pLuaState);
+	luaExport (lua::LuaState* luaState);
 
 protected:
 	void
-	ExportResolverMembers (lua::CLuaState* pLuaState);
+	luaExportResolverMembers (lua::LuaState* luaState);
 };
 
 //.............................................................................
 
 template <typename T>
 void
-TraceNodeList (
-	const char* pName,
-	rtl::CIteratorT <T> Node
+traceNodeList (
+	const char* name,
+	rtl::Iterator <T> nodeIt
 	)
 {
-	printf ("%s\n", pName);
+	printf ("%s\n", name);
 
-	for (; Node; Node++)
+	for (; nodeIt; nodeIt++)
 	{
-		T* pNode = *Node;
+		T* node = *nodeIt;
 
-		printf ("%3d/%-3d\t", pNode->m_Index, pNode->m_MasterIndex);
-		pNode->Trace ();
+		printf ("%3d/%-3d\t", node->m_index, node->m_masterIndex);
+		node->trace ();
 	}
 }
 
@@ -498,43 +498,43 @@ TraceNodeList (
 
 template <typename T>
 void
-TraceNodeArray (
-	const char* pName,
-	const rtl::CArrayT <T*>* pArray
+traceNodeArray (
+	const char* name,
+	const rtl::Array <T*>* array
 	)
 {
-	printf ("%s\n", pName);
+	printf ("%s\n", name);
 
-	size_t Count = pArray->GetCount ();
-	for (size_t i = 0; i < Count; i++)
+	size_t count = array->getCount ();
+	for (size_t i = 0; i < count; i++)
 	{
-		T* pNode = (*pArray) [i];
+		T* node = (*array) [i];
 
-		printf ("%3d/%-3d ", pNode->m_Index, pNode->m_MasterIndex);
-		pNode->Trace ();
+		printf ("%3d/%-3d ", node->m_index, node->m_masterIndex);
+		node->trace ();
 	}
 }
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 template <typename T>
-rtl::CString
-NodeArrayToString (const rtl::CArrayT <T*>* pArray)
+rtl::String
+nodeArrayToString (const rtl::Array <T*>* array)
 {
-	size_t Count = pArray->GetCount ();
-	if (!Count)
-		return rtl::CString ();
+	size_t count = array->getCount ();
+	if (!count)
+		return rtl::String ();
 
-	rtl::CString String = (*pArray) [0]->m_Name;
+	rtl::String string = (*array) [0]->m_name;
 
-	for (size_t i = 1; i < Count; i++)
+	for (size_t i = 1; i < count; i++)
 	{
-		CNode* pNode = (*pArray) [i];
-		String += ' ';
-		String += pNode->m_Name;
+		Node* node = (*array) [i];
+		string += ' ';
+		string += node->m_name;
 	}
 
-	return String;
+	return string;
 }
 
 //.............................................................................

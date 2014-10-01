@@ -8,49 +8,49 @@
 
 //.............................................................................
 
-class CParseTableBuilder
+class ParseTableBuilder
 {
 protected:
-	CNodeMgr* m_pNodeMgr;
-	rtl::CArrayT <CNode*>* m_pParseTable;
+	NodeMgr* m_nodeMgr;
+	rtl::Array <Node*>* m_parseTable;
 
 public:
-	CParseTableBuilder (
-		CNodeMgr* pNodeMgr,
-		rtl::CArrayT <CNode*>* pParseTable
+	ParseTableBuilder (
+		NodeMgr* nodeMgr,
+		rtl::Array <Node*>* parseTable
 		)
 	{
-		m_pNodeMgr = pNodeMgr;
-		m_pParseTable = pParseTable;
+		m_nodeMgr = nodeMgr;
+		m_parseTable = parseTable;
 	}
 
 	bool
-	Build ();
+	build ();
 
 protected:
 	void
-	CalcFirstFollow ();
+	calcFirstFollow ();
 
 	void
-	BuildFirstFollowArrays (CGrammarNode* pNode);
+	buildFirstFollowArrays (GrammarNode* node);
 
 	void
-	AddProductionToParseTable (
-		CSymbolNode* pSymbol,
-		CGrammarNode* pProduction
+	addProductionToParseTable (
+		SymbolNode* symbol,
+		GrammarNode* production
 		);
 
 	void
-	AddAnyTokenProductionToParseTable (
-		CSymbolNode* pSymbol,
-		CGrammarNode* pProduction
+	addAnyTokenProductionToParseTable (
+		SymbolNode* symbol,
+		GrammarNode* production
 		);
 
 	size_t 
-	AddParseTableEntry (
-		CSymbolNode* pSymbol,
-		CSymbolNode* pToken,
-		CGrammarNode* pProduction
+	addParseTableEntry (
+		SymbolNode* symbol,
+		SymbolNode* token,
+		GrammarNode* production
 		); // returns number of conflicting productions
 };
 

@@ -5,67 +5,67 @@
 //.............................................................................
 
 void
-CGenerator::Prepare (CModule* pModule)
+Generator::prepare (Module* module)
 {
-	pModule->Export (&m_StringTemplate.m_LuaState);
+	module->luaExport (&m_stringTemplate.m_luaState);
 }
 
 bool
-CGenerator::Generate (
-	const char* pFileName,
-	const char* pFrameFileName
+Generator::generate (
+	const char* fileName,
+	const char* frameFileName
 	)
 {
-	rtl::CString FrameFilePath;
-	if (m_pCmdLine)
+	rtl::String frameFilePath;
+	if (m_cmdLine)
 	{
-		FrameFilePath = io::FindFilePath (pFrameFileName, NULL, &m_pCmdLine->m_FrameDirList);
-		if (FrameFilePath.IsEmpty ())
+		frameFilePath = io::findFilePath (frameFileName, NULL, &m_cmdLine->m_frameDirList);
+		if (frameFilePath.isEmpty ())
 		{
-			err::SetFormatStringError ("frame file '%s' not found", pFrameFileName);
+			err::setFormatStringError ("frame file '%s' not found", frameFileName);
 			return false;
 		}
 	}
 
-	bool Result;
+	bool result;
 
-	io::CMappedFile FrameFile;
+	io::MappedFile frameFile;
 
-	Result = FrameFile.Open (FrameFilePath, io::EFileFlag_ReadOnly);
-	if (!Result)
+	result = frameFile.open (frameFilePath, io::FileFlagKind_ReadOnly);
+	if (!result)
 		return false;
 
-	size_t Size = (size_t) FrameFile.GetSize ();
-	char* p = (char*) FrameFile.View (0, Size);
+	size_t size = (size_t) frameFile.getSize ();
+	char* p = (char*) frameFile.view (0, size);
 	if (!p)
 		return false;
 
-	m_Buffer.Reserve (Size);
+	m_buffer.reserve (size);
 
-	rtl::CString TargetFilePath = io::GetFullFilePath (pFileName);
-	rtl::CString FrameDir = io::GetDir (FrameFilePath);
+	rtl::String targetFilePath = io::getFullFilePath (fileName);
+	rtl::String frameDir = io::getDir (frameFilePath);
 
-	m_StringTemplate.m_LuaState.SetGlobalString ("TargetFilePath", TargetFilePath);
-	m_StringTemplate.m_LuaState.SetGlobalString ("FrameFilePath", FrameFilePath);
-	m_StringTemplate.m_LuaState.SetGlobalString ("FrameDir", FrameDir);
-	m_StringTemplate.m_LuaState.SetGlobalBoolean ("NoPpLine", (m_pCmdLine->m_Flags & ECmdLineFlag_NoPpLine) != 0);
+	m_stringTemplate.m_luaState.setGlobalString ("TargetFilePath", targetFilePath);
+	m_stringTemplate.m_luaState.setGlobalString ("FrameFilePath", frameFilePath);
+	m_stringTemplate.m_luaState.setGlobalString ("FrameDir", frameDir);
+	m_stringTemplate.m_luaState.setGlobalBoolean ("NoPpLine", (m_cmdLine->m_flags & CmdLineFlagKind_NoPpLine) != 0);
 	
-	Result = m_StringTemplate.Process (&m_Buffer, FrameFilePath, p, Size);
-	if (!Result)
+	result = m_stringTemplate.process (&m_buffer, frameFilePath, p, size);
+	if (!result)
 		return false;
 
-	io::CFile TargetFile;
-	Result = TargetFile.Open (TargetFilePath);
-	if (!Result)
+	io::File targetFile;
+	result = targetFile.open (targetFilePath);
+	if (!result)
 		return false;
 
-	Size = m_Buffer.GetLength ();
+	size = m_buffer.getLength ();
 
-	Result = TargetFile.Write (m_Buffer, Size) != -1;
-	if (!Result)
+	result = targetFile.write (m_buffer, size) != -1;
+	if (!result)
 		return false;
 
-	TargetFile.SetSize (Size);
+	targetFile.setSize (size);
 
 	return true;
 }

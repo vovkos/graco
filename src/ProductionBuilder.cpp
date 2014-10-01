@@ -3,226 +3,226 @@
 
 //.............................................................................
 
-CProductionBuilder::CProductionBuilder (CNodeMgr* pNodeMgr)
+ProductionBuilder::ProductionBuilder (NodeMgr* nodeMgr)
 {
-	m_pNodeMgr = pNodeMgr;
-	m_pSymbol = NULL;
-	m_pProduction = NULL;
-	m_pDispatcher = NULL;
-	m_pResolver = NULL;
+	m_nodeMgr = nodeMgr;
+	m_symbol = NULL;
+	m_production = NULL;
+	m_dispatcher = NULL;
+	m_resolver = NULL;
 }
 
-CGrammarNode*
-CProductionBuilder::Build (
-	CSymbolNode* pSymbol,
-	CGrammarNode* pProduction
+GrammarNode*
+ProductionBuilder::build (
+	SymbolNode* symbol,
+	GrammarNode* production
 	)
 {
-	bool Result;
-	size_t FormalArgCount;
+	bool result;
+	size_t formalArgCount;
 
-	switch (pProduction->m_Kind)
+	switch (production->m_kind)
 	{
-	case ENode_Epsilon:
-	case ENode_Token:
-		return pProduction;
+	case NodeKind_Epsilon:
+	case NodeKind_Token:
+		return production;
 
-	case ENode_Symbol:
-		if (pProduction->m_Flags & ESymbolNodeFlag_Named)
-			return pProduction;
+	case NodeKind_Symbol:
+		if (production->m_flags & SymbolNodeFlagKind_Named)
+			return production;
 
 		// else fall through
 
-	case ENode_Action:
-	case ENode_Sequence:
+	case NodeKind_Action:
+	case NodeKind_Sequence:
 		break;
 
-	case ENode_Beacon:
-		CBeaconNode* pBeacon;
+	case NodeKind_Beacon:
+		BeaconNode* beacon;
 		
-		pBeacon = (CBeaconNode*) pProduction;
+		beacon = (BeaconNode*) production;
 
-		FormalArgCount = pBeacon->m_pTarget->m_ArgNameList.GetCount ();		 
-		if (FormalArgCount)
+		formalArgCount = beacon->m_target->m_argNameList.getCount ();		 
+		if (formalArgCount)
 		{
-			err::SetFormatStringError (
+			err::setFormatStringError (
 				"'%s' takes %d arguments, passed none", 
-				pBeacon->m_pTarget->m_Name.cc (), // thanks a lot gcc 
-				FormalArgCount
+				beacon->m_target->m_name.cc (), // thanks a lot gcc 
+				formalArgCount
 				);
-			err::PushSrcPosError (pBeacon->m_SrcPos);
+			err::pushSrcPosError (beacon->m_srcPos);
 			return NULL;
 		}
 
-		pProduction = pBeacon->m_pTarget;
-		m_pNodeMgr->DeleteBeaconNode (pBeacon);
-		return pProduction;
+		production = beacon->m_target;
+		m_nodeMgr->deleteBeaconNode (beacon);
+		return production;
 
 	default:
 		ASSERT (false);
 		return NULL;
 	}
 
-	m_ActionArray.Clear ();
-	m_ArgumentArray.Clear ();
-	m_BeaconArray.Clear ();
-	m_BeaconDeleteArray.Clear ();
-	m_BeaconMap.Clear ();
+	m_actionArray.clear ();
+	m_argumentArray.clear ();
+	m_beaconArray.clear ();
+	m_beaconDeleteArray.clear ();
+	m_beaconMap.clear ();
 
-	m_pSymbol = pSymbol;
-	m_pProduction = pProduction;
-	m_pDispatcher = NULL;
-	m_pResolver = NULL;
+	m_symbol = symbol;
+	m_production = production;
+	m_dispatcher = NULL;
+	m_resolver = NULL;
 
-	Result = Scan (pProduction);
-	if (!Result)
+	result = scan (production);
+	if (!result)
 		return NULL;
 	
-	Result = ProcessAllUserCode ();
-	if (!Result)
+	result = processAllUserCode ();
+	if (!result)
 	{
-		EnsureSrcPosError ();
+		ensureSrcPosError ();
 		return NULL;
 	}
 
-	FindAndReplaceUnusedBeacons (pProduction);
+	findAndReplaceUnusedBeacons (production);
 	
-	size_t Count = m_BeaconDeleteArray.GetCount ();
-	for (size_t i = 0; i < Count; i++)
-		m_pNodeMgr->DeleteBeaconNode (m_BeaconDeleteArray [i]);
+	size_t count = m_beaconDeleteArray.getCount ();
+	for (size_t i = 0; i < count; i++)
+		m_nodeMgr->deleteBeaconNode (m_beaconDeleteArray [i]);
 
-	return pProduction;
+	return production;
 }
 
 bool
-CProductionBuilder::ProcessAllUserCode ()
+ProductionBuilder::processAllUserCode ()
 {
-	bool Result;
+	bool result;
 
-	size_t Count = m_ActionArray.GetCount ();
-	for (size_t i = 0; i < Count; i++)
+	size_t count = m_actionArray.getCount ();
+	for (size_t i = 0; i < count; i++)
 	{
-		CActionNode* pNode = m_ActionArray [i];
-		if (pNode->m_Flags & EUserNodeFlag_UserCodeProcessed)
+		ActionNode* node = m_actionArray [i];
+		if (node->m_flags & UserNodeFlagKind_UserCodeProcessed)
 			continue;
 
-		Result = ProcessUserCode (pNode->m_SrcPos, &pNode->m_UserCode, pNode->m_pResolver);
-		if (!Result)
+		result = processUserCode (node->m_srcPos, &node->m_userCode, node->m_resolver);
+		if (!result)
 			return false;
 
-		pNode->m_Flags |= EUserNodeFlag_UserCodeProcessed;
-		pNode->m_pDispatcher = m_pDispatcher;
+		node->m_flags |= UserNodeFlagKind_UserCodeProcessed;
+		node->m_dispatcher = m_dispatcher;
 	}
 
-	Count = m_ArgumentArray.GetCount ();
-	for (size_t i = 0; i < Count; i++)
+	count = m_argumentArray.getCount ();
+	for (size_t i = 0; i < count; i++)
 	{
-		CArgumentNode* pNode = m_ArgumentArray [i];
-		if (pNode->m_Flags & EUserNodeFlag_UserCodeProcessed)
+		ArgumentNode* node = m_argumentArray [i];
+		if (node->m_flags & UserNodeFlagKind_UserCodeProcessed)
 			continue;
 
-		rtl::CBoxIteratorT <rtl::CString> It = pNode->m_ArgValueList.GetHead ();
-		for (; It; It++)
+		rtl::BoxIterator <rtl::String> it = node->m_argValueList.getHead ();
+		for (; it; it++)
 		{
-			Result = ProcessUserCode (pNode->m_SrcPos, &*It, pNode->m_pResolver);
-			if (!Result)
+			result = processUserCode (node->m_srcPos, &*it, node->m_resolver);
+			if (!result)
 				return false;
 		}
 
-		pNode->m_Flags |= EUserNodeFlag_UserCodeProcessed;
-		pNode->m_pDispatcher = m_pDispatcher;
+		node->m_flags |= UserNodeFlagKind_UserCodeProcessed;
+		node->m_dispatcher = m_dispatcher;
 	}
 
 	return true;
 }
 
 bool
-CProductionBuilder::Scan (CGrammarNode* pNode)
+ProductionBuilder::scan (GrammarNode* node)
 {
-	bool Result;
+	bool result;
 
-	if (pNode->m_Flags & ENodeFlag_RecursionStopper)
+	if (node->m_flags & NodeFlagKind_RecursionStopper)
 		return true;
 
-	CSymbolNode* pSymbol;
-	CSequenceNode* pSequence;
-	CActionNode* pAction;
-	CArgumentNode* pArgument;
+	SymbolNode* symbol;
+	SequenceNode* sequence;
+	ActionNode* action;
+	ArgumentNode* argument;
 
-	size_t ChildrenCount;
+	size_t childrenCount;
 
-	switch (pNode->m_Kind)
+	switch (node->m_kind)
 	{
-	case ENode_Epsilon:
-	case ENode_Token:
+	case NodeKind_Epsilon:
+	case NodeKind_Token:
 		break;
 
-	case ENode_Symbol:
-		if (pNode->m_Flags & ESymbolNodeFlag_Named) 
+	case NodeKind_Symbol:
+		if (node->m_flags & SymbolNodeFlagKind_Named) 
 			break;
 
-		pSymbol = (CSymbolNode*) pNode;
-		pSymbol->m_Flags |= ENodeFlag_RecursionStopper;
+		symbol = (SymbolNode*) node;
+		symbol->m_flags |= NodeFlagKind_RecursionStopper;
 
-		if (pSymbol->m_pResolver)
+		if (symbol->m_resolver)
 		{
-			CGrammarNode* pResolver = m_pResolver;
-			m_pResolver = pSymbol->m_pResolver;
+			GrammarNode* resolver = m_resolver;
+			m_resolver = symbol->m_resolver;
 
-			Result = Scan (pSymbol->m_pResolver);
-			if (!Result)
+			result = scan (symbol->m_resolver);
+			if (!result)
 				return false;
 
-			m_pResolver = pResolver;
+			m_resolver = resolver;
 		}
 
-		ChildrenCount = pSymbol->m_ProductionArray.GetCount ();
-		for (size_t i = 0; i < ChildrenCount; i++)
+		childrenCount = symbol->m_productionArray.getCount ();
+		for (size_t i = 0; i < childrenCount; i++)
 		{
-			CGrammarNode* pChild = pSymbol->m_ProductionArray [i];
-			Result = Scan (pChild);
-			if (!Result)
+			GrammarNode* child = symbol->m_productionArray [i];
+			result = scan (child);
+			if (!result)
 				return false;
 		}
 
-		pSymbol->m_Flags &= ~ENodeFlag_RecursionStopper;
+		symbol->m_flags &= ~NodeFlagKind_RecursionStopper;
 		break;
 
-	case ENode_Sequence:
-		pSequence = (CSequenceNode*) pNode;
-		pSequence->m_Flags |= ENodeFlag_RecursionStopper;
+	case NodeKind_Sequence:
+		sequence = (SequenceNode*) node;
+		sequence->m_flags |= NodeFlagKind_RecursionStopper;
 
-		ChildrenCount = pSequence->m_Sequence.GetCount ();
-		for (size_t i = 0; i < ChildrenCount; i++)
+		childrenCount = sequence->m_sequence.getCount ();
+		for (size_t i = 0; i < childrenCount; i++)
 		{
-			CGrammarNode* pChild = pSequence->m_Sequence [i];
-			Result = Scan (pChild);
-			if (!Result)
+			GrammarNode* child = sequence->m_sequence [i];
+			result = scan (child);
+			if (!result)
 				return false;
 		}
 
-		pSequence->m_Flags &= ~ENodeFlag_RecursionStopper;
+		sequence->m_flags &= ~NodeFlagKind_RecursionStopper;
 		break;
 
-	case ENode_Beacon:
-		Result = AddBeacon ((CBeaconNode*) pNode);
-		if (!Result)
+	case NodeKind_Beacon:
+		result = addBeacon ((BeaconNode*) node);
+		if (!result)
 			return false;
 
 		break;
 
-	case ENode_Action:
-		pAction = (CActionNode*) pNode;
-		pAction->m_pProductionSymbol = m_pSymbol;
-		pAction->m_pResolver = m_pResolver;
-		m_ActionArray.Append (pAction);
+	case NodeKind_Action:
+		action = (ActionNode*) node;
+		action->m_productionSymbol = m_symbol;
+		action->m_resolver = m_resolver;
+		m_actionArray.append (action);
 		break;
 
-	case ENode_Argument:
-		pArgument = (CArgumentNode*) pNode;
-		pArgument->m_pProductionSymbol = m_pSymbol;
-		pArgument->m_pResolver = m_pResolver;
-		m_ArgumentArray.Append (pArgument);
+	case NodeKind_Argument:
+		argument = (ArgumentNode*) node;
+		argument->m_productionSymbol = m_symbol;
+		argument->m_resolver = m_resolver;
+		m_argumentArray.append (argument);
 		break;
 
 	default:
@@ -233,103 +233,103 @@ CProductionBuilder::Scan (CGrammarNode* pNode)
 }
 
 bool
-CProductionBuilder::AddBeacon (CBeaconNode* pBeacon)
+ProductionBuilder::addBeacon (BeaconNode* beacon)
 {
-	if (pBeacon->m_Flags & EBeaconNodeFlag_Added)
+	if (beacon->m_flags & BeaconNodeFlagKind_Added)
 		return true;
 
-	if (!pBeacon->m_Label.IsEmpty ())
+	if (!beacon->m_label.isEmpty ())
 	{
-		rtl::CStringHashTableMapIteratorT <CBeaconNode*> It = m_BeaconMap.Goto (pBeacon->m_Label);
-		if (!It->m_Value)
-			It->m_Value = pBeacon;
+		rtl::StringHashTableMapIterator <BeaconNode*> it = m_beaconMap.visit (beacon->m_label);
+		if (!it->m_value)
+			it->m_value = beacon;
 	}
 
-	if (pBeacon->m_pTarget->m_Kind == ENode_Symbol)
+	if (beacon->m_target->m_kind == NodeKind_Symbol)
 	{
-		CSymbolNode* pNode = (CSymbolNode*) pBeacon->m_pTarget;
-		size_t FormalArgCount = pNode->m_ArgNameList.GetCount ();
-		size_t ActualArgCount = pBeacon->m_pArgument ? pBeacon->m_pArgument->m_ArgValueList.GetCount () : 0;
+		SymbolNode* node = (SymbolNode*) beacon->m_target;
+		size_t formalArgCount = node->m_argNameList.getCount ();
+		size_t actualArgCount = beacon->m_argument ? beacon->m_argument->m_argValueList.getCount () : 0;
 		
-		if (FormalArgCount != ActualArgCount)
+		if (formalArgCount != actualArgCount)
 		{
-			err::SetFormatStringError (
+			err::setFormatStringError (
 				"'%s' takes %d arguments, passed %d", 
-				pNode->m_Name.cc (), 
-				FormalArgCount, 
-				ActualArgCount
+				node->m_name.cc (), 
+				formalArgCount, 
+				actualArgCount
 				);
-			err::PushSrcPosError (pBeacon->m_SrcPos);
+			err::pushSrcPosError (beacon->m_srcPos);
 			return false;
 		}
 	}
 
-	m_BeaconArray.Append (pBeacon);
-	pBeacon->m_Flags |= EBeaconNodeFlag_Added;
-	pBeacon->m_pResolver = m_pResolver;
+	m_beaconArray.append (beacon);
+	beacon->m_flags |= BeaconNodeFlagKind_Added;
+	beacon->m_resolver = m_resolver;
 	return true;
 }
 
 void
-CProductionBuilder::FindAndReplaceUnusedBeacons (CGrammarNode*& pNode)
+ProductionBuilder::findAndReplaceUnusedBeacons (GrammarNode*& node)
 {
-	if (pNode->m_Flags & ENodeFlag_RecursionStopper)
+	if (node->m_flags & NodeFlagKind_RecursionStopper)
 		return;
 
-	CSymbolNode* pSymbol;
-	CSequenceNode* pSequence;
-	CBeaconNode* pBeacon;
+	SymbolNode* symbol;
+	SequenceNode* sequence;
+	BeaconNode* beacon;
 
-	size_t Count;
+	size_t count;
 
-	switch (pNode->m_Kind)
+	switch (node->m_kind)
 	{
-	case ENode_Epsilon:
-	case ENode_Token:
-	case ENode_Action:
-	case ENode_Argument:
+	case NodeKind_Epsilon:
+	case NodeKind_Token:
+	case NodeKind_Action:
+	case NodeKind_Argument:
 		break;
 
-	case ENode_Beacon:
-		pBeacon = (CBeaconNode*) pNode;
-		if (pBeacon->m_SlotIndex != -1)
+	case NodeKind_Beacon:
+		beacon = (BeaconNode*) node;
+		if (beacon->m_slotIndex != -1)
 			break;
 
-		if (!(pBeacon->m_Flags & EBeaconNodeFlag_Deleted))
+		if (!(beacon->m_flags & BeaconNodeFlagKind_Deleted))
 		{
-			m_BeaconDeleteArray.Append (pBeacon);
-			pBeacon->m_Flags |= EBeaconNodeFlag_Deleted;
+			m_beaconDeleteArray.append (beacon);
+			beacon->m_flags |= BeaconNodeFlagKind_Deleted;
 		}	
 
-		pNode = pBeacon->m_pTarget; // replace
+		node = beacon->m_target; // replace
 		break;
 
-	case ENode_Symbol:
-		if (pNode->m_Flags & ESymbolNodeFlag_Named) 
+	case NodeKind_Symbol:
+		if (node->m_flags & SymbolNodeFlagKind_Named) 
 			break;
 
-		pSymbol = (CSymbolNode*) pNode;
-		pSymbol->m_Flags |= ENodeFlag_RecursionStopper;
+		symbol = (SymbolNode*) node;
+		symbol->m_flags |= NodeFlagKind_RecursionStopper;
 
-		if (pSymbol->m_pResolver)
-			FindAndReplaceUnusedBeacons (pSymbol->m_pResolver);
+		if (symbol->m_resolver)
+			findAndReplaceUnusedBeacons (symbol->m_resolver);
 
-		Count = pSymbol->m_ProductionArray.GetCount ();
-		for (size_t i = 0; i < Count; i++)
-			FindAndReplaceUnusedBeacons (pSymbol->m_ProductionArray [i]);
+		count = symbol->m_productionArray.getCount ();
+		for (size_t i = 0; i < count; i++)
+			findAndReplaceUnusedBeacons (symbol->m_productionArray [i]);
 
-		pSymbol->m_Flags &= ~ENodeFlag_RecursionStopper;
+		symbol->m_flags &= ~NodeFlagKind_RecursionStopper;
 		break;
 
-	case ENode_Sequence:
-		pSequence = (CSequenceNode*) pNode;
-		pSequence->m_Flags |= ENodeFlag_RecursionStopper;
+	case NodeKind_Sequence:
+		sequence = (SequenceNode*) node;
+		sequence->m_flags |= NodeFlagKind_RecursionStopper;
 
-		Count = pSequence->m_Sequence.GetCount ();
-		for (size_t i = 0; i < Count; i++)
-			FindAndReplaceUnusedBeacons (pSequence->m_Sequence [i]);
+		count = sequence->m_sequence.getCount ();
+		for (size_t i = 0; i < count; i++)
+			findAndReplaceUnusedBeacons (sequence->m_sequence [i]);
 
-		pSequence->m_Flags &= ~ENodeFlag_RecursionStopper;
+		sequence->m_flags &= ~NodeFlagKind_RecursionStopper;
 		break;
 
 	default:
@@ -337,191 +337,191 @@ CProductionBuilder::FindAndReplaceUnusedBeacons (CGrammarNode*& pNode)
 	}
 }
 
-CProductionBuilder::EVariable
-CProductionBuilder::FindVariable (
-	int Index,
-	CBeaconNode** ppBeacon
+ProductionBuilder::VariableKind
+ProductionBuilder::findVariable (
+	int index,
+	BeaconNode** beacon_o
 	)
 {
-	if (Index == 0)
-		return EVariable_This;
+	if (index == 0)
+		return VariableKind_This;
 
-	size_t BeaconIndex = Index - 1;
-	size_t BeaconCount = m_BeaconArray.GetCount ();
+	size_t beaconIndex = index - 1;
+	size_t beaconCount = m_beaconArray.getCount ();
 	
-	if (BeaconIndex >= BeaconCount)
+	if (beaconIndex >= beaconCount)
 	{
-		err::SetFormatStringError ("locator '$%d' is out of range ($1..$%d)", BeaconIndex + 1, BeaconCount);
-		return EVariable_Undefined;
+		err::setFormatStringError ("locator '$%d' is out of range ($1..$%d)", beaconIndex + 1, beaconCount);
+		return VariableKind_Undefined;
 	}
 
-	CBeaconNode* pBeacon = m_BeaconArray [BeaconIndex];
-	*ppBeacon = pBeacon;
-	return pBeacon->m_pTarget->m_Kind == ENode_Token ? 
-		EVariable_TokenBeacon :
-		EVariable_SymbolBeacon;
+	BeaconNode* beacon = m_beaconArray [beaconIndex];
+	*beacon_o = beacon;
+	return beacon->m_target->m_kind == NodeKind_Token ? 
+		VariableKind_TokenBeacon :
+		VariableKind_SymbolBeacon;
 }
 
-CProductionBuilder::EVariable
-CProductionBuilder::FindVariable (
-	const char* pName,
-	CBeaconNode** ppBeacon
+ProductionBuilder::VariableKind
+ProductionBuilder::findVariable (
+	const char* name,
+	BeaconNode** beacon_o
 	)
 {
-	rtl::CStringHashTableMapIteratorT <CBeaconNode*> It = m_BeaconMap.Find (pName);
-	if (It)
+	rtl::StringHashTableMapIterator <BeaconNode*> it = m_beaconMap.find (name);
+	if (it)
 	{
-		CBeaconNode* pBeacon = It->m_Value;
-		*ppBeacon = pBeacon;
-		return pBeacon->m_pTarget->m_Kind == ENode_Token ? 
-			EVariable_TokenBeacon :
-			EVariable_SymbolBeacon;
+		BeaconNode* beacon = it->m_value;
+		*beacon_o = beacon;
+		return beacon->m_target->m_kind == NodeKind_Token ? 
+			VariableKind_TokenBeacon :
+			VariableKind_SymbolBeacon;
 	}
 
-	rtl::CHashTableIteratorT <const char*> It2 = m_pSymbol->m_LocalNameSet.Find (pName);
-	if (It2)
-		return EVariable_Local;
+	rtl::HashTableIterator <const char*> it2 = m_symbol->m_localNameSet.find (name);
+	if (it2)
+		return VariableKind_Local;
 
-	It2 = m_pSymbol->m_ArgNameSet.Find (pName);
-	if (It2)
-		return EVariable_Arg;
+	it2 = m_symbol->m_argNameSet.find (name);
+	if (it2)
+		return VariableKind_Arg;
 
-	err::SetFormatStringError ("locator '$%s' not found", pName);
-	return EVariable_Undefined;
+	err::setFormatStringError ("locator '$%s' not found", name);
+	return VariableKind_Undefined;
 }
 
 bool
-CProductionBuilder::ProcessUserCode (
-	lex::CSrcPos& SrcPos,
-	rtl::CString* pUserCode,
-	CGrammarNode* pResolver
+ProductionBuilder::processUserCode (
+	lex::SrcPos& srcPos,
+	rtl::String* userCode,
+	GrammarNode* resolver
 	)
 {
-	const CToken* pToken;
+	const Token* token;
 
-	rtl::CString ResultString;
+	rtl::String resultString;
 
-	CLexer::Create (
-		GetMachineState (ELexerMachine_UserCode2ndPass), 
-		SrcPos.m_FilePath, 
-		*pUserCode
+	Lexer::create (
+		getMachineState (LexerMachineKind_UserCode2ndPass), 
+		srcPos.m_filePath, 
+		*userCode
 		);
 
-	SetLineCol (SrcPos);
+	setLineCol (srcPos);
 
-	const char* p = *pUserCode;
+	const char* p = *userCode;
 
-	EVariable VariableKind;
-	CBeaconNode* pBeacon;
+	VariableKind variableKind;
+	BeaconNode* beacon;
 
 	for (;;)
 	{
-		pToken = GetToken ();
-		if (pToken->m_Token <= 0)
+		token = getToken ();
+		if (token->m_token <= 0)
 			break;
 
-		switch (pToken->m_Token)
+		switch (token->m_token)
 		{
-		case EToken_Integer:
-			VariableKind = FindVariable (pToken->m_Data.m_Integer, &pBeacon);
+		case TokenKind_Integer:
+			variableKind = findVariable (token->m_data.m_integer, &beacon);
 			break;
 
-		case EToken_Identifier:
-			VariableKind = FindVariable (pToken->m_Data.m_String, &pBeacon);
+		case TokenKind_Identifier:
+			variableKind = findVariable (token->m_data.m_string, &beacon);
 			break;
 
 		default:
-			NextToken ();
+			nextToken ();
 			continue;
 		}
 
-		if (!VariableKind)
+		if (!variableKind)
 			return false;
 
-		ResultString.Append (p, pToken->m_Pos.m_p - p);
+		resultString.append (p, token->m_pos.m_p - p);
 
-		switch (VariableKind)
+		switch (variableKind)
 		{
-		case EVariable_SymbolBeacon:
-			if (pBeacon->m_pTarget->m_Flags & ESymbolNodeFlag_NoAst)
+		case VariableKind_SymbolBeacon:
+			if (beacon->m_target->m_flags & SymbolNodeFlagKind_NoAst)
 			{
-				err::SetFormatStringError (
+				err::setFormatStringError (
 					"'%s' is declared as 'noast' and cannot be referenced from user actions", 
-					pBeacon->m_pTarget->m_Name.cc () 
+					beacon->m_target->m_name.cc () 
 					);
 				return false;
 			}
 
 			// and fall through
 
-		case EVariable_TokenBeacon:
-			if (pBeacon->m_pResolver != pResolver)
+		case VariableKind_TokenBeacon:
+			if (beacon->m_resolver != resolver)
 			{
-				err::SetFormatStringError (
+				err::setFormatStringError (
 					"cross-resolver reference to locator '%s'", 
-					pToken->GetText ().cc () 
+					token->getText ().cc () 
 					);
 				return false;
 			}
 
-			if (pBeacon->m_SlotIndex == -1)
+			if (beacon->m_slotIndex == -1)
 			{
-				if (!m_pDispatcher)
-					m_pDispatcher = m_pNodeMgr->CreateDispatcherNode (m_pSymbol);
+				if (!m_dispatcher)
+					m_dispatcher = m_nodeMgr->createDispatcherNode (m_symbol);
 
-				pBeacon->m_SlotIndex = m_pDispatcher->m_BeaconArray.GetCount ();
-				m_pDispatcher->m_BeaconArray.Append (pBeacon);
+				beacon->m_slotIndex = m_dispatcher->m_beaconArray.getCount ();
+				m_dispatcher->m_beaconArray.append (beacon);
 			}
 
-			ResultString.AppendFormat ("$%d", pBeacon->m_SlotIndex);
+			resultString.appendFormat ("$%d", beacon->m_slotIndex);
 			break;
 
-		case EVariable_This:
-			if (pResolver)
+		case VariableKind_This:
+			if (resolver)
 			{
-				err::SetFormatStringError ("resolvers cannot reference left side of production");
+				err::setFormatStringError ("resolvers cannot reference left side of production");
 				return false;
 			}
 
-			ResultString.Append ('$');
+			resultString.append ('$');
 			break;
 
-		case EVariable_Arg:
-			if (pResolver)
+		case VariableKind_Arg:
+			if (resolver)
 			{
-				err::SetFormatStringError ("resolvers cannot reference arguments");
+				err::setFormatStringError ("resolvers cannot reference arguments");
 				return false;
 			}
 
-			ResultString.AppendFormat (
+			resultString.appendFormat (
 				"$arg.%s", 
-				pToken->m_Data.m_String.cc () 
+				token->m_data.m_string.cc () 
 				);
 			break;
 
-		case EVariable_Local:
-			if (pResolver)
+		case VariableKind_Local:
+			if (resolver)
 			{
-				err::SetFormatStringError ("resolvers cannot reference locals");
+				err::setFormatStringError ("resolvers cannot reference locals");
 				return false;
 			}
 
-			ResultString.AppendFormat (
+			resultString.appendFormat (
 				"$local.%s", 
-				pToken->m_Data.m_String.cc () 
+				token->m_data.m_string.cc () 
 				);
 			break;
 		}
 
-		p = pToken->m_Pos.m_p + pToken->m_Pos.m_Length;
+		p = token->m_pos.m_p + token->m_pos.m_length;
 
-		NextToken ();
+		nextToken ();
 	}
 
-	ASSERT (!pToken->m_Token);
-	ResultString.Append (p, pToken->m_Pos.m_p - p);
+	ASSERT (!token->m_token);
+	resultString.append (p, token->m_pos.m_p - p);
 
-	*pUserCode = ResultString;
+	*userCode = resultString;
 	return true;
 }
 

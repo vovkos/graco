@@ -8,118 +8,120 @@
 
 //.............................................................................
 
-CModule::CModule ()
+Module::Module ()
 {
-	m_LookaheadLimit = 0;
-	m_Lookahead = 1;
+	m_lookaheadLimit = 0;
+	m_lookahead = 1;
 }
 
 void
-CModule::Clear ()
+Module::clear ()
 {
-	m_ParseTable.Clear ();
-	m_ClassMgr.Clear ();
-	m_DefineMgr.Clear ();
-	m_NodeMgr.Clear ();
-	m_ImportList.Clear ();
-	m_Lookahead = 1;
-	m_LookaheadLimit = 0;
+	m_parseTable.clear ();
+	m_classMgr.clear ();
+	m_defineMgr.clear ();
+	m_nodeMgr.clear ();
+	m_importList.clear ();
+	m_lookahead = 1;
+	m_lookaheadLimit = 0;
 }
 
 bool
-CModule::Build (TCmdLine* pCmdLine)
+Module::build (CmdLine* cmdLine)
 {
-	bool Result;
+	bool result;
 
-	m_ParseTable.Clear ();
+	m_parseTable.clear ();
 
-	if (m_NodeMgr.IsEmpty ())
+	if (m_nodeMgr.isEmpty ())
 	{
-		err::SetStringError ("grammar is empty");
+		err::setStringError ("grammar is empty");
 		return false;
 	}
 
-	if (!m_ClassMgr.Verify ())
+	if (!m_classMgr.verify ())
 		return false;
 
 	// check reachability from start symbols
 
-	m_NodeMgr.MarkReachableNodes ();
-	m_NodeMgr.DeleteUnreachableNodes ();
-	m_ClassMgr.DeleteUnreachableClasses ();
+	m_nodeMgr.markReachableNodes ();
+	m_nodeMgr.deleteUnreachableNodes ();
+	m_classMgr.deleteUnreachableClasses ();
 
 	// after marking we can assign default start symbol
 
-	if (!m_NodeMgr.m_pPrimaryStartSymbol)
-		m_NodeMgr.m_pPrimaryStartSymbol = *m_NodeMgr.m_NamedSymbolList.GetHead ();
+	if (!m_nodeMgr.m_primaryStartSymbol)
+		m_nodeMgr.m_primaryStartSymbol = *m_nodeMgr.m_namedSymbolList.getHead ();
 
-	m_NodeMgr.IndexTokens ();
-	m_NodeMgr.IndexSymbols ();
-	m_NodeMgr.IndexSequences ();
-	m_NodeMgr.IndexActions ();
-	m_NodeMgr.IndexArguments ();
+	m_nodeMgr.indexTokens ();
+	m_nodeMgr.indexSymbols ();
+	m_nodeMgr.indexSequences ();
+	m_nodeMgr.indexActions ();
+	m_nodeMgr.indexArguments ();
 
 	// build productions
 
-	CProductionBuilder ProductionBuilder (&m_NodeMgr);
+	ProductionBuilder productionBuilder (&m_nodeMgr);
 
-	rtl::CIteratorT <CSymbolNode> Symbol = m_NodeMgr.m_NamedSymbolList.GetHead ();
-	for (; Symbol; Symbol++)
+	rtl::Iterator <SymbolNode> symbolIt = m_nodeMgr.m_namedSymbolList.getHead ();
+	for (; symbolIt; symbolIt++)
 	{
-		size_t Count = Symbol->m_ProductionArray.GetCount ();
-		for (size_t i = 0; i < Count; i++)
+		SymbolNode* symbol = *symbolIt;
+
+		size_t count = symbol->m_productionArray.getCount ();
+		for (size_t i = 0; i < count; i++)
 		{
-			CGrammarNode* pProduction = Symbol->m_ProductionArray [i];
-			pProduction = ProductionBuilder.Build (*Symbol, pProduction);
-			if (!pProduction)
+			GrammarNode* production = symbol->m_productionArray [i];
+			production = productionBuilder.build (symbol, production);
+			if (!production)
 				return false;
 
-			Symbol->m_ProductionArray [i] = pProduction;
+			symbol->m_productionArray [i] = production;
 		}
 	}
 
-	m_NodeMgr.IndexBeacons (); // index only after unneeded beacons have been removed
-	m_NodeMgr.IndexDispatchers ();
+	m_nodeMgr.indexBeacons (); // index only after unneeded beacons have been removed
+	m_nodeMgr.indexDispatchers ();
 
 	// build parse table
 
-	CParseTableBuilder ParseTableBuilder (&m_NodeMgr, &m_ParseTable);
-	Result = ParseTableBuilder.Build ();
-	if (!Result)
+	ParseTableBuilder parseTableBuilder (&m_nodeMgr, &m_parseTable);
+	result = parseTableBuilder.build ();
+	if (!result)
 		return false;
 
 	// resolve conflicts
 
-	CLaDfaBuilder Builder (&m_NodeMgr, &m_ParseTable, m_LookaheadLimit ? m_LookaheadLimit : 2);
+	LaDfaBuilder builder (&m_nodeMgr, &m_parseTable, m_lookaheadLimit ? m_lookaheadLimit : 2);
 
-	size_t TokenCount = m_NodeMgr.m_TokenArray.GetCount ();
+	size_t tokenCount = m_nodeMgr.m_tokenArray.getCount ();
 
-	rtl::CIteratorT <CConflictNode> Conflict = m_NodeMgr.m_ConflictList.GetHead ();
-	for (; Conflict; Conflict++)
+	rtl::Iterator <ConflictNode> conflictIt = m_nodeMgr.m_conflictList.getHead ();
+	for (; conflictIt; conflictIt++)
 	{
-		CConflictNode* pConflict = *Conflict;
+		ConflictNode* conflict = *conflictIt;
 
-		pConflict->m_pResultNode = Builder.Build (pCmdLine, pConflict);
-		if (!pConflict->m_pResultNode)
+		conflict->m_resultNode = builder.build (cmdLine, conflict);
+		if (!conflict->m_resultNode)
 			return false;
 	}
 
 	// replace conflicts with dfas or with direct productions (could happen in conflicts with epsilon productions or with anytoken)
 
-	Conflict = m_NodeMgr.m_ConflictList.GetHead ();
-	for (; Conflict; Conflict++)
+	conflictIt = m_nodeMgr.m_conflictList.getHead ();
+	for (; conflictIt; conflictIt++)
 	{
-		CConflictNode* pConflict = *Conflict;
-		CNode** ppProduction = &m_ParseTable [pConflict->m_pSymbol->m_Index * TokenCount + pConflict->m_pToken->m_Index];
+		ConflictNode* conflict = *conflictIt;
+		Node** production = &m_parseTable [conflict->m_symbol->m_index * tokenCount + conflict->m_token->m_index];
 
-		ASSERT (*ppProduction == pConflict);
+		ASSERT (*production == conflict);
 
-		*ppProduction = pConflict->m_pResultNode;
+		*production = conflict->m_resultNode;
 	}
 
-	m_Lookahead = Builder.GetLookahead ();
+	m_lookahead = builder.getLookahead ();
 
-	m_NodeMgr.IndexLaDfaNodes ();
+	m_nodeMgr.indexLaDfaNodes ();
 
 	return true;
 }
@@ -127,151 +129,151 @@ CModule::Build (TCmdLine* pCmdLine)
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
-CModule::Trace ()
+Module::trace ()
 {
-	printf ("lookahead = %d\n", m_Lookahead);
-	m_NodeMgr.Trace ();
+	printf ("lookahead = %d\n", m_lookahead);
+	m_nodeMgr.trace ();
 }
 
 bool
-CModule::WriteBnfFile (const char* pFileName)
+Module::writeBnfFile (const char* fileName)
 {
-	rtl::CString BufferString;
+	rtl::String bufferString;
 
-	io::CFile File;
-	bool Result =
-		File.Open (pFileName) &&
-		File.SetSize (0);
+	io::File file;
+	bool result =
+		file.open (fileName) &&
+		file.setSize (0);
 
-	if (!Result)
+	if (!result)
 		return false;
 
-	rtl::CString String = GenerateBnfString ();
-	File.Write (String, String.GetLength ());
+	rtl::String string = generateBnfString ();
+	file.write (string, string.getLength ());
 	return true;
 }
 
-rtl::CString
-CModule::GenerateBnfString ()
+rtl::String
+Module::generateBnfString ()
 {
-	rtl::CString String;
-	rtl::CString SequenceString;
+	rtl::String string;
+	rtl::String sequenceString;
 
-	String.Format ("lookahead = %d;\n\n", m_LookaheadLimit);
+	string.format ("lookahead = %d;\n\n", m_lookaheadLimit);
 
-	rtl::CIteratorT <CSymbolNode> Node = m_NodeMgr.m_NamedSymbolList.GetHead ();
-	for (; Node; Node++)
+	rtl::Iterator <SymbolNode> node = m_nodeMgr.m_namedSymbolList.getHead ();
+	for (; node; node++)
 	{
-		CSymbolNode* pSymbol = *Node;
-		if (pSymbol->m_ProductionArray.IsEmpty ())
+		SymbolNode* symbol = *node;
+		if (symbol->m_productionArray.isEmpty ())
 			continue;
 
-		if (pSymbol->m_Flags & ESymbolNodeFlag_Start)
-			String.Append ("start\n");
+		if (symbol->m_flags & SymbolNodeFlagKind_Start)
+			string.append ("start\n");
 
-		if (pSymbol->m_Flags & ESymbolNodeFlag_Nullable)
-			String.Append ("nullable\n");
+		if (symbol->m_flags & SymbolNodeFlagKind_Nullable)
+			string.append ("nullable\n");
 
-		if (pSymbol->m_Flags & ESymbolNodeFlag_Pragma)
-			String.Append ("pragma\n");
+		if (symbol->m_flags & SymbolNodeFlagKind_Pragma)
+			string.append ("pragma\n");
 
-		String.Append (pSymbol->m_Name);
-		String.Append ('\n');
+		string.append (symbol->m_name);
+		string.append ('\n');
 
-		size_t ProductionCount = pSymbol->m_ProductionArray.GetCount ();
+		size_t productionCount = symbol->m_productionArray.getCount ();
 
-		if (pSymbol->m_QuantifierKind)
+		if (symbol->m_quantifierKind)
 		{
-			String.Append ("\t:\t");
-			String.Append (pSymbol->CGrammarNode::GetBnfString ());
-			String.Append ('\n');
+			string.append ("\t:\t");
+			string.append (symbol->GrammarNode::getBnfString ());
+			string.append ('\n');
 		}
-		else for (size_t i = 0; i < ProductionCount; i++)
+		else for (size_t i = 0; i < productionCount; i++)
 		{
-			String.Append (i ? "\t|\t" : "\t:\t");
-			String.Append (pSymbol->m_ProductionArray [i]->GetBnfString ());
-			String.Append ('\n');
+			string.append (i ? "\t|\t" : "\t:\t");
+			string.append (symbol->m_productionArray [i]->getBnfString ());
+			string.append ('\n');
 		}
 
-		String.Append ("\t;\n\n");
+		string.append ("\t;\n\n");
 	}
 
-	return String;
+	return string;
 }
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
-CModule::Export (lua::CLuaState* pLuaState)
+Module::luaExport (lua::LuaState* luaState)
 {
-	ExportDefines (pLuaState);
-	ExportClassTable (pLuaState);
-	ExportParseTable (pLuaState);
-	pLuaState->SetGlobalInteger ("Lookahead", m_Lookahead);
-	m_NodeMgr.Export (pLuaState);
+	luaExportDefines (luaState);
+	luaExportClassTable (luaState);
+	luaExportParseTable (luaState);
+	luaState->setGlobalInteger ("Lookahead", m_lookahead);
+	m_nodeMgr.luaExport (luaState);
 }
 
 void
-CModule::ExportDefines (lua::CLuaState* pLuaState)
+Module::luaExportDefines (lua::LuaState* luaState)
 {
-	rtl::CIteratorT <CDefine> Define = m_DefineMgr.GetHead ();
-	for (; Define; Define++)
+	rtl::Iterator <Define> defineIt = m_defineMgr.getHead ();
+	for (; defineIt; defineIt++)
 	{
-		CDefine* pDefine = *Define;
+		Define* define = *defineIt;
 
-		switch (pDefine->m_Kind)
+		switch (define->m_kind)
 		{
-		case EDefine_String:
-			pLuaState->SetGlobalString (pDefine->m_Name, pDefine->m_StringValue);
+		case DefineKind_String:
+			luaState->setGlobalString (define->m_name, define->m_stringValue);
 			break;
 
-		case EDefine_Integer:
-			pLuaState->SetGlobalInteger (pDefine->m_Name, pDefine->m_IntegerValue);
+		case DefineKind_Integer:
+			luaState->setGlobalInteger (define->m_name, define->m_integerValue);
 			break;
 		}
 	}
 }
 
 void
-CModule::ExportClassTable (lua::CLuaState* pLuaState)
+Module::luaExportClassTable (lua::LuaState* luaState)
 {
-	size_t Count = m_ClassMgr.GetCount ();
+	size_t count = m_classMgr.getCount ();
 
-	pLuaState->CreateTable (Count);
+	luaState->createTable (count);
 
-	rtl::CIteratorT <CClass> Class = m_ClassMgr.GetHead ();
-	for (size_t i = 1; Class; Class++, i++)
+	rtl::Iterator <Class> it = m_classMgr.getHead ();
+	for (size_t i = 1; it; it++, i++)
 	{
-		CClass* pClass = *Class;
-		pClass->Export (pLuaState);
-		pLuaState->SetArrayElement (i);
+		Class* cls = *it;
+		cls->luaExport (luaState);
+		luaState->setArrayElement (i);
 	}
 
-	pLuaState->SetGlobal ("ClassTable");
+	luaState->setGlobal ("ClassTable");
 }
 
 void
-CModule::ExportParseTable (lua::CLuaState* pLuaState)
+Module::luaExportParseTable (lua::LuaState* luaState)
 {
-	size_t SymbolCount = m_NodeMgr.m_SymbolArray.GetCount ();
-	size_t TokenCount = m_NodeMgr.m_TokenArray.GetCount ();
+	size_t symbolCount = m_nodeMgr.m_symbolArray.getCount ();
+	size_t tokenCount = m_nodeMgr.m_tokenArray.getCount ();
 
-	pLuaState->CreateTable (SymbolCount);
+	luaState->createTable (symbolCount);
 
-	for (size_t i = 0, k = 0; i < SymbolCount; i++)
+	for (size_t i = 0, k = 0; i < symbolCount; i++)
 	{
-		pLuaState->CreateTable (TokenCount);
+		luaState->createTable (tokenCount);
 
-		for (size_t j = 0; j < TokenCount; j++, k++)
+		for (size_t j = 0; j < tokenCount; j++, k++)
 		{
-			CNode* pProduction = m_ParseTable [k];
-			pLuaState->SetArrayElementInteger (j + 1, pProduction ? pProduction->m_MasterIndex : -1);
+			Node* production = m_parseTable [k];
+			luaState->setArrayElementInteger (j + 1, production ? production->m_masterIndex : -1);
 		}
 
-		pLuaState->SetArrayElement (i + 1);
+		luaState->setArrayElement (i + 1);
 	}
 
-	pLuaState->SetGlobal ("ParseTable");
+	luaState->setGlobal ("ParseTable");
 }
 
 //.............................................................................

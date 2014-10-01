@@ -4,32 +4,32 @@
 
 #pragma once
 
-struct TCmdLine;
+struct CmdLine;
 
 //.............................................................................
 
-class CGenerator
+class Generator
 {
 protected:
-	lua::CStringTemplate m_StringTemplate;
-	rtl::CString m_Buffer;
+	lua::StringTemplate m_stringTemplate;
+	rtl::String m_buffer;
 
 public:
-	const TCmdLine* m_pCmdLine;
+	const CmdLine* m_cmdLine;
 
 public:
-	CGenerator ()
+	Generator ()
 	{
-		m_pCmdLine = NULL;
+		m_cmdLine = NULL;
 	}
 
 	void
-	Prepare (class CModule* pModule);
+	prepare (class Module* module);
 	
 	bool
-	Generate (
-		const char* pFileName,
-		const char* pFrameFileName
+	generate (
+		const char* fileName,
+		const char* frameFileName
 		);
 };
 

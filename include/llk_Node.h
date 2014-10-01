@@ -12,26 +12,26 @@ namespace llk {
 	
 //.............................................................................
 
-enum ENode
+enum NodeKind
 {
-	ENode_Undefined = 0,
-	ENode_Token,
-	ENode_Symbol,
-	ENode_Sequence,
-	ENode_Action,	
-	ENode_Argument,	
-	ENode_LaDfa,	
+	NodeKind_Undefined = 0,
+	NodeKind_Token,
+	NodeKind_Symbol,
+	NodeKind_Sequence,
+	NodeKind_Action,	
+	NodeKind_Argument,	
+	NodeKind_LaDfa,	
 
-	ENode__Count,
+	NodeKind__Count,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 inline
 const char*
-GetNodeKindString (ENode NodeKind)
+getNodeKindString (NodeKind nodeKind)
 {
-	static const char* StringTable [ENode__Count] = 
+	static const char* stringTable [NodeKind__Count] = 
 	{
 		"undefined-node-kind", // ENode_Undefined
 		"token-node",          // ENode_Token,
@@ -42,136 +42,136 @@ GetNodeKindString (ENode NodeKind)
 		"lookahead-dfa-node",  // ENode_LaDfa,	
 	};
 
-	return NodeKind >= 0 && NodeKind < ENode__Count ? 
-		StringTable [NodeKind] : 
-		StringTable [ENode_Undefined];
+	return nodeKind >= 0 && nodeKind < NodeKind__Count ? 
+		stringTable [nodeKind] : 
+		stringTable [NodeKind_Undefined];
 }
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum ENodeFlag
+enum NodeFlagKind
 {
-	ENodeFlag_Locator = 0x01, // used to locate AST / token from actions (applies to token & symbol nodes)
-	ENodeFlag_Matched = 0x02, // applies to token & symbol & argument nodes
+	NodeFlagKind_Locator = 0x01, // used to locate AST / token from actions (applies to token & symbol nodes)
+	NodeFlagKind_Matched = 0x02, // applies to token & symbol & argument nodes
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CNode: public axl::rtl::TListLink
+class Node: public axl::rtl::ListLink
 {
 public:
-	ENode m_Kind;
-	uint_t m_Flags;
-	size_t m_Index;
+	NodeKind m_kind;
+	uint_t m_flags;
+	size_t m_index;
 
 public:
-	CNode ()
+	Node ()
 	{
-		m_Kind = ENode_Undefined;
-		m_Flags = 0;
-		m_Index = -1;
+		m_kind = NodeKind_Undefined;
+		m_flags = 0;
+		m_index = -1;
 	}
 
 	virtual
-	~CNode ()
+	~Node ()
 	{
 	}
 
 	const char*
-	GetNodeKindString ()
+	getNodeKindString ()
 	{
-		return llk::GetNodeKindString (m_Kind);
+		return llk::getNodeKindString (m_kind);
 	}
 };
 
 //.............................................................................
 
-template <class TToken>
-class CTokenNodeT: public CNode
+template <class Token>
+class TokenNode: public Node
 {
 public:
-	typedef TToken CToken;
+	typedef Token Token;
 
 public:
-	CToken m_Token;
+	Token m_token;
 
 public:
-	CTokenNodeT ()
+	TokenNode ()
 	{
-		m_Kind = ENode_Token;
+		m_kind = NodeKind_Token;
 	}
 };
 
 //.............................................................................
 
-enum ESymbolNodeFlag
+enum SymbolNodeFlagKind
 {
-	ESymbolNodeFlag_Stacked = 0x0010,
-	ESymbolNodeFlag_Named   = 0x0020,
-	ESymbolNodeFlag_Pragma  = 0x0040,
-	ESymbolNodeFlag_HasEnter  = 0x0100,
-	ESymbolNodeFlag_HasLeave  = 0x0200,
-	ESymbolNodeFlag_KeepAst   = 0x0400,
+	SymbolNodeFlagKind_Stacked = 0x0010,
+	SymbolNodeFlagKind_Named   = 0x0020,
+	SymbolNodeFlagKind_Pragma  = 0x0040,
+	SymbolNodeFlagKind_HasEnter  = 0x0100,
+	SymbolNodeFlagKind_HasLeave  = 0x0200,
+	SymbolNodeFlagKind_KeepAst   = 0x0400,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-template <class TAstNode>
-class CSymbolNodeT: public CNode
+template <class AstNode>
+class SymbolNode: public Node
 {
 public:
-	typedef TAstNode CAstNode;
+	typedef AstNode AstNode;
 
 public:
-	CAstNode* m_pAstNode;
+	AstNode* m_astNode;
 
-	axl::rtl::CStdListT <CNode> m_LocatorList;
-	axl::rtl::CArrayT <CNode*> m_LocatorArray;
+	axl::rtl::StdList <Node> m_locatorList;
+	axl::rtl::Array <Node*> m_locatorArray;
 
 public:
-	CSymbolNodeT ()
+	SymbolNode ()
 	{
-		m_Kind = ENode_Symbol;
-		m_pAstNode = NULL;
+		m_kind = NodeKind_Symbol;
+		m_astNode = NULL;
 	}
 
 	virtual
-	~CSymbolNodeT ()
+	~SymbolNode ()
 	{
-		if (m_pAstNode && !(m_Flags & ESymbolNodeFlag_KeepAst))
-			AXL_MEM_DELETE (m_pAstNode);
+		if (m_astNode && !(m_flags & SymbolNodeFlagKind_KeepAst))
+			AXL_MEM_DELETE (m_astNode);
 	}
 };
 
 //.............................................................................
 
-enum ELaDfaNodeFlag
+enum LaDfaNodeFlagKind
 {
-	ELaDfaNodeFlag_PreResolver        = 0x0010,
-	ELaDfaNodeFlag_HasChainedResolver = 0x0020,
+	LaDfaNodeFlagKind_PreResolver        = 0x0010,
+	LaDfaNodeFlagKind_HasChainedResolver = 0x0020,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-template <class TToken>
-class CLaDfaNodeT: public CNode
+template <class Token>
+class LaDfaNode: public Node
 {
 public:
-	typedef TToken CToken;
+	typedef Token Token;
 
 public:
-	size_t m_ResolverThenIndex;
-	size_t m_ResolverElseIndex;
+	size_t m_resolverThenIndex;
+	size_t m_resolverElseIndex;
 
-	axl::rtl::CBoxIteratorT <CToken> m_ReparseLaDfaTokenCursor;
-	axl::rtl::CBoxIteratorT <CToken> m_ReparseResolverTokenCursor;
+	axl::rtl::BoxIterator <Token> m_reparseLaDfaTokenCursor;
+	axl::rtl::BoxIterator <Token> m_reparseResolverTokenCursor;
 
 public:
-	CLaDfaNodeT ()
+	LaDfaNode ()
 	{
-		m_Kind = ENode_LaDfa;
-		m_ResolverThenIndex = -1;
-		m_ResolverElseIndex = -1;
+		m_kind = NodeKind_LaDfa;
+		m_resolverThenIndex = -1;
+		m_resolverElseIndex = -1;
 	}
 };
 

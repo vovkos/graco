@@ -16,12 +16,12 @@ write data;
 
 prepush 
 {
-	stack = PrePush ();
+	stack = prePush ();
 }
 
 postpop
 {
-	PostPop ();
+	postPop ();
 }
 
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -35,7 +35,7 @@ oct    = [0-7];
 bin    = [01];
 id     = [_a-zA-Z] [_a-zA-Z0-9]*;
 ws     = [ \t\r]+;
-nl     = '\n' @{ NewLine (p + 1); };
+nl     = '\n' @{ newLine (p + 1); };
 esc    = '\\' [^\n];
 lit_dq = '"' ([^"\n\\] | esc)* (["\\] | nl);
 lit_sq = "'" ([^'\n\\] | esc)* (['\\] | nl);
@@ -51,11 +51,11 @@ user_code := |*
 
 lit_sq         ;
 lit_dq         ;
-[{}()<>]       { CreateToken (ts [0]); };
-'{.'           { CreateToken (EToken_OpenBrace); };
-'.}'           { CreateToken (EToken_CloseBrace); };
-'<.'           { CreateToken (EToken_OpenChevron); };
-'.>'           { CreateToken (EToken_CloseChevron); };
+[{}()<>]       { createToken (ts [0]); };
+'{.'           { createToken (TokenKind_OpenBrace); };
+'.}'           { createToken (TokenKind_CloseBrace); };
+'<.'           { createToken (TokenKind_OpenChevron); };
+'.>'           { createToken (TokenKind_CloseChevron); };
 nl             ;
 any            ;
 
@@ -69,16 +69,16 @@ user_code_2nd_pass := |*
 
 lit_sq         ;
 lit_dq         ;
-'$' dec+       { CreateIntegerToken (10, 1); };
-'$' 'arg'      { CreateToken (EToken_Arg); };
-'$' 'local'    { CreateToken (EToken_Local); };
-'$' id         { CreateStringToken (EToken_Identifier, 1); };
-'$'            { CreateConstIntegerToken (0); };
-[{}()<>,;]     { CreateToken (ts [0]); };
-'{.'           { CreateToken (EToken_OpenBrace); };
-'.}'           { CreateToken (EToken_CloseBrace); };
-'<.'           { CreateToken (EToken_OpenChevron); };
-'.>'           { CreateToken (EToken_CloseChevron); };
+'$' dec+       { createIntegerToken (10, 1); };
+'$' 'arg'      { createToken (TokenKind_Arg); };
+'$' 'local'    { createToken (TokenKind_Local); };
+'$' id         { createStringToken (TokenKind_Identifier, 1); };
+'$'            { createConstIntegerToken (0); };
+[{}()<>,;]     { createToken (ts [0]); };
+'{.'           { createToken (TokenKind_OpenBrace); };
+'.}'           { createToken (TokenKind_CloseBrace); };
+'<.'           { createToken (TokenKind_OpenChevron); };
+'.>'           { createToken (TokenKind_CloseChevron); };
 nl             ;
 any            ;
 
@@ -91,35 +91,35 @@ any            ;
 
 main := |*
 
-'lookahead'    { CreateToken (EToken_Lookahead); };
-'import'       { CreateToken (EToken_Import); };
-'using'        { CreateToken (EToken_Using); };
-'class'        { CreateToken (EToken_Class); };
-'noast'        { CreateToken (EToken_NoAst); };
-'default'      { CreateToken (EToken_Default); };
-'local'        { CreateToken (EToken_Local); };
-'enter'        { CreateToken (EToken_Enter); };
-'leave'        { CreateToken (EToken_Leave); };
-'start'        { CreateToken (EToken_Start); };
-'pragma'       { CreateToken (EToken_Pragma); };
-'resolver'     { CreateToken (EToken_Resolver); };
-'priority'     { CreateToken (EToken_Priority); };
-'any'          { CreateToken (EToken_Any); };
-'epsilon'      { CreateToken (EToken_Epsilon); };
-'nullable'     { CreateToken (EToken_Nullable); };
+'lookahead'    { createToken (TokenKind_Lookahead); };
+'import'       { createToken (TokenKind_Import); };
+'using'        { createToken (TokenKind_Using); };
+'class'        { createToken (TokenKind_Class); };
+'noast'        { createToken (TokenKind_NoAst); };
+'default'      { createToken (TokenKind_Default); };
+'local'        { createToken (TokenKind_Local); };
+'enter'        { createToken (TokenKind_Enter); };
+'leave'        { createToken (TokenKind_Leave); };
+'start'        { createToken (TokenKind_Start); };
+'pragma'       { createToken (TokenKind_Pragma); };
+'resolver'     { createToken (TokenKind_Resolver); };
+'priority'     { createToken (TokenKind_Priority); };
+'any'          { createToken (TokenKind_Any); };
+'epsilon'      { createToken (TokenKind_Epsilon); };
+'nullable'     { createToken (TokenKind_Nullable); };
 
-lit_sq         { CreateCharToken (EToken_Integer); };
-lit_dq         { CreateStringToken (EToken_Literal, 1, 1); };
-id             { CreateStringToken (EToken_Identifier); };
-dec+           { CreateIntegerToken (10); };
-'0' [Xx] hex+  { CreateIntegerToken (16, 2); };
+lit_sq         { createCharToken (TokenKind_Integer); };
+lit_dq         { createStringToken (TokenKind_Literal, 1, 1); };
+id             { createStringToken (TokenKind_Identifier); };
+dec+           { createIntegerToken (10); };
+'0' [xx] hex+  { createIntegerToken (16, 2); };
 
 '//' [^\n]*    ;
 '/*' (any | nl)* :>> '*/' ;
 
 ws | nl        ;
-print          { CreateToken (ts [0]); };
-any            { CreateErrorToken (ts [0]); };
+print          { createToken (ts [0]); };
+any            { createErrorToken (ts [0]); };
 
 *|;
 
@@ -128,29 +128,29 @@ any            { CreateErrorToken (ts [0]); };
 //.............................................................................
 
 void 
-CLexer::Init ()
+Lexer::init ()
 {
 	%% write init;
 }
 
 void
-CLexer::Exec ()
+Lexer::exec ()
 {
 	%% write exec;
 }
 
 int
-CLexer::GetMachineState (ELexerMachine Machine)
+Lexer::getMachineState (LexerMachineKind machine)
 {
-	switch (Machine)
+	switch (machine)
 	{
-	case ELexerMachine_Main:
+	case LexerMachineKind_Main:
 		return llkc_en_main;
 
-	case ELexerMachine_UserCode:
+	case LexerMachineKind_UserCode:
 		return llkc_en_user_code;
 
-	case ELexerMachine_UserCode2ndPass:
+	case LexerMachineKind_UserCode2ndPass:
 		return llkc_en_user_code_2nd_pass;
 
 	default:

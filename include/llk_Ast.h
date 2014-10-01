@@ -10,74 +10,74 @@ namespace llk {
 	
 //.............................................................................
 
-template <class TToken>
-class CAstNodeT: public axl::rtl::TListLink
+template <class Token>
+class AstNode: public axl::rtl::ListLink
 {
 public:
-	typedef TToken CToken;
+	typedef Token Token;
 
 public:
-	int m_Kind;
+	int m_kind;
 
-	CToken m_FirstToken;
-	CToken m_LastToken;		
+	Token m_firstToken;
+	Token m_lastToken;		
 
 	// later create a wrapper for ast tree 
 	// we don't really need tree fields and listlink until we plan to keep ast nodes
 
-	CAstNodeT* m_pParent;
-	axl::rtl::CArrayT <CAstNodeT*> m_Children;
+	AstNode* m_parent;
+	axl::rtl::Array <AstNode*> m_children;
 
 public:
-	CAstNodeT ()
+	AstNode ()
 	{
-		m_Kind = -1;
-		m_pParent = NULL;
+		m_kind = -1;
+		m_parent = NULL;
 	}
 
 	virtual
-	~CAstNodeT () // could be subclassed
+	~AstNode () // could be subclassed
 	{
 	}
 };
 
 //.............................................................................
 
-template <class TAstNode>
-class CAstT
+template <class AstNode>
+class Ast
 {
 public:
-	typedef TAstNode CAstNode;
+	typedef AstNode AstNode;
 
 protected:
-	axl::rtl::CStdListT <CAstNode> m_List;
-	CAstNode* m_pRoot;
+	axl::rtl::StdList <AstNode> m_list;
+	AstNode* m_root;
 
 public:
-	CAstT ()
+	Ast ()
 	{
-		m_pRoot = NULL;
+		m_root = NULL;
 	}
 
-	CAstNode*
-	GetRoot ()
+	AstNode*
+	getRoot ()
 	{
-		return m_pRoot;
-	}
-
-	void
-	Clear ()
-	{
-		m_List.Clear ();
-		m_pRoot = NULL;
+		return m_root;
 	}
 
 	void
-	Add (CAstNode* pAstNode)
+	clear ()
 	{
-		m_List.InsertTail (pAstNode);
-		if (!m_pRoot)
-			m_pRoot = pAstNode;
+		m_list.clear ();
+		m_root = NULL;
+	}
+
+	void
+	add (AstNode* astNode)
+	{
+		m_list.insertTail (astNode);
+		if (!m_root)
+			m_root = astNode;
 	}
 };
 

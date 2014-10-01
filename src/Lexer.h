@@ -6,138 +6,138 @@
 
 //.............................................................................
 
-enum EToken
+enum TokenKind
 {
-	EToken_Eof = 0,
-	EToken_Error = -1,
-	EToken_Identifier = 256,
-	EToken_Integer,
-	EToken_Literal,
-	EToken_Lookahead,
-	EToken_Import,
-	EToken_Using,
-	EToken_Class,
-	EToken_NoAst,
-	EToken_Default,
-	EToken_Arg,
-	EToken_Local,
-	EToken_Enter,
-	EToken_Leave,
-	EToken_Start,
-	EToken_Pragma,
-	EToken_Resolver,
-	EToken_Priority,
-	EToken_Any,
-	EToken_Epsilon,
-	EToken_Nullable,
-	EToken_OpenBrace,
-	EToken_CloseBrace,
-	EToken_OpenChevron,
-	EToken_CloseChevron,
+	TokenKind_Eof = 0,
+	TokenKind_Error = -1,
+	TokenKind_Identifier = 256,
+	TokenKind_Integer,
+	TokenKind_Literal,
+	TokenKind_Lookahead,
+	TokenKind_Import,
+	TokenKind_Using,
+	TokenKind_Class,
+	TokenKind_NoAst,
+	TokenKind_Default,
+	TokenKind_Arg,
+	TokenKind_Local,
+	TokenKind_Enter,
+	TokenKind_Leave,
+	TokenKind_Start,
+	TokenKind_Pragma,
+	TokenKind_Resolver,
+	TokenKind_Priority,
+	TokenKind_Any,
+	TokenKind_Epsilon,
+	TokenKind_Nullable,
+	TokenKind_OpenBrace,
+	TokenKind_CloseBrace,
+	TokenKind_OpenChevron,
+	TokenKind_CloseChevron,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-AXL_LEX_BEGIN_TOKEN_NAME_MAP (CTokenName)
-	AXL_LEX_TOKEN_NAME (EToken_Eof,          "eof")
-	AXL_LEX_TOKEN_NAME (EToken_Error,        "error")
-	AXL_LEX_TOKEN_NAME (EToken_Identifier,   "identifier")
-	AXL_LEX_TOKEN_NAME (EToken_Integer,      "integer-constant")
-	AXL_LEX_TOKEN_NAME (EToken_Literal,      "string-literal")
-	AXL_LEX_TOKEN_NAME (EToken_Lookahead,    "lookahead")
-	AXL_LEX_TOKEN_NAME (EToken_Import,       "import")
-	AXL_LEX_TOKEN_NAME (EToken_Using,        "using")
-	AXL_LEX_TOKEN_NAME (EToken_Class,        "class")
-	AXL_LEX_TOKEN_NAME (EToken_NoAst,        "noast")
-	AXL_LEX_TOKEN_NAME (EToken_Default,      "default")
-	AXL_LEX_TOKEN_NAME (EToken_Arg,          "arg")
-	AXL_LEX_TOKEN_NAME (EToken_Local,        "local")
-	AXL_LEX_TOKEN_NAME (EToken_Enter,        "enter")
-	AXL_LEX_TOKEN_NAME (EToken_Leave,        "leave")
-	AXL_LEX_TOKEN_NAME (EToken_Start,        "start")
-	AXL_LEX_TOKEN_NAME (EToken_Pragma,       "pragma")
-	AXL_LEX_TOKEN_NAME (EToken_Resolver,     "resolver")
-	AXL_LEX_TOKEN_NAME (EToken_Priority,     "priority")
-	AXL_LEX_TOKEN_NAME (EToken_Any,          "any")
-	AXL_LEX_TOKEN_NAME (EToken_Epsilon,      "epsilon")
-	AXL_LEX_TOKEN_NAME (EToken_Nullable,     "nullable")
-	AXL_LEX_TOKEN_NAME (EToken_OpenBrace,    "{.")
-	AXL_LEX_TOKEN_NAME (EToken_CloseBrace,   ".}")
-	AXL_LEX_TOKEN_NAME (EToken_OpenChevron,  "<.")
-	AXL_LEX_TOKEN_NAME (EToken_CloseChevron, ".>")
+AXL_LEX_BEGIN_TOKEN_NAME_MAP (TokenName)
+	AXL_LEX_TOKEN_NAME (TokenKind_Eof,          "eof")
+	AXL_LEX_TOKEN_NAME (TokenKind_Error,        "error")
+	AXL_LEX_TOKEN_NAME (TokenKind_Identifier,   "identifier")
+	AXL_LEX_TOKEN_NAME (TokenKind_Integer,      "integer-constant")
+	AXL_LEX_TOKEN_NAME (TokenKind_Literal,      "string-literal")
+	AXL_LEX_TOKEN_NAME (TokenKind_Lookahead,    "lookahead")
+	AXL_LEX_TOKEN_NAME (TokenKind_Import,       "import")
+	AXL_LEX_TOKEN_NAME (TokenKind_Using,        "using")
+	AXL_LEX_TOKEN_NAME (TokenKind_Class,        "class")
+	AXL_LEX_TOKEN_NAME (TokenKind_NoAst,        "noast")
+	AXL_LEX_TOKEN_NAME (TokenKind_Default,      "default")
+	AXL_LEX_TOKEN_NAME (TokenKind_Arg,          "arg")
+	AXL_LEX_TOKEN_NAME (TokenKind_Local,        "local")
+	AXL_LEX_TOKEN_NAME (TokenKind_Enter,        "enter")
+	AXL_LEX_TOKEN_NAME (TokenKind_Leave,        "leave")
+	AXL_LEX_TOKEN_NAME (TokenKind_Start,        "start")
+	AXL_LEX_TOKEN_NAME (TokenKind_Pragma,       "pragma")
+	AXL_LEX_TOKEN_NAME (TokenKind_Resolver,     "resolver")
+	AXL_LEX_TOKEN_NAME (TokenKind_Priority,     "priority")
+	AXL_LEX_TOKEN_NAME (TokenKind_Any,          "any")
+	AXL_LEX_TOKEN_NAME (TokenKind_Epsilon,      "epsilon")
+	AXL_LEX_TOKEN_NAME (TokenKind_Nullable,     "nullable")
+	AXL_LEX_TOKEN_NAME (TokenKind_OpenBrace,    "{.")
+	AXL_LEX_TOKEN_NAME (TokenKind_CloseBrace,   ".}")
+	AXL_LEX_TOKEN_NAME (TokenKind_OpenChevron,  "<.")
+	AXL_LEX_TOKEN_NAME (TokenKind_CloseChevron, ".>")
 AXL_LEX_END_TOKEN_NAME_MAP ()
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-typedef lex::CRagelTokenT <EToken, CTokenName> CToken;
+typedef lex::RagelToken <TokenKind, TokenName> Token;
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum ELexerMachine
+enum LexerMachineKind
 {
-	ELexerMachine_Main,
-	ELexerMachine_UserCode,
-	ELexerMachine_UserCode2ndPass,
+	LexerMachineKind_Main,
+	LexerMachineKind_UserCode,
+	LexerMachineKind_UserCode2ndPass,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CLexer: public lex::CRagelLexerT <CLexer, CToken>
+class Lexer: public lex::RagelLexer <Lexer, Token>
 {
-	friend class lex::CRagelLexerT <CLexer, CToken>;
+	friend class lex::RagelLexer <Lexer, Token>;
 
 public:
 	static
 	int
-	GetMachineState (ELexerMachine Machine);
+	getMachineState (LexerMachineKind machine);
 
 protected:
-	CToken*
-	CreateStringToken (
-		int Token,
-		int Left = 0,
-		int Right = 0
+	Token*
+	createStringToken (
+		int tokenKind,
+		int left = 0,
+		int right = 0
 		)
 	{
-		CToken* pToken = CreateToken (Token);
-		pToken->m_Data.m_String.Copy (ts + Left, pToken->m_Pos.m_Length - (Left + Right));
-		return pToken;
+		Token* token = createToken (tokenKind);
+		token->m_data.m_string.copy (ts + left, token->m_pos.m_length - (left + right));
+		return token;
 	}
 
-	CToken*
-	CreateCharToken (int Token)
+	Token*
+	createCharToken (int tokenKind)
 	{
-		CToken* pToken = CreateToken (Token);
-		pToken->m_Data.m_Integer = ts [1];
-		return pToken;
+		Token* token = createToken (tokenKind);
+		token->m_data.m_integer = ts [1];
+		return token;
 	}
 
-	CToken*
-	CreateIntegerToken (
-		int Radix = 10,
-		int Left = 0
+	Token*
+	createIntegerToken (
+		int radix = 10,
+		int left = 0
 		)
 	{
-		CToken* pToken = CreateToken (EToken_Integer);
-		pToken->m_Data.m_Integer = strtol (ts + Left, NULL, Radix);
-		return pToken;
+		Token* token = createToken (TokenKind_Integer);
+		token->m_data.m_integer = strtol (ts + left, NULL, radix);
+		return token;
 	}
 
-	CToken*
-	CreateConstIntegerToken (int Value)
+	Token*
+	createConstIntegerToken (int value)
 	{
-		CToken* pToken = CreateToken (EToken_Integer);
-		pToken->m_Data.m_Integer = Value;
-		return pToken;
+		Token* token = createToken (TokenKind_Integer);
+		token->m_data.m_integer = value;
+		return token;
 	}
 
 	// implemented in *.rl
 
 	void 
-	Init ();
+	init ();
 
 	void
-	Exec ();
+	exec ();
 };
 
 //.............................................................................

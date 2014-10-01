@@ -4,65 +4,65 @@
 //.............................................................................
 
 bool
-CParser::ParseFile (
-	CModule* pModule,
-	TCmdLine* pCmdLine,
-	const rtl::CString& FilePath
+Parser::parseFile (
+	Module* module,
+	CmdLine* cmdLine,
+	const rtl::String& filePath
 	)
 {
-	bool Result;
+	bool result;
 
-	io::CMappedFile SrcFile;
+	io::MappedFile srcFile;
 
-	Result = SrcFile.Open (FilePath, io::EFileFlag_ReadOnly);
-	if (!Result)
+	result = srcFile.open (filePath, io::FileFlagKind_ReadOnly);
+	if (!result)
 	{
-		err::SetFormatStringError (
+		err::setFormatStringError (
 			"cannot open '%s': %s",
-			FilePath.cc (), // thanks a lot gcc
-			err::GetError ()->GetDescription ().cc ()
+			filePath.cc (), // thanks a lot gcc
+			err::getError ()->getDescription ().cc ()
 			);
 		return false;
 	}
 
-	size_t Size = (size_t) SrcFile.GetSize ();
-	char* p = (char*) SrcFile.View (0, Size);
+	size_t size = (size_t) srcFile.getSize ();
+	char* p = (char*) srcFile.view (0, size);
 	if (!p)
 	{
-		err::SetFormatStringError (
+		err::setFormatStringError (
 			"cannot open '%s': %s",
-			FilePath.cc (),
-			err::GetError ()->GetDescription ().cc ()
+			filePath.cc (),
+			err::getError ()->getDescription ().cc ()
 			);
 		return false;
 	}
 
-	return Parse (pModule, pCmdLine, FilePath, p, Size);
+	return parse (module, cmdLine, filePath, p, size);
 }
 
 bool
-CParser::Parse (
-	CModule* pModule,
-	const TCmdLine* pCmdLine,
-	const rtl::CString& FilePath,
-	const char* pSource,
-	size_t Length
+Parser::parse (
+	Module* module,
+	const CmdLine* cmdLine,
+	const rtl::String& filePath,
+	const char* source,
+	size_t length
 	)
 {
-	bool Result;
+	bool result;
 
-	m_pModule = pModule;
-	m_pCmdLine = pCmdLine;
-	m_Dir = io::GetDir (FilePath);
+	m_module = module;
+	m_cmdLine = cmdLine;
+	m_dir = io::getDir (filePath);
 
-	m_DefaultProductionSpecifiers.Reset ();
+	m_defaultProductionSpecifiers.reset ();
 
-	CLexer::Create (FilePath, pSource, Length);
+	Lexer::create (filePath, source, length);
 
-	Result = Program ();
-	if (!Result)
+	result = program ();
+	if (!result)
 	{
-		EnsureSrcPosError ();
+		ensureSrcPosError ();
 		return false;
 	}
 
@@ -70,51 +70,51 @@ CParser::Parse (
 }
 
 bool
-CParser::Program ()
+Parser::program ()
 {
-	bool Result;
+	bool result;
 
 	for (;;)
 	{
-		const CToken* pToken = GetToken ();
-		const CToken* pNextToken;
+		const Token* token = getToken ();
+		const Token* laToken;
 
-		if (!pToken->m_Token)
+		if (!token->m_token)
 			break;
 
-		switch (pToken->m_Token)
+		switch (token->m_token)
 		{
-		case EToken_Lookahead:
-			Result = LookaheadStatement ();
-			if (!Result)
+		case TokenKind_Lookahead:
+			result = lookaheadStatement ();
+			if (!result)
 				return false;
 
 			break;
 
-		case EToken_Import:
-			Result = ImportStatement ();
-			if (!Result)
+		case TokenKind_Import:
+			result = importStatement ();
+			if (!result)
 				return false;
 
 			break;
 
-		case EToken_Using:
-			Result = UsingStatement ();
-			if (!Result)
+		case TokenKind_Using:
+			result = usingStatement ();
+			if (!result)
 				return false;
 
 			break;
 
 		case ';':
-			NextToken ();
+			nextToken ();
 			break;
 
-		case EToken_Identifier:
-			pNextToken = GetToken (1);
-			if (pNextToken->m_Token == '{' || pNextToken->m_Token == '=')
+		case TokenKind_Identifier:
+			laToken = getToken (1);
+			if (laToken->m_token == '{' || laToken->m_token == '=')
 			{
-				Result = DefineStatement ();
-				if (!Result)
+				result = defineStatement ();
+				if (!result)
 					return false;
 
 				break;
@@ -123,8 +123,8 @@ CParser::Program ()
 			// fall through
 
 		default:
-			Result = DeclarationStatement ();
-			if (!Result)
+			result = declarationStatement ();
+			if (!result)
 				return false;
 		}
 	}
@@ -133,342 +133,342 @@ CParser::Program ()
 }
 
 bool
-CParser::LookaheadStatement ()
+Parser::lookaheadStatement ()
 {
-	const CToken* pToken = GetToken ();
-	ASSERT (pToken->m_Token == EToken_Lookahead);
+	const Token* token = getToken ();
+	ASSERT (token->m_token == TokenKind_Lookahead);
 
-	NextToken ();
+	nextToken ();
 
-	pToken = ExpectToken ('=');
-	if (!pToken)
+	token = expectToken ('=');
+	if (!token)
 		return false;
 
-	NextToken ();
+	nextToken ();
 
-	pToken = ExpectToken (EToken_Integer);
-	if (!pToken)
+	token = expectToken (TokenKind_Integer);
+	if (!token)
 		return false;
 
-	if (m_pModule->m_LookaheadLimit && m_pModule->m_LookaheadLimit != pToken->m_Data.m_Integer)
+	if (m_module->m_lookaheadLimit && m_module->m_lookaheadLimit != token->m_data.m_integer)
 	{
-		err::SetFormatStringError ("redefinition of lookahead limit (previously seen as %d)", m_pModule->m_LookaheadLimit);
+		err::setFormatStringError ("redefinition of lookahead limit (previously seen as %d)", m_module->m_lookaheadLimit);
 		return false;
 	}
 
-	m_pModule->m_LookaheadLimit = pToken->m_Data.m_Integer;
+	m_module->m_lookaheadLimit = token->m_data.m_integer;
 
-	NextToken ();
+	nextToken ();
 
-	pToken = ExpectToken (';');
-	if (!pToken)
+	token = expectToken (';');
+	if (!token)
 		return false;
 
-	NextToken ();
+	nextToken ();
 	return true;
 }
 
 bool
-CParser::ImportStatement ()
+Parser::importStatement ()
 {
-	const CToken* pToken = GetToken ();
-	ASSERT (pToken->m_Token == EToken_Import);
+	const Token* token = getToken ();
+	ASSERT (token->m_token == TokenKind_Import);
 
-	NextToken ();
+	nextToken ();
 
-	pToken = ExpectToken (EToken_Literal);
-	if (!pToken)
+	token = expectToken (TokenKind_Literal);
+	if (!token)
 		return false;
 
-	rtl::CString FilePath = io::FindFilePath (
-		pToken->m_Data.m_String,
-		m_Dir,
-		m_pCmdLine ? &m_pCmdLine->m_ImportDirList : NULL,
+	rtl::String filePath = io::findFilePath (
+		token->m_data.m_string,
+		m_dir,
+		m_cmdLine ? &m_cmdLine->m_importDirList : NULL,
 		true
 		);
 
-	if (FilePath.IsEmpty ())
+	if (filePath.isEmpty ())
 	{
-		err::SetFormatStringError (
+		err::setFormatStringError (
 			"cannot find import file '%s'",
-			pToken->m_Data.m_String.cc ()
+			token->m_data.m_string.cc ()
 			);
 		return false;
 	}
 
-	m_pModule->m_ImportList.InsertTail (FilePath);
+	m_module->m_importList.insertTail (filePath);
 
-	NextToken ();
+	nextToken ();
 
-	pToken = ExpectToken (';');
-	if (!pToken)
+	token = expectToken (';');
+	if (!token)
 		return false;
 
-	NextToken ();
+	nextToken ();
 	return true;
 }
 
 bool
-CParser::DeclarationStatement ()
+Parser::declarationStatement ()
 {
-	bool Result;
+	bool result;
 
-	CProductionSpecifiers Specifiers = m_DefaultProductionSpecifiers;
-	Result = ProductionSpecifiers (&Specifiers);
-	if (!Result)
+	ProductionSpecifiers specifiers = m_defaultProductionSpecifiers;
+	result = productionSpecifiers (&specifiers);
+	if (!result)
 		return false;
 
-	const CToken* pToken = GetToken ();
-	if (pToken->m_Token == EToken_Identifier)
+	const Token* token = getToken ();
+	if (token->m_token == TokenKind_Identifier)
 	{
-		Result = Production (&Specifiers);
-		if (!Result)
+		result = production (&specifiers);
+		if (!result)
 			return false;
 	}
 
-	pToken = ExpectToken (';');
-	if (!pToken)
+	token = expectToken (';');
+	if (!token)
 		return false;
 
-	NextToken ();
+	nextToken ();
 	return true;
 }
 
 bool
-CParser::ProductionSpecifiers (CProductionSpecifiers* pSpecifiers)
+Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 {
-	CClass* pClass = NULL;
-	uint_t SymbolFlags = 0;
+	Class* cls = NULL;
+	uint_t symbolFlags = 0;
 
-	bool IsClassSpecified = false;
-	bool NoMoreSpecifiers = false;
+	bool isClassSpecified = false;
+	bool noMoreSpecifiers = false;
 
 	do
 	{
-		const CToken* pToken = GetToken ();
-		const CToken* pNextToken;
+		const Token* token = getToken ();
+		const Token* laToken;
 
-		switch (pToken->m_Token)
+		switch (token->m_token)
 		{
-		case EToken_Class:
-			if (IsClassSpecified)
+		case TokenKind_Class:
+			if (isClassSpecified)
 			{
-				err::SetStringError ("multiple class specifiers");
+				err::setStringError ("multiple class specifiers");
 				return false;
 			}
 
-			pClass = ClassSpecifier ();
-			if (!pClass)
+			cls = classSpecifier ();
+			if (!cls)
 				return false;
 
-			IsClassSpecified = true;
+			isClassSpecified = true;
 			break;
 
-		case EToken_Default:
-			if (IsClassSpecified)
+		case TokenKind_Default:
+			if (isClassSpecified)
 			{
-				err::SetStringError ("multiple class specifiers");
-				return false;
-			}
-
-			NextToken ();
-
-			pClass = NULL;
-			IsClassSpecified = true;
-			break;
-
-		case EToken_NoAst:
-			if (IsClassSpecified)
-			{
-				err::SetStringError ("multiple class specifiers");
+				err::setStringError ("multiple class specifiers");
 				return false;
 			}
 
-			NextToken ();
+			nextToken ();
 
-			SymbolFlags |= ESymbolNodeFlag_NoAst;
-			IsClassSpecified = true;
+			cls = NULL;
+			isClassSpecified = true;
 			break;
 
-		case EToken_Pragma:
-			if (SymbolFlags & ESymbolNodeFlag_Pragma)
+		case TokenKind_NoAst:
+			if (isClassSpecified)
 			{
-				err::SetStringError ("multiple 'pragma' specifiers");
+				err::setStringError ("multiple class specifiers");
 				return false;
 			}
 
-			NextToken ();
+			nextToken ();
 
-			SymbolFlags |= ESymbolNodeFlag_Pragma;
+			symbolFlags |= SymbolNodeFlagKind_NoAst;
+			isClassSpecified = true;
 			break;
 
-		case EToken_Start:
-			if (SymbolFlags & ESymbolNodeFlag_Start)
+		case TokenKind_Pragma:
+			if (symbolFlags & SymbolNodeFlagKind_Pragma)
 			{
-				err::SetStringError ("multiple 'start' specifiers");
+				err::setStringError ("multiple 'pragma' specifiers");
 				return false;
 			}
 
-			NextToken ();
+			nextToken ();
 
-			SymbolFlags |= ESymbolNodeFlag_Start;
+			symbolFlags |= SymbolNodeFlagKind_Pragma;
 			break;
 
-		case EToken_Nullable:
-			if (SymbolFlags & ESymbolNodeFlag_Nullable)
+		case TokenKind_Start:
+			if (symbolFlags & SymbolNodeFlagKind_Start)
 			{
-				err::SetStringError ("multiple 'nullable' specifiers");
+				err::setStringError ("multiple 'start' specifiers");
 				return false;
 			}
 
-			NextToken ();
+			nextToken ();
 
-			SymbolFlags |= ESymbolNodeFlag_Nullable;
+			symbolFlags |= SymbolNodeFlagKind_Start;
 			break;
 
-		case EToken_Identifier:
-			pNextToken = GetToken (1);
-			switch (pNextToken->m_Token)
+		case TokenKind_Nullable:
+			if (symbolFlags & SymbolNodeFlagKind_Nullable)
 			{
-			case EToken_Class:
-			case EToken_Default:
-			case EToken_NoAst:
-			case EToken_Pragma:
-			case EToken_Identifier:
-				if (IsClassSpecified)
+				err::setStringError ("multiple 'nullable' specifiers");
+				return false;
+			}
+
+			nextToken ();
+
+			symbolFlags |= SymbolNodeFlagKind_Nullable;
+			break;
+
+		case TokenKind_Identifier:
+			laToken = getToken (1);
+			switch (laToken->m_token)
+			{
+			case TokenKind_Class:
+			case TokenKind_Default:
+			case TokenKind_NoAst:
+			case TokenKind_Pragma:
+			case TokenKind_Identifier:
+				if (isClassSpecified)
 				{
-					err::SetStringError ("multiple class specifiers");
+					err::setStringError ("multiple class specifiers");
 					return false;
 				}
 
-				pClass = m_pModule->m_ClassMgr.GetClass (pToken->m_Data.m_String);
-				NextToken ();
-				IsClassSpecified = true;
+				cls = m_module->m_classMgr.getClass (token->m_data.m_string);
+				nextToken ();
+				isClassSpecified = true;
 				break;
 
 			default:
-				NoMoreSpecifiers = true;
+				noMoreSpecifiers = true;
 			}
 
 			break;
 
 		default:
-			NoMoreSpecifiers = true;
+			noMoreSpecifiers = true;
 		}
-	} while (!NoMoreSpecifiers);
+	} while (!noMoreSpecifiers);
 
-	pSpecifiers->m_SymbolFlags = SymbolFlags;
+	specifiers->m_symbolFlags = symbolFlags;
 
-	if (IsClassSpecified)
-		pSpecifiers->m_pClass = pClass;
+	if (isClassSpecified)
+		specifiers->m_class = cls;
 
 	return true;
 }
 
-CClass*
-CParser::ClassSpecifier ()
+Class*
+Parser::classSpecifier ()
 {
-	bool Result;
+	bool result;
 
-	const CToken* pToken = GetToken ();
-	ASSERT (pToken->m_Token == EToken_Class);
+	const Token* token = getToken ();
+	ASSERT (token->m_token == TokenKind_Class);
 
-	NextToken ();
+	nextToken ();
 
-	CClass* pClass;
+	Class* cls;
 
-	pToken = GetToken ();
+	token = getToken ();
 
-	if (pToken->m_Token != EToken_Identifier)
+	if (token->m_token != TokenKind_Identifier)
 	{
-		pClass = m_pModule->m_ClassMgr.CreateUnnamedClass ();
+		cls = m_module->m_classMgr.createUnnamedClass ();
 	}
 	else
 	{
-		pClass = m_pModule->m_ClassMgr.GetClass (pToken->m_Data.m_String);
-		NextToken ();
+		cls = m_module->m_classMgr.getClass (token->m_data.m_string);
+		nextToken ();
 
-		pToken = GetToken ();
-		if (pToken->m_Token != '{' && pToken->m_Token != ':')
-			return pClass;
+		token = getToken ();
+		if (token->m_token != '{' && token->m_token != ':')
+			return cls;
 
-		if (pClass->m_Flags & EClassFlag_Defined)
+		if (cls->m_flags & ClassFlagKind_Defined)
 		{
-			err::SetFormatStringError (
+			err::setFormatStringError (
 				"redefinition of class '%s'",
-				pClass->m_Name.cc ()
+				cls->m_name.cc ()
 				);
 			return NULL;
 		}
 	}
 
-	if (pToken->m_Token == ':')
+	if (token->m_token == ':')
 	{
-		NextToken ();
+		nextToken ();
 
-		pToken = ExpectToken (EToken_Identifier);
-		if (!pToken)
+		token = expectToken (TokenKind_Identifier);
+		if (!token)
 			return NULL;
 
-		pClass->m_pBaseClass = m_pModule->m_ClassMgr.GetClass (pToken->m_Data.m_String);
-		pClass->m_pBaseClass->m_Flags |= EClassFlag_Used;
+		cls->m_baseClass = m_module->m_classMgr.getClass (token->m_data.m_string);
+		cls->m_baseClass->m_flags |= ClassFlagKind_Used;
 
-		NextToken ();
+		nextToken ();
 	}
 
-	Result = UserCode ('{', &pClass->m_Members, &pClass->m_SrcPos);
-	if (!Result)
+	result = userCode ('{', &cls->m_members, &cls->m_srcPos);
+	if (!result)
 		return NULL;
 
-	pClass->m_Flags |= EClassFlag_Defined;
-	return pClass;
+	cls->m_flags |= ClassFlagKind_Defined;
+	return cls;
 }
 
 bool
-CParser::DefineStatement ()
+Parser::defineStatement ()
 {
-	const CToken* pToken = ExpectToken (EToken_Identifier);
-	if (!pToken)
+	const Token* token = expectToken (TokenKind_Identifier);
+	if (!token)
 		return false;
 
-	CDefine* pDefine = m_pModule->m_DefineMgr.GetDefine (pToken->m_Data.m_String);
-	pDefine->m_SrcPos.m_FilePath = m_FilePath;
+	Define* define = m_module->m_defineMgr.getDefine (token->m_data.m_string);
+	define->m_srcPos.m_filePath = m_filePath;
 
-	NextToken ();
+	nextToken ();
 
-	pToken = GetToken ();
-	switch (pToken->m_Token)
+	token = getToken ();
+	switch (token->m_token)
 	{
 	case '{':
-		return UserCode ('{', &pDefine->m_StringValue, &pDefine->m_SrcPos);
+		return userCode ('{', &define->m_stringValue, &define->m_srcPos);
 
 	case '=':
-		NextToken ();
+		nextToken ();
 
-		pToken = GetToken ();
-		switch (pToken->m_Token)
+		token = getToken ();
+		switch (token->m_token)
 		{
-		case EToken_Identifier:
-		case EToken_Literal:
-			pDefine->m_StringValue = pToken->m_Data.m_String;
-			pDefine->m_SrcPos = pToken->m_Pos;
-			NextToken ();
+		case TokenKind_Identifier:
+		case TokenKind_Literal:
+			define->m_stringValue = token->m_data.m_string;
+			define->m_srcPos = token->m_pos;
+			nextToken ();
 			break;
 
-		case EToken_Integer:
-			pDefine->m_Kind = EDefine_Integer;
-			pDefine->m_IntegerValue = pToken->m_Data.m_Integer;
-			pDefine->m_SrcPos = pToken->m_Pos;
-			NextToken ();
+		case TokenKind_Integer:
+			define->m_kind = DefineKind_Integer;
+			define->m_integerValue = token->m_data.m_integer;
+			define->m_srcPos = token->m_pos;
+			nextToken ();
 			break;
 
 		case '{':
-			return UserCode ('{', &pDefine->m_StringValue, &pDefine->m_SrcPos);
+			return userCode ('{', &define->m_stringValue, &define->m_srcPos);
 
 		default:
-			err::SetFormatStringError (
+			err::setFormatStringError (
 				"invalid define value for '%s'",
-				pDefine->m_Name.cc ()
+				define->m_name.cc ()
 				);
 			return false;
 		}
@@ -476,120 +476,120 @@ CParser::DefineStatement ()
 		break;
 
 	default:
-		err::SetFormatStringError (
+		err::setFormatStringError (
 			"invalid define syntax for '%s'",
-			pDefine->m_Name.cc ()
+			define->m_name.cc ()
 			);
 		return false;
 	}
 
-	pToken = ExpectToken (';');
-	if (!pToken)
+	token = expectToken (';');
+	if (!token)
 		return false;
 
-	NextToken ();
+	nextToken ();
 	return true;
 }
 
 bool
-CParser::UsingStatement ()
+Parser::usingStatement ()
 {
-	bool Result;
+	bool result;
 
-	const CToken* pToken = GetToken ();
-	ASSERT (pToken->m_Token == EToken_Using);
+	const Token* token = getToken ();
+	ASSERT (token->m_token == TokenKind_Using);
 
-	NextToken ();
+	nextToken ();
 
-	Result = ProductionSpecifiers (&m_DefaultProductionSpecifiers);
-	if (!Result)
+	result = productionSpecifiers (&m_defaultProductionSpecifiers);
+	if (!result)
 		return false;
 
 	return true;
 }
 
 bool
-CParser::CustomizeSymbol (CSymbolNode* pNode)
+Parser::customizeSymbol (SymbolNode* node)
 {
-	bool Result;
+	bool result;
 
-	const CToken* pToken = GetToken ();
-	if (pToken->m_Token == '<')
+	const Token* token = getToken ();
+	if (token->m_token == '<')
 	{
-		Result = UserCode ('<', &pNode->m_Arg, &pNode->m_ArgLineCol);
-		if (!Result)
+		result = userCode ('<', &node->m_arg, &node->m_argLineCol);
+		if (!result)
 			return false;
 	}
 
 	for (;;)
 	{
-		pToken = GetToken ();
+		token = getToken ();
 
-		rtl::CString* pString = NULL;
-		lex::CLineCol* pLineCol = NULL;
+		rtl::String* string = NULL;
+		lex::LineCol* lineCol = NULL;
 
-		switch (pToken->m_Token)
+		switch (token->m_token)
 		{
-		case EToken_Local:
-			pString = &pNode->m_Local;
-			pLineCol = &pNode->m_LocalLineCol;
+		case TokenKind_Local:
+			string = &node->m_local;
+			lineCol = &node->m_localLineCol;
 			break;
 
-		case EToken_Enter:
-			pString = &pNode->m_Enter;
-			pLineCol = &pNode->m_EnterLineCol;
+		case TokenKind_Enter:
+			string = &node->m_enter;
+			lineCol = &node->m_enterLineCol;
 			break;
 
-		case EToken_Leave:
-			pString = &pNode->m_Leave;
-			pLineCol = &pNode->m_LeaveLineCol;
+		case TokenKind_Leave:
+			string = &node->m_leave;
+			lineCol = &node->m_leaveLineCol;
 			break;
 		}
 
-		if (!pString)
+		if (!string)
 			break;
 
-		if (!pString->IsEmpty ())
+		if (!string->isEmpty ())
 		{
-			err::SetFormatStringError (
+			err::setFormatStringError (
 				"redefinition of '%s'::%s",
-				pNode->m_Name.cc (),
-				pToken->GetName ()
+				node->m_name.cc (),
+				token->getName ()
 				);
 			return false;
 		}
 
-		NextToken ();
-		Result = UserCode ('{', pString, pLineCol);
-		if (!Result)
+		nextToken ();
+		result = userCode ('{', string, lineCol);
+		if (!result)
 			return false;
 	}
 
-	if (!pNode->m_Arg.IsEmpty ())
+	if (!node->m_arg.isEmpty ())
 	{
-		Result = ProcessFormalArgList (pNode);
-		if (!Result)
+		result = processFormalArgList (node);
+		if (!result)
 			return false;
 	}
 
-	if (!pNode->m_Local.IsEmpty ())
+	if (!node->m_local.isEmpty ())
 	{
-		Result = ProcessLocalList (pNode);
-		if (!Result)
+		result = processLocalList (node);
+		if (!result)
 			return false;
 	}
 
-	if (!pNode->m_Enter.IsEmpty ())
+	if (!node->m_enter.isEmpty ())
 	{
-		Result = ProcessSymbolEventHandler (pNode, &pNode->m_Enter);
-		if (!Result)
+		result = processSymbolEventHandler (node, &node->m_enter);
+		if (!result)
 			return false;
 	}
 
-	if (!pNode->m_Leave.IsEmpty ())
+	if (!node->m_leave.isEmpty ())
 	{
-		Result = ProcessSymbolEventHandler (pNode, &pNode->m_Leave);
-		if (!Result)
+		result = processSymbolEventHandler (node, &node->m_leave);
+		if (!result)
 			return false;
 	}
 
@@ -597,356 +597,356 @@ CParser::CustomizeSymbol (CSymbolNode* pNode)
 }
 
 bool
-CParser::ProcessFormalArgList (CSymbolNode* pNode)
+Parser::processFormalArgList (SymbolNode* node)
 {
-	const CToken* pToken;
+	const Token* token;
 
-	rtl::CString ResultString;
+	rtl::String resultString;
 
-	CLexer Lexer;
-	Lexer.Create (GetMachineState (ELexerMachine_UserCode2ndPass), "formal-arg-list", pNode->m_Arg);
+	Lexer lexer;
+	lexer.create (getMachineState (LexerMachineKind_UserCode2ndPass), "formal-arg-list", node->m_arg);
 
-	const char* p = pNode->m_Arg;
+	const char* p = node->m_arg;
 
 	for (;;)
 	{
-		pToken = Lexer.GetToken ();
+		token = lexer.getToken ();
 
-		if (!pToken->m_Token)
+		if (!token->m_token)
 			break;
 
-		if (pToken->m_Token == EToken_Error)
+		if (token->m_token == TokenKind_Error)
 		{
-			err::SetFormatStringError ("invalid character '\\x%02x'", (uchar_t) pToken->m_Data.m_Integer);
+			err::setFormatStringError ("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
 			return false;
 		}
 
-		if (pToken->m_Token != EToken_Identifier)
+		if (token->m_token != TokenKind_Identifier)
 		{
-			Lexer.NextToken ();
+			lexer.nextToken ();
 			continue;
 		}
 
-		rtl::CString Name = pToken->m_Data.m_String;
+		rtl::String name = token->m_data.m_string;
 
-		ResultString.Append (p, pToken->m_Pos.m_p - p);
-		ResultString.Append (Name);
-		p = pToken->m_Pos.m_p + pToken->m_Pos.m_Length;
+		resultString.append (p, token->m_pos.m_p - p);
+		resultString.append (name);
+		p = token->m_pos.m_p + token->m_pos.m_length;
 
-		Lexer.NextToken ();
+		lexer.nextToken ();
 
-		pNode->m_ArgNameList.InsertTail (Name);
-		pNode->m_ArgNameSet.Goto (Name);
+		node->m_argNameList.insertTail (name);
+		node->m_argNameSet.visit (name);
 
-		pToken = Lexer.GetToken ();
-		if (!pToken->m_Token)
+		token = lexer.getToken ();
+		if (!token->m_token)
 			break;
 
-		pToken = Lexer.ExpectToken (',');
-		if (!pToken)
+		token = lexer.expectToken (',');
+		if (!token)
 			return false;
 
-		Lexer.NextToken ();
+		lexer.nextToken ();
 	}
 
-	ASSERT (!pToken->m_Token);
-	ResultString.Append (p, pToken->m_Pos.m_p - p);
+	ASSERT (!token->m_token);
+	resultString.append (p, token->m_pos.m_p - p);
 
-	pNode->m_Arg = ResultString;
+	node->m_arg = resultString;
 	return true;
 }
 
 bool
-CParser::ProcessLocalList (CSymbolNode* pNode)
+Parser::processLocalList (SymbolNode* node)
 {
-	const CToken* pToken;
+	const Token* token;
 
-	rtl::CString ResultString;
+	rtl::String resultString;
 
-	CLexer Lexer;
-	Lexer.Create (GetMachineState (ELexerMachine_UserCode2ndPass), "local-list", pNode->m_Local);
+	Lexer lexer;
+	lexer.create (getMachineState (LexerMachineKind_UserCode2ndPass), "local-list", node->m_local);
 
-	const char* p = pNode->m_Local;
+	const char* p = node->m_local;
 
 	for (;;)
 	{
-		pToken = Lexer.GetToken ();
-		if (pToken->m_Token <= 0)
+		token = lexer.getToken ();
+		if (token->m_token <= 0)
 			break;
 
-		if (pToken->m_Token != EToken_Identifier)
+		if (token->m_token != TokenKind_Identifier)
 		{
-			Lexer.NextToken ();
+			lexer.nextToken ();
 			continue;
 		}
 
-		rtl::CString Name = pToken->m_Data.m_String;
+		rtl::String name = token->m_data.m_string;
 
-		ResultString.Append (p, pToken->m_Pos.m_p - p);
-		ResultString.Append (Name);
-		p = pToken->m_Pos.m_p + pToken->m_Pos.m_Length;
+		resultString.append (p, token->m_pos.m_p - p);
+		resultString.append (name);
+		p = token->m_pos.m_p + token->m_pos.m_length;
 
-		Lexer.NextToken ();
+		lexer.nextToken ();
 
-		pNode->m_LocalNameList.InsertTail (Name);
-		pNode->m_LocalNameSet.Goto (Name);
+		node->m_localNameList.insertTail (name);
+		node->m_localNameSet.visit (name);
 	}
 
-	ASSERT (!pToken->m_Token);
-	ResultString.Append (p, pToken->m_Pos.m_p - p);
+	ASSERT (!token->m_token);
+	resultString.append (p, token->m_pos.m_p - p);
 
-	pNode->m_Local = ResultString;
+	node->m_local = resultString;
 	return true;
 }
 
 bool
-CParser::ProcessSymbolEventHandler (
-	CSymbolNode* pNode,
-	rtl::CString* pString
+Parser::processSymbolEventHandler (
+	SymbolNode* node,
+	rtl::String* string
 	)
 {
-	const CToken* pToken;
+	const Token* token;
 
-	rtl::CString ResultString;
+	rtl::String resultString;
 
-	CLexer Lexer;
-	Lexer.Create (GetMachineState (ELexerMachine_UserCode2ndPass), "event-handler", *pString);
+	Lexer lexer;
+	lexer.create (getMachineState (LexerMachineKind_UserCode2ndPass), "event-handler", *string);
 
-	const char* p = *pString;
+	const char* p = *string;
 
 	for (;;)
 	{
-		pToken = Lexer.GetToken ();
-		if (pToken->m_Token <= 0)
+		token = lexer.getToken ();
+		if (token->m_token <= 0)
 			break;
 
-		rtl::CHashTableIteratorT <const char*> It;
+		rtl::HashTableIterator <const char*> it;
 
-		switch (pToken->m_Token)
+		switch (token->m_token)
 		{
-		case EToken_Identifier:
-			It = pNode->m_LocalNameSet.Find (pToken->m_Data.m_String);
-			if (It)
+		case TokenKind_Identifier:
+			it = node->m_localNameSet.find (token->m_data.m_string);
+			if (it)
 			{
-				ResultString.Append (p, pToken->m_Pos.m_p - p);
-				ResultString.AppendFormat (
+				resultString.append (p, token->m_pos.m_p - p);
+				resultString.appendFormat (
 					"$local.%s",
-					pToken->m_Data.m_String.cc ()
+					token->m_data.m_string.cc ()
 					);
 				break;
 			}
 
-			It = pNode->m_ArgNameSet.Find (pToken->m_Data.m_String);
-			if (It)
+			it = node->m_argNameSet.find (token->m_data.m_string);
+			if (it)
 			{
-				ResultString.Append (p, pToken->m_Pos.m_p - p);
-				ResultString.AppendFormat (
+				resultString.append (p, token->m_pos.m_p - p);
+				resultString.appendFormat (
 					"$arg.%s",
-					pToken->m_Data.m_String.cc ()
+					token->m_data.m_string.cc ()
 					);
 				break;
 			}
 
-			err::SetFormatStringError ("undeclared identifier '%s'", pToken->m_Data.m_String.cc ());
+			err::setFormatStringError ("undeclared identifier '%s'", token->m_data.m_string.cc ());
 			return false;
 
-		case EToken_Integer:
-			if (pToken->m_Data.m_Integer != 0)
+		case TokenKind_Integer:
+			if (token->m_data.m_integer != 0)
 			{
-				err::SetFormatStringError ("'enter' or 'leave' cannot have indexed references");
+				err::setFormatStringError ("'enter' or 'leave' cannot have indexed references");
 				return false;
 			}
 
-			ResultString.Append (p, pToken->m_Pos.m_p - p);
-			ResultString.Append ('$');
+			resultString.append (p, token->m_pos.m_p - p);
+			resultString.append ('$');
 			break;
 
 		default:
-			Lexer.NextToken ();
+			lexer.nextToken ();
 			continue;
 		}
 
-		p = pToken->m_Pos.m_p + pToken->m_Pos.m_Length;
-		Lexer.NextToken ();
+		p = token->m_pos.m_p + token->m_pos.m_length;
+		lexer.nextToken ();
 	}
 
-	ASSERT (!pToken->m_Token);
-	ResultString.Append (p, pToken->m_Pos.m_p - p);
+	ASSERT (!token->m_token);
+	resultString.append (p, token->m_pos.m_p - p);
 
-	*pString = ResultString;
+	*string = resultString;
 	return true;
 }
 
 bool
-CParser::ProcessActualArgList (
-	CArgumentNode* pNode,
-	const rtl::CString& String
+Parser::processActualArgList (
+	ArgumentNode* node,
+	const rtl::String& string
 	)
 {
-	const CToken* pToken;
+	const Token* token;
 
-	CLexer Lexer;
-	Lexer.Create (GetMachineState (ELexerMachine_UserCode2ndPass), "actual-arg-list", String);
+	Lexer lexer;
+	lexer.create (getMachineState (LexerMachineKind_UserCode2ndPass), "actual-arg-list", string);
 
-	int Level = 0;
+	int level = 0;
 
-	const char* p = String;
+	const char* p = string;
 
 	for (;;)
 	{
-		pToken = Lexer.GetToken ();
-		if (pToken->m_Token <= 0)
+		token = lexer.getToken ();
+		if (token->m_token <= 0)
 			break;
 
-		switch (pToken->m_Token)
+		switch (token->m_token)
 		{
 		case '(':
 		case '{':
 		case '[':
-			Level++;
+			level++;
 			break;
 
 		case ')':
 		case '}':
 		case ']':
-			Level--;
+			level--;
 			break;
 
 		case ',':
-			if (Level == 0)
+			if (level == 0)
 			{
-				rtl::CString ValueString (p, pToken->m_Pos.m_p - p);
-				pNode->m_ArgValueList.InsertTail (ValueString);
+				rtl::String valueString (p, token->m_pos.m_p - p);
+				node->m_argValueList.insertTail (valueString);
 
-				p = pToken->m_Pos.m_p + pToken->m_Pos.m_Length;
+				p = token->m_pos.m_p + token->m_pos.m_length;
 			}
 		};
 
-		Lexer.NextToken ();
+		lexer.nextToken ();
 	}
 
-	rtl::CString ValueString (p, pToken->m_Pos.m_p - p);
-	pNode->m_ArgValueList.InsertTail (ValueString);
+	rtl::String valueString (p, token->m_pos.m_p - p);
+	node->m_argValueList.insertTail (valueString);
 
-	ASSERT (!pToken->m_Token);
+	ASSERT (!token->m_token);
 	return true;
 }
 
 void
-CParser::SetGrammarNodeSrcPos (
-	CGrammarNode* pNode,
-	const lex::CLineCol& LineCol
+Parser::setGrammarNodeSrcPos (
+	GrammarNode* node,
+	const lex::LineCol& lineCol
 	)
 {
-	pNode->m_SrcPos.m_FilePath = m_FilePath;
-	pNode->m_SrcPos.m_Line = LineCol.m_Line;
-	pNode->m_SrcPos.m_Col = LineCol.m_Col;
+	node->m_srcPos.m_filePath = m_filePath;
+	node->m_srcPos.m_line = lineCol.m_line;
+	node->m_srcPos.m_col = lineCol.m_col;
 }
 
 bool
-CParser::Production (const CProductionSpecifiers* pSpecifiers)
+Parser::production (const ProductionSpecifiers* specifiers)
 {
-	bool Result;
+	bool result;
 
-	const CToken* pToken = GetToken ();
-	ASSERT (pToken->m_Token == EToken_Identifier);
+	const Token* token = getToken ();
+	ASSERT (token->m_token == TokenKind_Identifier);
 
-	CSymbolNode* pSymbol = m_pModule->m_NodeMgr.GetSymbolNode (pToken->m_Data.m_String);
-	if (!pSymbol->m_ProductionArray.IsEmpty ())
+	SymbolNode* symbol = m_module->m_nodeMgr.getSymbolNode (token->m_data.m_string);
+	if (!symbol->m_productionArray.isEmpty ())
 	{
-		err::SetFormatStringError (
+		err::setFormatStringError (
 			"redefinition of symbol '%s'",
-			pSymbol->m_Name.cc ()
+			symbol->m_name.cc ()
 			);
 		return false;
 	}
 
-	SetGrammarNodeSrcPos (pSymbol);
+	setGrammarNodeSrcPos (symbol);
 
-	NextToken ();
+	nextToken ();
 
-	pSymbol->m_pClass = pSpecifiers->m_pClass;
-	pSymbol->m_Flags |= pSpecifiers->m_SymbolFlags;
+	symbol->m_class = specifiers->m_class;
+	symbol->m_flags |= specifiers->m_symbolFlags;
 
-	if (pSymbol->m_pClass)
-		pSymbol->m_pClass->m_Flags |= EClassFlag_Used;
+	if (symbol->m_class)
+		symbol->m_class->m_flags |= ClassFlagKind_Used;
 
-	if (pSymbol->m_Flags & ESymbolNodeFlag_Pragma)
-		m_pModule->m_NodeMgr.m_StartPragmaSymbol.m_ProductionArray.Append (pSymbol);
+	if (symbol->m_flags & SymbolNodeFlagKind_Pragma)
+		m_module->m_nodeMgr.m_startPragmaSymbol.m_productionArray.append (symbol);
 
-	if ((pSymbol->m_Flags & ESymbolNodeFlag_Start) && !m_pModule->m_NodeMgr.m_pPrimaryStartSymbol)
-		m_pModule->m_NodeMgr.m_pPrimaryStartSymbol = pSymbol;
+	if ((symbol->m_flags & SymbolNodeFlagKind_Start) && !m_module->m_nodeMgr.m_primaryStartSymbol)
+		m_module->m_nodeMgr.m_primaryStartSymbol = symbol;
 
-	Result = CustomizeSymbol (pSymbol);
-	if (!Result)
+	result = customizeSymbol (symbol);
+	if (!result)
 		return false;
 
-	pToken = ExpectToken (':');
-	if (!pToken)
+	token = expectToken (':');
+	if (!token)
 		return false;
 
-	NextToken ();
+	nextToken ();
 
-	CGrammarNode* pRightSide = Alternative ();
-	if (!pRightSide)
+	GrammarNode* rightSide = alternative ();
+	if (!rightSide)
 		return false;
 
-	pSymbol->AddProduction (pRightSide);
+	symbol->addProduction (rightSide);
 	return true;
 }
 
-CGrammarNode*
-CParser::Alternative ()
+GrammarNode*
+Parser::alternative ()
 {
-	CGrammarNode* pNode = Sequence ();
-	if (!pNode)
+	GrammarNode* node = sequence ();
+	if (!node)
 		return NULL;
 
-	CSymbolNode* pTemp = NULL;
+	SymbolNode* temp = NULL;
 
 	for (;;)
 	{
-		const CToken* pToken = GetToken ();
-		if (pToken->m_Token != '|')
+		const Token* token = getToken ();
+		if (token->m_token != '|')
 			break;
 
-		NextToken ();
+		nextToken ();
 
-		CGrammarNode* pNode2 = Sequence ();
-		if (!pNode2)
+		GrammarNode* node2 = sequence ();
+		if (!node2)
 			return NULL;
 
-		if (!pTemp)
-			if (pNode->m_Kind == ENode_Symbol && (pNode->m_Flags & ESymbolNodeFlag_Named))
+		if (!temp)
+			if (node->m_kind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlagKind_Named))
 			{
-				pTemp = (CSymbolNode*) pNode;
+				temp = (SymbolNode*) node;
 			}
 			else
 			{
-				pTemp = m_pModule->m_NodeMgr.CreateTempSymbolNode ();
-				pTemp->AddProduction (pNode);
+				temp = m_module->m_nodeMgr.createTempSymbolNode ();
+				temp->addProduction (node);
 
-				SetGrammarNodeSrcPos (pTemp, pNode->m_SrcPos);
-				pNode = pTemp;
+				setGrammarNodeSrcPos (temp, node->m_srcPos);
+				node = temp;
 			}
 
-		pTemp->AddProduction (pNode2);
+		temp->addProduction (node2);
 	}
 
-	return pNode;
+	return node;
 }
 
 static
 inline
 bool
-IsFirstOfPrimary (int Token)
+isFirstOfPrimary (int token)
 {
-	switch (Token)
+	switch (token)
 	{
-	case EToken_Identifier:
-	case EToken_Integer:
-	case EToken_Any:
-	case EToken_Resolver:
+	case TokenKind_Identifier:
+	case TokenKind_Integer:
+	case TokenKind_Any:
+	case TokenKind_Resolver:
 	case '{':
 	case '(':
 	case '.':
@@ -957,397 +957,397 @@ IsFirstOfPrimary (int Token)
 	}
 }
 
-CGrammarNode*
-CParser::Sequence ()
+GrammarNode*
+Parser::sequence ()
 {
-	CGrammarNode* pNode = Quantifier ();
-	if (!pNode)
+	GrammarNode* node = quantifier ();
+	if (!node)
 		return NULL;
 
-	CSequenceNode* pTemp = NULL;
+	SequenceNode* temp = NULL;
 
 	for (;;)
 	{
-		const CToken* pToken = GetToken ();
+		const Token* token = getToken ();
 
-		if (!IsFirstOfPrimary (pToken->m_Token))
+		if (!isFirstOfPrimary (token->m_token))
 			break;
 
-		CGrammarNode* pNode2 = Quantifier ();
-		if (!pNode2)
+		GrammarNode* node2 = quantifier ();
+		if (!node2)
 			return NULL;
 
-		if (!pTemp)
-			if (pNode->m_Kind == ENode_Sequence)
+		if (!temp)
+			if (node->m_kind == NodeKind_Sequence)
 			{
-				pTemp = (CSequenceNode*) pNode;
+				temp = (SequenceNode*) node;
 			}
 			else
 			{
-				pTemp = m_pModule->m_NodeMgr.CreateSequenceNode ();
-				pTemp->Append (pNode);
+				temp = m_module->m_nodeMgr.createSequenceNode ();
+				temp->append (node);
 
-				SetGrammarNodeSrcPos (pTemp, pNode->m_SrcPos);
-				pNode = pTemp;
+				setGrammarNodeSrcPos (temp, node->m_srcPos);
+				node = temp;
 			}
 
-		pTemp->Append (pNode2);
+		temp->append (node2);
 	}
 
-	return pNode;
+	return node;
 }
 
-CGrammarNode*
-CParser::Quantifier ()
+GrammarNode*
+Parser::quantifier ()
 {
-	CGrammarNode* pNode = Primary ();
-	if (!pNode)
+	GrammarNode* node = primary ();
+	if (!node)
 		return NULL;
 
-	const CToken* pToken = GetToken ();
-	if (pToken->m_Token != '?' &&
-		pToken->m_Token != '*' &&
-		pToken->m_Token != '+')
-		return pNode;
+	const Token* token = getToken ();
+	if (token->m_token != '?' &&
+		token->m_token != '*' &&
+		token->m_token != '+')
+		return node;
 
-	CGrammarNode* pTemp = m_pModule->m_NodeMgr.CreateQuantifierNode (pNode, pToken->m_Token);
-	if (!pTemp)
+	GrammarNode* temp = m_module->m_nodeMgr.createQuantifierNode (node, token->m_token);
+	if (!temp)
 		return NULL;
 
-	SetGrammarNodeSrcPos (pTemp, pNode->m_SrcPos);
+	setGrammarNodeSrcPos (temp, node->m_srcPos);
 
-	NextToken ();
-	return pTemp;
+	nextToken ();
+	return temp;
 }
 
-CGrammarNode*
-CParser::Primary ()
+GrammarNode*
+Parser::primary ()
 {
-	bool Result;
+	bool result;
 
-	CGrammarNode* pNode;
-	CActionNode* pActionNode;
+	GrammarNode* node;
+	ActionNode* actionNode;
 
-	const CToken* pToken = GetToken ();
-	switch (pToken->m_Token)
+	const Token* token = getToken ();
+	switch (token->m_token)
 	{
 	case '.':
-	case EToken_Any:
-	case EToken_Integer:
-		pNode = Beacon ();
-		if (!pNode)
+	case TokenKind_Any:
+	case TokenKind_Integer:
+		node = beacon ();
+		if (!node)
 			return NULL;
 
 		break;
 
-	case EToken_Epsilon:
-		pNode = &m_pModule->m_NodeMgr.m_EpsilonNode;
-		NextToken ();
+	case TokenKind_Epsilon:
+		node = &m_module->m_nodeMgr.m_epsilonNode;
+		nextToken ();
 		break;
 
 	case ';':
 	case '|':
-		pNode = &m_pModule->m_NodeMgr.m_EpsilonNode;
+		node = &m_module->m_nodeMgr.m_epsilonNode;
 		// and don't swallow token
 		break;
 
-	case EToken_Identifier:
-		pNode = Beacon ();
-		if (!pNode)
+	case TokenKind_Identifier:
+		node = beacon ();
+		if (!node)
 			return NULL;
 
-		pToken = GetToken ();
-		if (pToken->m_Token == '<')
+		token = getToken ();
+		if (token->m_token == '<')
 		{
-			CBeaconNode* pBeacon = (CBeaconNode*) pNode;
-			CArgumentNode* pArgument = m_pModule->m_NodeMgr.CreateArgumentNode ();
-			CSequenceNode* pSequence = m_pModule->m_NodeMgr.CreateSequenceNode ();
+			BeaconNode* beacon = (BeaconNode*) node;
+			ArgumentNode* argument = m_module->m_nodeMgr.createArgumentNode ();
+			SequenceNode* sequence = m_module->m_nodeMgr.createSequenceNode ();
 
-			SetGrammarNodeSrcPos (pSequence, pNode->m_SrcPos);
+			setGrammarNodeSrcPos (sequence, node->m_srcPos);
 
-			rtl::CString String;
-			Result = UserCode ('<', &String, &pArgument->m_SrcPos);
-			if (!Result)
+			rtl::String string;
+			result = userCode ('<', &string, &argument->m_srcPos);
+			if (!result)
 				return NULL;
 
-			Result = ProcessActualArgList (pArgument, String);
-			if (!Result)
+			result = processActualArgList (argument, string);
+			if (!result)
 				return NULL;
 
-			pBeacon->m_pArgument = pArgument;
-			pArgument->m_pTargetSymbol = pBeacon->m_pTarget;
+			beacon->m_argument = argument;
+			argument->m_targetSymbol = beacon->m_target;
 
-			pSequence->Append (pBeacon);
-			pSequence->Append (pArgument);
-			pNode = pSequence;
+			sequence->append (beacon);
+			sequence->append (argument);
+			node = sequence;
 		}
 
 		break;
 
 	case '{':
-		pActionNode = m_pModule->m_NodeMgr.CreateActionNode ();
+		actionNode = m_module->m_nodeMgr.createActionNode ();
 
-		Result = UserCode ('{', &pActionNode->m_UserCode, &pActionNode->m_SrcPos);
-		if (!Result)
+		result = userCode ('{', &actionNode->m_userCode, &actionNode->m_srcPos);
+		if (!result)
 			return NULL;
 
-		pNode = pActionNode;
+		node = actionNode;
 		break;
 
-	case EToken_Resolver:
-		pNode = Resolver ();
-		if (!pNode)
+	case TokenKind_Resolver:
+		node = resolver ();
+		if (!node)
 			return NULL;
 
 		break;
 
 	case '(':
-		NextToken ();
+		nextToken ();
 
-		pNode = Alternative ();
-		if (!pNode)
+		node = alternative ();
+		if (!node)
 			return NULL;
 
-		pToken = ExpectToken (')');
-		if (!pToken)
+		token = expectToken (')');
+		if (!token)
 			return NULL;
 
-		NextToken ();
+		nextToken ();
 		break;
 
 	default:
-		err::SetUnexpectedTokenError (pToken->GetName (), "primary");
+		err::setUnexpectedTokenError (token->getName (), "primary");
 		return NULL;
 	}
 
-	return pNode;
+	return node;
 }
 
-CBeaconNode*
-CParser::Beacon ()
+BeaconNode*
+Parser::beacon ()
 {
-	CSymbolNode* pNode;
+	SymbolNode* node;
 
-	const CToken* pToken = GetToken ();
-	switch (pToken->m_Token)
+	const Token* token = getToken ();
+	switch (token->m_token)
 	{
-	case EToken_Any:
+	case TokenKind_Any:
 	case '.':
-		pNode = &m_pModule->m_NodeMgr.m_AnyTokenNode;
+		node = &m_module->m_nodeMgr.m_anyTokenNode;
 		break;
 
-	case EToken_Identifier:
-		pNode = m_pModule->m_NodeMgr.GetSymbolNode (pToken->m_Data.m_String);
+	case TokenKind_Identifier:
+		node = m_module->m_nodeMgr.getSymbolNode (token->m_data.m_string);
 		break;
 
-	case EToken_Integer:
-		if (!pToken->m_Data.m_Integer)
+	case TokenKind_Integer:
+		if (!token->m_data.m_integer)
 		{
-			err::SetFormatStringError ("cannot use a reserved eof token \\00");
+			err::setFormatStringError ("cannot use a reserved eof token \\00");
 			return NULL;
 		}
 
-		pNode = m_pModule->m_NodeMgr.GetTokenNode (pToken->m_Data.m_Integer);
+		node = m_module->m_nodeMgr.getTokenNode (token->m_data.m_integer);
 		break;
 
 	default:
 		ASSERT (false);
 	}
 
-	CBeaconNode* pBeacon = m_pModule->m_NodeMgr.CreateBeaconNode (pNode);
-	SetGrammarNodeSrcPos (pBeacon);
+	BeaconNode* beacon = m_module->m_nodeMgr.createBeaconNode (node);
+	setGrammarNodeSrcPos (beacon);
 
-	NextToken ();
+	nextToken ();
 
-	pToken = GetToken ();
-	if (pToken->m_Token != '$')
-		return pBeacon;
+	token = getToken ();
+	if (token->m_token != '$')
+		return beacon;
 
-	NextToken ();
-	pToken = ExpectToken (EToken_Identifier);
-	if (!pToken)
+	nextToken ();
+	token = expectToken (TokenKind_Identifier);
+	if (!token)
 		return NULL;
 
-	pBeacon->m_Label = pToken->m_Data.m_String;
-	NextToken ();
+	beacon->m_label = token->m_data.m_string;
+	nextToken ();
 
-	return pBeacon;
+	return beacon;
 }
 
-CSymbolNode*
-CParser::Resolver ()
+SymbolNode*
+Parser::resolver ()
 {
-	const CToken* pToken = GetToken ();
-	ASSERT (pToken->m_Token == EToken_Resolver);
+	const Token* token = getToken ();
+	ASSERT (token->m_token == TokenKind_Resolver);
 
-	lex::CRagelTokenPos Pos = pToken->m_Pos;
+	lex::RagelTokenPos pos = token->m_pos;
 
-	NextToken ();
+	nextToken ();
 
-	pToken = ExpectToken ('(');
-	if (!pToken)
+	token = expectToken ('(');
+	if (!token)
 		return NULL;
 
-	NextToken ();
+	nextToken ();
 
-	CGrammarNode* pResolver = Alternative ();
-	if (!pResolver)
+	GrammarNode* resolver = alternative ();
+	if (!resolver)
 		return NULL;
 
-	pToken = ExpectToken (')');
-	if (!pToken)
+	token = expectToken (')');
+	if (!token)
 		return NULL;
 
-	NextToken ();
+	nextToken ();
 
-	size_t Priority = 0;
+	size_t priority = 0;
 
-	pToken = GetToken ();
-	if (pToken->m_Token == EToken_Priority)
+	token = getToken ();
+	if (token->m_token == TokenKind_Priority)
 	{
-		NextToken ();
+		nextToken ();
 
-		pToken = ExpectToken ('(');
-		if (!pToken)
+		token = expectToken ('(');
+		if (!token)
 			return NULL;
 
-		NextToken ();
+		nextToken ();
 
-		pToken = ExpectToken (EToken_Integer);
-		if (!pToken)
+		token = expectToken (TokenKind_Integer);
+		if (!token)
 			return NULL;
 
-		Priority = pToken->m_Data.m_Integer;
-		NextToken ();
+		priority = token->m_data.m_integer;
+		nextToken ();
 
-		pToken = ExpectToken (')');
-		if (!pToken)
+		token = expectToken (')');
+		if (!token)
 			return NULL;
 
-		NextToken ();
+		nextToken ();
 	}
 
-	CGrammarNode* pProduction = Sequence ();
-	if (!pProduction)
+	GrammarNode* production = sequence ();
+	if (!production)
 		return NULL;
 
-	CSymbolNode* pTemp = m_pModule->m_NodeMgr.CreateTempSymbolNode ();
-	pTemp->m_pResolver = pResolver;
-	pTemp->m_ResolverPriority = Priority;
-	pTemp->AddProduction (pProduction);
+	SymbolNode* temp = m_module->m_nodeMgr.createTempSymbolNode ();
+	temp->m_resolver = resolver;
+	temp->m_resolverPriority = priority;
+	temp->addProduction (production);
 
-	SetGrammarNodeSrcPos (pTemp, Pos);
+	setGrammarNodeSrcPos (temp, pos);
 
-	return pTemp;
+	return temp;
 }
 
 bool
-CParser::UserCode (
-	int OpenBracket,
-	rtl::CString* pString,
-	lex::CSrcPos* pSrcPos
+Parser::userCode (
+	int openBracket,
+	rtl::String* string,
+	lex::SrcPos* srcPos
 	)
 {
-	bool Result = UserCode (OpenBracket, pString, (lex::CLineCol*) pSrcPos);
-	if (!Result)
+	bool result = userCode (openBracket, string, (lex::LineCol*) srcPos);
+	if (!result)
 		return false;
 
-	pSrcPos->m_FilePath = m_FilePath;
+	srcPos->m_filePath = m_filePath;
 	return true;
 }
 
 bool
-CParser::UserCode (
-	int OpenBracket,
-	rtl::CString* pString,
-	lex::CLineCol* pLineCol
+Parser::userCode (
+	int openBracket,
+	rtl::String* string,
+	lex::LineCol* lineCol
 	)
 {
-	const CToken* pToken = ExpectToken (OpenBracket);
-	if (!pToken)
+	const Token* token = expectToken (openBracket);
+	if (!token)
 		return false;
 
-	GotoState (GetMachineState (ELexerMachine_UserCode), pToken, EGotoState_ReparseToken);
+	gotoState (getMachineState (LexerMachineKind_UserCode), token, GotoStateKind_ReparseToken);
 
-	pToken = GetToken ();
+	token = getToken ();
 
-	OpenBracket = pToken->m_Token; // could change! e.g. { vs {. and < vs <.
+	openBracket = token->m_token; // could change! e.g. { vs {. and < vs <.
 
-	int CloseBracket;
+	int closeBracket;
 
-	switch (OpenBracket)
+	switch (openBracket)
 	{
 	case '{':
-		CloseBracket = '}';
+		closeBracket = '}';
 		break;
 
 	case '(':
-		CloseBracket = ')';
+		closeBracket = ')';
 		break;
 
 	case '<':
-		CloseBracket = '>';
+		closeBracket = '>';
 		break;
 
-	case EToken_OpenBrace:
-		CloseBracket = EToken_CloseBrace;
+	case TokenKind_OpenBrace:
+		closeBracket = TokenKind_CloseBrace;
 		break;
 
-	case EToken_OpenChevron:
-		CloseBracket = EToken_CloseChevron;
+	case TokenKind_OpenChevron:
+		closeBracket = TokenKind_CloseChevron;
 		break;
 
 	default:
 		ASSERT (false);
 
-		err::SetFormatStringError ("invalid user code opener '%s'", CToken::GetName (OpenBracket));
+		err::setFormatStringError ("invalid user code opener '%s'", Token::getName (openBracket));
 		return false;
 	}
 
-	const char* pBegin = pToken->m_Pos.m_p + pToken->m_Pos.m_Length;
-	*pLineCol = pToken->m_Pos;
+	const char* begin = token->m_pos.m_p + token->m_pos.m_length;
+	*lineCol = token->m_pos;
 
-	NextToken ();
+	nextToken ();
 
-	int Level = 1;
+	int level = 1;
 
 	for (;;)
 	{
-		pToken = GetToken ();
+		token = getToken ();
 
-		if (pToken->m_Token == EToken_Eof)
+		if (token->m_token == TokenKind_Eof)
 		{
-			err::SetUnexpectedTokenError ("eof", "user-code");
+			err::setUnexpectedTokenError ("eof", "user-code");
 			return false;
 		}
-		else if (pToken->m_Token == EToken_Error)
+		else if (token->m_token == TokenKind_Error)
 		{
-			err::SetFormatStringError ("invalid character '\\x%02x'", (uchar_t) pToken->m_Data.m_Integer);
+			err::setFormatStringError ("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
 			return false;
 		}
-		else if (pToken->m_Token == OpenBracket)
+		else if (token->m_token == openBracket)
 		{
-			Level++;
+			level++;
 		}
-		else if (pToken->m_Token == CloseBracket)
+		else if (token->m_token == closeBracket)
 		{
-			Level--;
+			level--;
 
-			if (Level <= 0)
+			if (level <= 0)
 				break;
 		}
 
-		NextToken ();
+		nextToken ();
 	}
 
-	size_t End = pToken->m_Pos.m_Offset;
+	size_t end = token->m_pos.m_offset;
 
-	pToken = GetToken ();
-	ASSERT (pToken->m_Token == CloseBracket);
+	token = getToken ();
+	ASSERT (token->m_token == closeBracket);
 
-	*pString = rtl::CString (pBegin, pToken->m_Pos.m_p - pBegin);
+	*string = rtl::String (begin, token->m_pos.m_p - begin);
 
-	GotoState (GetMachineState (ELexerMachine_Main), pToken, EGotoState_EatToken);
+	gotoState (getMachineState (LexerMachineKind_Main), token, GotoStateKind_EatToken);
 
 	return true;
 }

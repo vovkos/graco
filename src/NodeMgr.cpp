@@ -3,255 +3,255 @@
 
 //.............................................................................
 
-CNodeMgr::CNodeMgr ()
+NodeMgr::NodeMgr ()
 {
-	m_MasterCount = 0;
-	m_pPrimaryStartSymbol = NULL;
+	m_masterCount = 0;
+	m_primaryStartSymbol = NULL;
 
 	// we use the same master index for epsilon production and eof token:
 	// token with index 0 is eof token
 	// parse table entry equal 0 is epsilon production
 
-	m_EofTokenNode.m_Kind = ENode_Token;
-	m_AnyTokenNode.m_Flags = ESymbolNodeFlag_EofToken;
-	m_EofTokenNode.m_Name = "$";
-	m_EofTokenNode.m_Index = 0;
-	m_EofTokenNode.m_MasterIndex = 0;
+	m_eofTokenNode.m_kind = NodeKind_Token;
+	m_anyTokenNode.m_flags = SymbolNodeFlagKind_EofToken;
+	m_eofTokenNode.m_name = "$";
+	m_eofTokenNode.m_index = 0;
+	m_eofTokenNode.m_masterIndex = 0;
 
-	m_AnyTokenNode.m_Kind = ENode_Token;
-	m_AnyTokenNode.m_Flags = ESymbolNodeFlag_AnyToken;
-	m_AnyTokenNode.m_Name = "any";
-	m_AnyTokenNode.m_Index = 1;
-	m_AnyTokenNode.m_MasterIndex = 1;
+	m_anyTokenNode.m_kind = NodeKind_Token;
+	m_anyTokenNode.m_flags = SymbolNodeFlagKind_AnyToken;
+	m_anyTokenNode.m_name = "any";
+	m_anyTokenNode.m_index = 1;
+	m_anyTokenNode.m_masterIndex = 1;
 
-	m_EpsilonNode.m_Kind = ENode_Epsilon;
-	m_EpsilonNode.m_Flags |= EGrammarNodeFlag_Nullable;
-	m_EpsilonNode.m_Name = "epsilon";
-	m_EpsilonNode.m_MasterIndex = 0; 
+	m_epsilonNode.m_kind = NodeKind_Epsilon;
+	m_epsilonNode.m_flags |= GrammarNodeFlagKind_Nullable;
+	m_epsilonNode.m_name = "epsilon";
+	m_epsilonNode.m_masterIndex = 0; 
 
-	m_StartPragmaSymbol.m_Flags |= ESymbolNodeFlag_Pragma;
-	m_StartPragmaSymbol.m_Name = "pragma";
+	m_startPragmaSymbol.m_flags |= SymbolNodeFlagKind_Pragma;
+	m_startPragmaSymbol.m_name = "pragma";
 }
 
 void
-CNodeMgr::Clear ()
+NodeMgr::clear ()
 {
-	m_CharTokenList.Clear ();
-	m_NamedTokenList.Clear ();
-	m_NamedSymbolList.Clear ();
-	m_TempSymbolList.Clear ();
-	m_SequenceList.Clear ();
-	m_BeaconList.Clear ();
-	m_DispatcherList.Clear ();
-	m_ActionList.Clear ();
-	m_ArgumentList.Clear ();
-	m_ConflictList.Clear ();
-	m_LaDfaList.Clear ();
+	m_charTokenList.clear ();
+	m_namedTokenList.clear ();
+	m_namedSymbolList.clear ();
+	m_tempSymbolList.clear ();
+	m_sequenceList.clear ();
+	m_beaconList.clear ();
+	m_dispatcherList.clear ();
+	m_actionList.clear ();
+	m_argumentList.clear ();
+	m_conflictList.clear ();
+	m_laDfaList.clear ();
 
-	m_TokenMap.Clear ();
-	m_SymbolMap.Clear ();
-	m_AnyTokenNode.m_FirstArray.Clear ();
-	m_AnyTokenNode.m_FirstSet.Clear ();
+	m_tokenMap.clear ();
+	m_symbolMap.clear ();
+	m_anyTokenNode.m_firstArray.clear ();
+	m_anyTokenNode.m_firstSet.clear ();
 	
-	m_StartPragmaSymbol.m_Index = -1;
-	m_StartPragmaSymbol.m_MasterIndex = -1;
-	m_StartPragmaSymbol.m_ProductionArray.Clear ();
+	m_startPragmaSymbol.m_index = -1;
+	m_startPragmaSymbol.m_masterIndex = -1;
+	m_startPragmaSymbol.m_productionArray.clear ();
 
-	m_MasterCount = 0;
-	m_pPrimaryStartSymbol = NULL;
+	m_masterCount = 0;
+	m_primaryStartSymbol = NULL;
 }
 
 void
-CNodeMgr::Trace ()
+NodeMgr::trace ()
 {
-	TraceNodeArray ("TOKENS", &m_TokenArray);
-	TraceNodeArray ("SYMBOLS", &m_SymbolArray);
-	TraceNodeList ("SEQUENCES", m_SequenceList.GetHead ());
-	TraceNodeList ("BEACONS", m_BeaconList.GetHead ());
-	TraceNodeList ("DISPATCHERS", m_DispatcherList.GetHead ());
-	TraceNodeList ("ACTIONS", m_ActionList.GetHead ());
-	TraceNodeList ("ARGUMENTS", m_ArgumentList.GetHead ());
-	TraceNodeList ("CONFLICTS", m_ConflictList.GetHead ());
-	TraceNodeList ("LOOKAHEAD DFA", m_LaDfaList.GetHead ());
+	traceNodeArray ("TOKENS", &m_tokenArray);
+	traceNodeArray ("SYMBOLS", &m_symbolArray);
+	traceNodeList ("SEQUENCES", m_sequenceList.getHead ());
+	traceNodeList ("BEACONS", m_beaconList.getHead ());
+	traceNodeList ("DISPATCHERS", m_dispatcherList.getHead ());
+	traceNodeList ("ACTIONS", m_actionList.getHead ());
+	traceNodeList ("ARGUMENTS", m_argumentList.getHead ());
+	traceNodeList ("CONFLICTS", m_conflictList.getHead ());
+	traceNodeList ("LOOKAHEAD DFA", m_laDfaList.getHead ());
 }
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-CSymbolNode*
-CNodeMgr::GetTokenNode (int Token)
+SymbolNode*
+NodeMgr::getTokenNode (int token)
 {
-	rtl::CHashTableMapIteratorT <int, CSymbolNode*> Node = m_TokenMap.Goto (Token);
-	if (Node->m_Value)
-		return Node->m_Value;
+	rtl::HashTableMapIterator <int, SymbolNode*> mapIt = m_tokenMap.visit (token);
+	if (mapIt->m_value)
+		return mapIt->m_value;
 
-	CSymbolNode* pNode = AXL_MEM_NEW (CSymbolNode);
-	pNode->m_Kind = ENode_Token;
-	pNode->m_CharToken = Token;
+	SymbolNode* node = AXL_MEM_NEW (SymbolNode);
+	node->m_kind = NodeKind_Token;
+	node->m_charToken = token;
 	
-	if (isprint (Token))
-		pNode->m_Name.Format ("\'%c\'", (char) Token);
+	if (isprint (token))
+		node->m_name.format ("\'%c\'", (char) token);
 	else 
-		pNode->m_Name.Format ("\\0%d", Token);
+		node->m_name.format ("\\0%d", token);
 
-	m_CharTokenList.InsertTail (pNode);
-	Node->m_Value = pNode;
+	m_charTokenList.insertTail (node);
+	mapIt->m_value = node;
 
-	return pNode;
+	return node;
 }
 
-CSymbolNode*
-CNodeMgr::GetSymbolNode (const rtl::CString& Name)
+SymbolNode*
+NodeMgr::getSymbolNode (const rtl::String& name)
 {
-	rtl::CStringHashTableMapIteratorT <CSymbolNode*> It = m_SymbolMap.Goto (Name);
-	if (It->m_Value)
-		return It->m_Value;
+	rtl::StringHashTableMapIterator <SymbolNode*> mapIt = m_symbolMap.visit (name);
+	if (mapIt->m_value)
+		return mapIt->m_value;
 
-	CSymbolNode* pNode = AXL_MEM_NEW (CSymbolNode);
-	pNode->m_Kind = ENode_Symbol;
-	pNode->m_Flags = ESymbolNodeFlag_Named;
-	pNode->m_Name = Name;
+	SymbolNode* node = AXL_MEM_NEW (SymbolNode);
+	node->m_kind = NodeKind_Symbol;
+	node->m_flags = SymbolNodeFlagKind_Named;
+	node->m_name = name;
 	
-	m_NamedSymbolList.InsertTail (pNode);
-	It->m_Value = pNode;
+	m_namedSymbolList.insertTail (node);
+	mapIt->m_value = node;
 	
-	return pNode;
+	return node;
 }
 
-CSymbolNode*
-CNodeMgr::CreateTempSymbolNode ()
+SymbolNode*
+NodeMgr::createTempSymbolNode ()
 {
-	CSymbolNode* pNode = AXL_MEM_NEW (CSymbolNode);
-	pNode->m_Name.Format ("_tmp%d", m_TempSymbolList.GetCount () + 1);
-	m_TempSymbolList.InsertTail (pNode);
-	return pNode;
+	SymbolNode* node = AXL_MEM_NEW (SymbolNode);
+	node->m_name.format ("_tmp%d", m_tempSymbolList.getCount () + 1);
+	m_tempSymbolList.insertTail (node);
+	return node;
 }
 
-CSequenceNode*
-CNodeMgr::CreateSequenceNode ()
+SequenceNode*
+NodeMgr::createSequenceNode ()
 {
-	CSequenceNode* pNode = AXL_MEM_NEW (CSequenceNode);
-	pNode->m_Name.Format ("_seq%d", m_SequenceList.GetCount () + 1);
-	m_SequenceList.InsertTail (pNode);
-	return pNode;
+	SequenceNode* node = AXL_MEM_NEW (SequenceNode);
+	node->m_name.format ("_seq%d", m_sequenceList.getCount () + 1);
+	m_sequenceList.insertTail (node);
+	return node;
 }
 
-CSequenceNode*
-CNodeMgr::CreateSequenceNode (CGrammarNode* pNode)
+SequenceNode*
+NodeMgr::createSequenceNode (GrammarNode* node)
 {
-	CSequenceNode* pSequenceNode = CreateSequenceNode ();
-	pSequenceNode->Append (pNode);
-	return pSequenceNode;
+	SequenceNode* sequenceNode = createSequenceNode ();
+	sequenceNode->append (node);
+	return sequenceNode;
 }
 
-CBeaconNode*
-CNodeMgr::CreateBeaconNode (CSymbolNode* pTarget)
+BeaconNode*
+NodeMgr::createBeaconNode (SymbolNode* target)
 {
-	CBeaconNode* pBeaconNode = AXL_MEM_NEW (CBeaconNode);
-	pBeaconNode->m_Kind = ENode_Beacon;
-	pBeaconNode->m_pTarget = pTarget;
-	if (pTarget->m_Kind == ENode_Symbol)
-		pBeaconNode->m_Label = pTarget->m_Name;
-	pBeaconNode->m_Name.Format (
+	BeaconNode* beaconNode = AXL_MEM_NEW (BeaconNode);
+	beaconNode->m_kind = NodeKind_Beacon;
+	beaconNode->m_target = target;
+	if (target->m_kind == NodeKind_Symbol)
+		beaconNode->m_label = target->m_name;
+	beaconNode->m_name.format (
 		"_bcn%d(%s)", 
-		m_BeaconList.GetCount () + 1, 
-		pTarget->m_Name.cc () // thanks a lot gcc
+		m_beaconList.getCount () + 1, 
+		target->m_name.cc () // thanks a lot gcc
 		);
-	m_BeaconList.InsertTail (pBeaconNode);
-	return pBeaconNode;
+	m_beaconList.insertTail (beaconNode);
+	return beaconNode;
 }
 
-CDispatcherNode*
-CNodeMgr::CreateDispatcherNode (CSymbolNode* pSymbol)
+DispatcherNode*
+NodeMgr::createDispatcherNode (SymbolNode* symbol)
 {
-	CDispatcherNode* pDispatcherNode = AXL_MEM_NEW (CDispatcherNode);
-	pDispatcherNode->m_Name.Format ("_dsp%d", m_DispatcherList.GetCount () + 1);
-	pDispatcherNode->m_pSymbol = pSymbol;
-	m_DispatcherList.InsertTail (pDispatcherNode);
-	return pDispatcherNode;
+	DispatcherNode* dispatcherNode = AXL_MEM_NEW (DispatcherNode);
+	dispatcherNode->m_name.format ("_dsp%d", m_dispatcherList.getCount () + 1);
+	dispatcherNode->m_symbol = symbol;
+	m_dispatcherList.insertTail (dispatcherNode);
+	return dispatcherNode;
 }
 
-CActionNode*
-CNodeMgr::CreateActionNode ()
+ActionNode*
+NodeMgr::createActionNode ()
 {
-	CActionNode* pNode = AXL_MEM_NEW (CActionNode);
-	pNode->m_Name.Format ("_act%d", m_ActionList.GetCount () + 1);
-	m_ActionList.InsertTail (pNode);
-	return pNode;
+	ActionNode* node = AXL_MEM_NEW (ActionNode);
+	node->m_name.format ("_act%d", m_actionList.getCount () + 1);
+	m_actionList.insertTail (node);
+	return node;
 }
 
-CArgumentNode*
-CNodeMgr::CreateArgumentNode ()
+ArgumentNode*
+NodeMgr::createArgumentNode ()
 {
-	CArgumentNode* pNode = AXL_MEM_NEW (CArgumentNode);
-	pNode->m_Name.Format ("_arg%d", m_ArgumentList.GetCount () + 1);
-	m_ArgumentList.InsertTail (pNode);
-	return pNode;
+	ArgumentNode* node = AXL_MEM_NEW (ArgumentNode);
+	node->m_name.format ("_arg%d", m_argumentList.getCount () + 1);
+	m_argumentList.insertTail (node);
+	return node;
 }
 
-CConflictNode*
-CNodeMgr::CreateConflictNode ()
+ConflictNode*
+NodeMgr::createConflictNode ()
 {
-	CConflictNode* pNode = AXL_MEM_NEW (CConflictNode);
-	pNode->m_Name.Format ("_cnf%d", m_ConflictList.GetCount () + 1);
-	m_ConflictList.InsertTail (pNode);
-	return pNode;
+	ConflictNode* node = AXL_MEM_NEW (ConflictNode);
+	node->m_name.format ("_cnf%d", m_conflictList.getCount () + 1);
+	m_conflictList.insertTail (node);
+	return node;
 }
 
-CLaDfaNode*
-CNodeMgr::CreateLaDfaNode ()
+LaDfaNode*
+NodeMgr::createLaDfaNode ()
 {
-	CLaDfaNode* pNode = AXL_MEM_NEW (CLaDfaNode);
-	pNode->m_Name.Format ("_dfa%d", m_LaDfaList.GetCount () + 1);
-	m_LaDfaList.InsertTail (pNode);
-	return pNode;
+	LaDfaNode* node = AXL_MEM_NEW (LaDfaNode);
+	node->m_name.format ("_dfa%d", m_laDfaList.getCount () + 1);
+	m_laDfaList.insertTail (node);
+	return node;
 }
 
-CGrammarNode*
-CNodeMgr::CreateQuantifierNode (
-	CGrammarNode* pNode,
-	int Kind
+GrammarNode*
+NodeMgr::createQuantifierNode (
+	GrammarNode* node,
+	int kind
 	)
 {
-	CSequenceNode* pTempSeq;
-	CSymbolNode* pTempAlt;
+	SequenceNode* tempSeq;
+	SymbolNode* tempAlt;
 
-	if (pNode->m_Kind == ENode_Action || pNode->m_Kind == ENode_Epsilon)
+	if (node->m_kind == NodeKind_Action || node->m_kind == NodeKind_Epsilon)
 	{
-		err::SetFormatStringError ("can't apply quantifier to action or epsilon nodes");
+		err::setFormatStringError ("can't apply quantifier to action or epsilon nodes");
 		return NULL;
 	}
 
-	CGrammarNode* pResultNode;
+	GrammarNode* resultNode;
 
-	switch (Kind)
+	switch (kind)
 	{
 	case '?':
-		pTempAlt = CreateTempSymbolNode ();
-		pTempAlt->AddProduction (pNode);
-		pTempAlt->AddProduction (&m_EpsilonNode);
+		tempAlt = createTempSymbolNode ();
+		tempAlt->addProduction (node);
+		tempAlt->addProduction (&m_epsilonNode);
 		
-		pResultNode = pTempAlt;
+		resultNode = tempAlt;
 		break;
 
 	case '*':
-		pTempAlt = CreateTempSymbolNode ();
+		tempAlt = createTempSymbolNode ();
 
-		pTempSeq = CreateSequenceNode ();
-		pTempSeq->Append (pNode);
-		pTempSeq->Append (pTempAlt);
+		tempSeq = createSequenceNode ();
+		tempSeq->append (node);
+		tempSeq->append (tempAlt);
 
-		pTempAlt->AddProduction (pTempSeq);
-		pTempAlt->AddProduction (&m_EpsilonNode);
+		tempAlt->addProduction (tempSeq);
+		tempAlt->addProduction (&m_epsilonNode);
 		
-		pResultNode = pTempAlt;
+		resultNode = tempAlt;
 		break;
 		
 	case '+': 
-		pTempSeq = CreateSequenceNode ();
-		pTempSeq->Append (pNode);
-		pTempSeq->Append (CreateQuantifierNode (pNode, '*'));
+		tempSeq = createSequenceNode ();
+		tempSeq->append (node);
+		tempSeq->append (createQuantifierNode (node, '*'));
 
-		pResultNode = pTempSeq;
+		resultNode = tempSeq;
 		break;
 
 	default:
@@ -259,330 +259,330 @@ CNodeMgr::CreateQuantifierNode (
 		return NULL;
 	}
 
-	pResultNode->m_QuantifierKind = Kind;
-	pResultNode->m_pQuantifiedNode = pNode;
-	return pResultNode;
+	resultNode->m_quantifierKind = kind;
+	resultNode->m_quantifiedNode = node;
+	return resultNode;
 }
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
-CNodeMgr::MarkReachableNodes ()
+NodeMgr::markReachableNodes ()
 {
-	rtl::CIteratorT <CSymbolNode> Node = m_NamedSymbolList.GetHead ();
+	rtl::Iterator <SymbolNode> nodeIt = m_namedSymbolList.getHead ();
 
-	if (m_pPrimaryStartSymbol)
-		for (; Node; Node++)
+	if (m_primaryStartSymbol)
+		for (; nodeIt; nodeIt++)
 		{
-			CSymbolNode* pNode = *Node;
-			if (pNode->m_Flags & ESymbolNodeFlag_Start)
-				pNode->MarkReachable ();
+			SymbolNode* node = *nodeIt;
+			if (node->m_flags & SymbolNodeFlagKind_Start)
+				node->markReachable ();
 		}
 	else
-		for (; Node; Node++)
+		for (; nodeIt; nodeIt++)
 		{
-			CSymbolNode* pNode = *Node;
-			pNode->MarkReachable ();
+			SymbolNode* node = *nodeIt;
+			node->markReachable ();
 		}
 
-	m_StartPragmaSymbol.MarkReachable (); 
+	m_startPragmaSymbol.markReachable (); 
 }
 
 template <typename T>
 static
 void
-DeleteUnreachableNodesFromList (rtl::CStdListT <T>* pList)
+deleteUnreachableNodesFromList (rtl::StdList <T>* list)
 {
-	rtl::CIteratorT <T> Node = pList->GetHead ();
-	while (Node)
+	rtl::Iterator <T> nodeIt = list->getHead ();
+	while (nodeIt)
 	{
-		T* pNode = *Node++;
-		if (!pNode->IsReachable ())
-			pList->Delete (pNode);	
+		T* node = *nodeIt++;
+		if (!node->isReachable ())
+			list->erase (node);	
 	}
 }
 
 void
-CNodeMgr::DeleteUnreachableNodes ()
+NodeMgr::deleteUnreachableNodes ()
 {
-	DeleteUnreachableNodesFromList (&m_CharTokenList);
-	DeleteUnreachableNodesFromList (&m_NamedSymbolList);
-	DeleteUnreachableNodesFromList (&m_TempSymbolList);
-	DeleteUnreachableNodesFromList (&m_SequenceList);
-	DeleteUnreachableNodesFromList (&m_BeaconList);
-	DeleteUnreachableNodesFromList (&m_ActionList);
-	DeleteUnreachableNodesFromList (&m_ArgumentList);
+	deleteUnreachableNodesFromList (&m_charTokenList);
+	deleteUnreachableNodesFromList (&m_namedSymbolList);
+	deleteUnreachableNodesFromList (&m_tempSymbolList);
+	deleteUnreachableNodesFromList (&m_sequenceList);
+	deleteUnreachableNodesFromList (&m_beaconList);
+	deleteUnreachableNodesFromList (&m_actionList);
+	deleteUnreachableNodesFromList (&m_argumentList);
 }
 
 void 
-CNodeMgr::IndexTokens ()
+NodeMgr::indexTokens ()
 {
 	size_t i = 0;
 
-	size_t Count = m_CharTokenList.GetCount () + 2;
-	m_TokenArray.SetCount (Count);
+	size_t count = m_charTokenList.getCount () + 2;
+	m_tokenArray.setCount (count);
 
-	m_TokenArray [i++] = &m_EofTokenNode;
-	m_TokenArray [i++] = &m_AnyTokenNode;
+	m_tokenArray [i++] = &m_eofTokenNode;
+	m_tokenArray [i++] = &m_anyTokenNode;
 
-	rtl::CIteratorT <CSymbolNode> Node = m_CharTokenList.GetHead ();
-	for (; Node; Node++, i++)
+	rtl::Iterator <SymbolNode> nodeIt = m_charTokenList.getHead ();
+	for (; nodeIt; nodeIt++, i++)
 	{
-		CSymbolNode* pNode = *Node;
-		pNode->m_Index = i;
-		pNode->m_MasterIndex = i;
-		m_TokenArray [i] = pNode;
+		SymbolNode* node = *nodeIt;
+		node->m_index = i;
+		node->m_masterIndex = i;
+		m_tokenArray [i] = node;
 	}
 
-	m_MasterCount = i;
+	m_masterCount = i;
 }
 
 void 
-CNodeMgr::IndexSymbols ()
+NodeMgr::indexSymbols ()
 {
 	size_t i = 0;
-	size_t j = m_MasterCount;
+	size_t j = m_masterCount;
 	
-	rtl::CIteratorT <CSymbolNode> Node = m_NamedSymbolList.GetHead ();
-	while (Node)
+	rtl::Iterator <SymbolNode> nodeIt = m_namedSymbolList.getHead ();
+	while (nodeIt)
 	{
-		CSymbolNode* pNode = *Node++;
-		if (!pNode->m_ProductionArray.IsEmpty ())	
+		SymbolNode* node = *nodeIt++;
+		if (!node->m_productionArray.isEmpty ())	
 			continue;
 
-		pNode->m_Kind = ENode_Token;
-		pNode->m_Index = j;
-		pNode->m_MasterIndex = j;
+		node->m_kind = NodeKind_Token;
+		node->m_index = j;
+		node->m_masterIndex = j;
 
 		j++;
 
-		m_NamedSymbolList.Remove (pNode);
-		m_NamedTokenList.InsertTail (pNode);
-		m_TokenArray.Append (pNode);
+		m_namedSymbolList.remove (node);
+		m_namedTokenList.insertTail (node);
+		m_tokenArray.append (node);
 	}
 
-	size_t Count = m_NamedSymbolList.GetCount () + m_TempSymbolList.GetCount ();
-	m_SymbolArray.SetCount (Count);
+	size_t count = m_namedSymbolList.getCount () + m_tempSymbolList.getCount ();
+	m_symbolArray.setCount (count);
 
-	Node = m_NamedSymbolList.GetHead ();
-	for (; Node; Node++, i++, j++)
+	nodeIt = m_namedSymbolList.getHead ();
+	for (; nodeIt; nodeIt++, i++, j++)
 	{
-		CSymbolNode* pNode = *Node;
-		pNode->m_Index = i;
-		pNode->m_MasterIndex = j;
-		m_SymbolArray [i] = pNode;
+		SymbolNode* node = *nodeIt;
+		node->m_index = i;
+		node->m_masterIndex = j;
+		m_symbolArray [i] = node;
 	}
 
-	Node = m_TempSymbolList.GetHead ();
-	for (; Node; Node++, i++, j++)
+	nodeIt = m_tempSymbolList.getHead ();
+	for (; nodeIt; nodeIt++, i++, j++)
 	{
-		CSymbolNode* pNode = *Node;
-		pNode->m_Index = i;
-		pNode->m_MasterIndex = j;
-		m_SymbolArray [i] = pNode;
+		SymbolNode* node = *nodeIt;
+		node->m_index = i;
+		node->m_masterIndex = j;
+		m_symbolArray [i] = node;
 	}
 
-	if (!m_StartPragmaSymbol.m_ProductionArray.IsEmpty ())
+	if (!m_startPragmaSymbol.m_productionArray.isEmpty ())
 	{
-		m_StartPragmaSymbol.m_Index = i;
-		m_StartPragmaSymbol.m_MasterIndex = j;
-		m_SymbolArray.Append (&m_StartPragmaSymbol);
+		m_startPragmaSymbol.m_index = i;
+		m_startPragmaSymbol.m_masterIndex = j;
+		m_symbolArray.append (&m_startPragmaSymbol);
 
 		i++;
 		j++;
 	}
 
-	m_MasterCount = j;
+	m_masterCount = j;
 }
 
 void 
-CNodeMgr::IndexSequences ()
+NodeMgr::indexSequences ()
 {
 	size_t i = 0;
-	size_t j = m_MasterCount;
+	size_t j = m_masterCount;
 
-	size_t Count = m_SequenceList.GetCount ();
+	size_t count = m_sequenceList.getCount ();
 
-	rtl::CIteratorT <CSequenceNode> Node = m_SequenceList.GetHead ();
-	for (; Node; Node++, i++, j++)
+	rtl::Iterator <SequenceNode> nodeIt = m_sequenceList.getHead ();
+	for (; nodeIt; nodeIt++, i++, j++)
 	{
-		CSequenceNode* pNode = *Node;
-		pNode->m_Index = i;
-		pNode->m_MasterIndex = j;
+		SequenceNode* node = *nodeIt;
+		node->m_index = i;
+		node->m_masterIndex = j;
 	}
 
-	m_MasterCount = j;
+	m_masterCount = j;
 }
 
 void 
-CNodeMgr::IndexBeacons ()
+NodeMgr::indexBeacons ()
 {
 	size_t i = 0;
-	size_t j = m_MasterCount;
+	size_t j = m_masterCount;
 
-	rtl::CIteratorT <CBeaconNode> Node = m_BeaconList.GetHead ();
-	for (; Node; Node++, i++, j++)
+	rtl::Iterator <BeaconNode> nodeIt = m_beaconList.getHead ();
+	for (; nodeIt; nodeIt++, i++, j++)
 	{
-		CBeaconNode* pNode = *Node;
-		pNode->m_Index = i;
-		pNode->m_MasterIndex = j;
+		BeaconNode* node = *nodeIt;
+		node->m_index = i;
+		node->m_masterIndex = j;
 	}
 
-	m_MasterCount = j;
+	m_masterCount = j;
 }
 
 void 
-CNodeMgr::IndexDispatchers ()
+NodeMgr::indexDispatchers ()
 {
 	size_t i = 0;
 
-	rtl::CIteratorT <CDispatcherNode> Node = m_DispatcherList.GetHead ();
-	for (; Node; Node++, i++)
+	rtl::Iterator <DispatcherNode> nodeIt = m_dispatcherList.getHead ();
+	for (; nodeIt; nodeIt++, i++)
 	{
-		CDispatcherNode* pNode = *Node;
-		pNode->m_Index = i;
+		DispatcherNode* node = *nodeIt;
+		node->m_index = i;
 	}
 }
 
 void 
-CNodeMgr::IndexActions ()
+NodeMgr::indexActions ()
 {
 	size_t i = 0;
-	size_t j = m_MasterCount;
+	size_t j = m_masterCount;
 
-	rtl::CIteratorT <CActionNode> Node = m_ActionList.GetHead ();
-	for (; Node; Node++, i++, j++)
+	rtl::Iterator <ActionNode> nodeIt = m_actionList.getHead ();
+	for (; nodeIt; nodeIt++, i++, j++)
 	{
-		CActionNode* pNode = *Node;
-		pNode->m_Index = i;
-		pNode->m_MasterIndex = j;
+		ActionNode* node = *nodeIt;
+		node->m_index = i;
+		node->m_masterIndex = j;
 	}
 
-	m_MasterCount = j;
+	m_masterCount = j;
 }
 
 void 
-CNodeMgr::IndexArguments ()
+NodeMgr::indexArguments ()
 {
 	size_t i = 0;
-	size_t j = m_MasterCount;
+	size_t j = m_masterCount;
 
-	rtl::CIteratorT <CArgumentNode> Node = m_ArgumentList.GetHead ();
-	for (; Node; Node++, i++, j++)
+	rtl::Iterator <ArgumentNode> nodeIt = m_argumentList.getHead ();
+	for (; nodeIt; nodeIt++, i++, j++)
 	{
-		CArgumentNode* pNode = *Node;
-		pNode->m_Index = i;
-		pNode->m_MasterIndex = j;
+		ArgumentNode* node = *nodeIt;
+		node->m_index = i;
+		node->m_masterIndex = j;
 	}
 
-	m_MasterCount = j;
+	m_masterCount = j;
 }
 
 void 
-CNodeMgr::IndexLaDfaNodes ()
+NodeMgr::indexLaDfaNodes ()
 {
 	size_t i = 0;
-	size_t j = m_MasterCount;
+	size_t j = m_masterCount;
 	
-	rtl::CIteratorT <CLaDfaNode> Node = m_LaDfaList.GetHead ();
-	for (; Node; Node++)
+	rtl::Iterator <LaDfaNode> nodeIt = m_laDfaList.getHead ();
+	for (; nodeIt; nodeIt++)
 	{
-		CLaDfaNode* pNode = *Node;
+		LaDfaNode* node = *nodeIt;
 
-		if (!(pNode->m_Flags & ELaDfaNodeFlag_Leaf) &&       // don't index leaves
-			(!pNode->m_pResolver || pNode->m_pResolverUplink)) // and non-chained resolvers
+		if (!(node->m_flags & LaDfaNodeFlagKind_Leaf) &&       // don't index leaves
+			(!node->m_resolver || node->m_resolverUplink)) // and non-chained resolvers
 		{
-			pNode->m_Index = i++;
-			pNode->m_MasterIndex = j++;
+			node->m_index = i++;
+			node->m_masterIndex = j++;
 		}
 	}
 
-	m_MasterCount = j;
+	m_masterCount = j;
 }
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
-CNodeMgr::Export (lua::CLuaState* pLuaState)
+NodeMgr::luaExport (lua::LuaState* luaState)
 {
-	pLuaState->SetGlobalInteger ("StartSymbol", m_pPrimaryStartSymbol ? m_pPrimaryStartSymbol->m_Index : -1);
-	pLuaState->SetGlobalInteger ("StartPragmaSymbol", m_StartPragmaSymbol.m_Index);
-	pLuaState->SetGlobalInteger ("NamedTokenCount", m_NamedTokenList.GetCount ());
-	pLuaState->SetGlobalInteger ("NamedSymbolCount", m_NamedSymbolList.GetCount ());
+	luaState->setGlobalInteger ("StartSymbol", m_primaryStartSymbol ? m_primaryStartSymbol->m_index : -1);
+	luaState->setGlobalInteger ("StartPragmaSymbol", m_startPragmaSymbol.m_index);
+	luaState->setGlobalInteger ("NamedTokenCount", m_namedTokenList.getCount ());
+	luaState->setGlobalInteger ("NamedSymbolCount", m_namedSymbolList.getCount ());
 
-	ExportNodeArray (pLuaState, "TokenTable", (CNode**) (CSymbolNode**) m_TokenArray, m_TokenArray.GetCount ());
-	ExportNodeArray (pLuaState, "SymbolTable", (CNode**) (CSymbolNode**) m_SymbolArray, m_SymbolArray.GetCount ());	
-	ExportNodeList (pLuaState, "SequenceTable", m_SequenceList.GetHead (), m_SequenceList.GetCount ());	
-	ExportNodeList (pLuaState, "BeaconTable", m_BeaconList.GetHead (), m_BeaconList.GetCount ());
-	ExportNodeList (pLuaState, "DispatcherTable", m_DispatcherList.GetHead (), m_DispatcherList.GetCount ());
-	ExportNodeList (pLuaState, "ActionTable", m_ActionList.GetHead (), m_ActionList.GetCount ());
-	ExportNodeList (pLuaState, "ArgumentTable", m_ArgumentList.GetHead (), m_ArgumentList.GetCount ());
+	luaExportNodeArray (luaState, "TokenTable", (Node**) (SymbolNode**) m_tokenArray, m_tokenArray.getCount ());
+	luaExportNodeArray (luaState, "SymbolTable", (Node**) (SymbolNode**) m_symbolArray, m_symbolArray.getCount ());	
+	luaExportNodeList (luaState, "SequenceTable", m_sequenceList.getHead (), m_sequenceList.getCount ());	
+	luaExportNodeList (luaState, "BeaconTable", m_beaconList.getHead (), m_beaconList.getCount ());
+	luaExportNodeList (luaState, "DispatcherTable", m_dispatcherList.getHead (), m_dispatcherList.getCount ());
+	luaExportNodeList (luaState, "ActionTable", m_actionList.getHead (), m_actionList.getCount ());
+	luaExportNodeList (luaState, "ArgumentTable", m_argumentList.getHead (), m_argumentList.getCount ());
 	
-	ExportLaDfaTable (pLuaState);
+	luaExportLaDfaTable (luaState);
 }
 
 void
-CNodeMgr::ExportNodeArray (
-	lua::CLuaState* pLuaState,
-	const char* pName,
-	CNode* const* ppNode,
-	size_t Count
+NodeMgr::luaExportNodeArray (
+	lua::LuaState* luaState,
+	const char* name,
+	Node* const* nodeArray,
+	size_t count
 	)
 {
-	pLuaState->CreateTable (Count);
+	luaState->createTable (count);
 
-	for (size_t i = 0; i < Count; i++)
+	for (size_t i = 0; i < count; i++)
 	{
-		CNode* pNode = ppNode [i];
-		pNode->Export (pLuaState);
-		pLuaState->SetArrayElement (i + 1);
+		Node* node = nodeArray [i];
+		node->luaExport (luaState);
+		luaState->setArrayElement (i + 1);
 	}
 
 
-	pLuaState->SetGlobal (pName);
+	luaState->setGlobal (name);
 }
 
 void
-CNodeMgr::ExportNodeList (
-	lua::CLuaState* pLuaState,
-	const char* pName,
-	rtl::CIteratorT <CNode> Node,
-	size_t CountEstimate
+NodeMgr::luaExportNodeList (
+	lua::LuaState* luaState,
+	const char* name,
+	rtl::Iterator <Node> nodeIt,
+	size_t countEstimate
 	)
 {
-	pLuaState->CreateTable (CountEstimate);
+	luaState->createTable (countEstimate);
 
 	size_t i = 1;
 
-	for (; Node; Node++, i++)
+	for (; nodeIt; nodeIt++, i++)
 	{
-		Node->Export (pLuaState);
-		pLuaState->SetArrayElement (i);
+		nodeIt->luaExport (luaState);
+		luaState->setArrayElement (i);
 	}
 
-	pLuaState->SetGlobal (pName);
+	luaState->setGlobal (name);
 }
 
 void
-CNodeMgr::ExportLaDfaTable (lua::CLuaState* pLuaState)
+NodeMgr::luaExportLaDfaTable (lua::LuaState* luaState)
 {
-	pLuaState->CreateTable (m_LaDfaList.GetCount ());
+	luaState->createTable (m_laDfaList.getCount ());
 
 	size_t i = 1;
-	rtl::CIteratorT <CLaDfaNode> Node = m_LaDfaList.GetHead ();
+	rtl::Iterator <LaDfaNode> nodeIt = m_laDfaList.getHead ();
 
-	for (; Node; Node++)
+	for (; nodeIt; nodeIt++)
 	{
-		CLaDfaNode* pNode = *Node;
+		LaDfaNode* node = *nodeIt;
 
-		if (pNode->m_MasterIndex != -1)
+		if (node->m_masterIndex != -1)
 		{
-			pNode->Export (pLuaState);
-			pLuaState->SetArrayElement (i++);
+			node->luaExport (luaState);
+			luaState->setArrayElement (i++);
 		}
 	}
 
-	pLuaState->SetGlobal ("LaDfaTable");
+	luaState->setGlobal ("LaDfaTable");
 }
 
 //.............................................................................

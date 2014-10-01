@@ -3,309 +3,309 @@
 
 //.............................................................................
 
-CLaDfaThread::CLaDfaThread ()
+LaDfaThread::LaDfaThread ()
 {
-	m_Match = ELaDfaThreadMatch_None;
-	m_pState = NULL;
-	m_pProduction = NULL;
-	m_pResolver = NULL;
-	m_ResolverPriority = 0;
+	m_match = LaDfaThreadMatchKind_None;
+	m_state = NULL;
+	m_production = NULL;
+	m_resolver = NULL;
+	m_resolverPriority = 0;
 }
 
 //.............................................................................
 
-CLaDfaState::CLaDfaState ()
+LaDfaState::LaDfaState ()
 {
-	m_Index = -1;
-	m_Flags = 0;
-	m_pDfaNode = NULL;
-	m_pFromState = NULL;
-	m_pToken = NULL;
+	m_index = -1;
+	m_flags = 0;
+	m_dfaNode = NULL;
+	m_fromState = NULL;
+	m_token = NULL;
 }
 
-CLaDfaThread*
-CLaDfaState::CreateThread (CLaDfaThread* pSrc)
+LaDfaThread*
+LaDfaState::createThread (LaDfaThread* src)
 {
-	CLaDfaThread* pThread = AXL_MEM_NEW (CLaDfaThread);
-	pThread->m_pState = this;
+	LaDfaThread* thread = AXL_MEM_NEW (LaDfaThread);
+	thread->m_state = this;
 
-	if (pSrc)
+	if (src)
 	{
-		ASSERT (!pSrc->m_pResolver);
+		ASSERT (!src->m_resolver);
 
-		pThread->m_pProduction = pSrc->m_pProduction;
-		pThread->m_Stack = pSrc->m_Stack;
+		thread->m_production = src->m_production;
+		thread->m_stack = src->m_stack;
 	}
 
-	m_ActiveThreadList.InsertTail (pThread);
-	return pThread;
+	m_activeThreadList.insertTail (thread);
+	return thread;
 }
 
 bool
-CLaDfaState::CalcResolved ()
+LaDfaState::calcResolved ()
 {
-	rtl::CIteratorT <CLaDfaThread> Thread;
+	rtl::Iterator <LaDfaThread> thread;
 
-	if (m_ActiveThreadList.IsEmpty ())
+	if (m_activeThreadList.isEmpty ())
 	{
-		m_pDfaNode->m_Flags |= ELaDfaNodeFlag_Resolved;
+		m_dfaNode->m_flags |= LaDfaNodeFlagKind_Resolved;
 		return true;
 	}
 
-	Thread = m_ActiveThreadList.GetHead ();
+	thread = m_activeThreadList.getHead ();
 
-	CNode* pOriginalProduction = Thread->m_pProduction;
+	Node* originalProduction = thread->m_production;
 
-	for (Thread++; Thread; Thread++)
+	for (thread++; thread; thread++)
 	{
-		if (Thread->m_pProduction != pOriginalProduction)
+		if (thread->m_production != originalProduction)
 			return false;
 	}
 
-	Thread = m_CompleteThreadList.GetHead ();
-	for (; Thread; Thread++)
+	thread = m_completeThreadList.getHead ();
+	for (; thread; thread++)
 	{
-		if (Thread->m_pProduction != pOriginalProduction)
+		if (thread->m_production != originalProduction)
 			return false;
 	}
 
-	m_pDfaNode->m_Flags |= ELaDfaNodeFlag_Resolved;
+	m_dfaNode->m_flags |= LaDfaNodeFlagKind_Resolved;
 	return true;
 }
 
-CNode*
-CLaDfaState::GetResolvedProduction ()
+Node*
+LaDfaState::getResolvedProduction ()
 {
-	CLaDfaThread* pActiveThread = *m_ActiveThreadList.GetHead ();
-	CLaDfaThread* pCompleteThread = *m_CompleteThreadList.GetHead ();
-	CLaDfaThread* pEpsilonThread = *m_EpsilonThreadList.GetHead ();
+	LaDfaThread* activeThread = *m_activeThreadList.getHead ();
+	LaDfaThread* completeThread = *m_completeThreadList.getHead ();
+	LaDfaThread* epsilonThread = *m_epsilonThreadList.getHead ();
 
-	if (IsAnyTokenIgnored ())
+	if (isAnyTokenIgnored ())
 		return
-			pActiveThread && pActiveThread->m_Match != ELaDfaThreadMatch_AnyToken ? pActiveThread->m_pProduction :
-			pCompleteThread && pCompleteThread->m_Match != ELaDfaThreadMatch_AnyToken ? pCompleteThread->m_pProduction :
-			pEpsilonThread ? pEpsilonThread->m_pProduction : NULL;
+			activeThread && activeThread->m_match != LaDfaThreadMatchKind_AnyToken ? activeThread->m_production :
+			completeThread && completeThread->m_match != LaDfaThreadMatchKind_AnyToken ? completeThread->m_production :
+			epsilonThread ? epsilonThread->m_production : NULL;
 	else
 		return
-			pActiveThread ? pActiveThread->m_pProduction :
-			pCompleteThread ? pCompleteThread->m_pProduction :
-			pEpsilonThread ? pEpsilonThread->m_pProduction : NULL;
+			activeThread ? activeThread->m_production :
+			completeThread ? completeThread->m_production :
+			epsilonThread ? epsilonThread->m_production : NULL;
 
 }
 
-CNode*
-CLaDfaState::GetDefaultProduction ()
+Node*
+LaDfaState::getDefaultProduction ()
 {
-	CLaDfaThread* pCompleteThread = *m_CompleteThreadList.GetHead ();
-	CLaDfaThread* pEpsilonThread = *m_EpsilonThreadList.GetHead ();
+	LaDfaThread* completeThread = *m_completeThreadList.getHead ();
+	LaDfaThread* epsilonThread = *m_epsilonThreadList.getHead ();
 
 	return
-		pCompleteThread ? pCompleteThread->m_pProduction :
-		pEpsilonThread ? pEpsilonThread->m_pProduction :
-		m_pFromState ? m_pFromState->GetDefaultProduction () : NULL;
+		completeThread ? completeThread->m_production :
+		epsilonThread ? epsilonThread->m_production :
+		m_fromState ? m_fromState->getDefaultProduction () : NULL;
 }
 
 //.............................................................................
 
-CLaDfaBuilder::CLaDfaBuilder (
-	CNodeMgr* pNodeMgr,
-	rtl::CArrayT <CNode*>* pParseTable,
-	size_t LookeaheadLimit
+LaDfaBuilder::LaDfaBuilder (
+	NodeMgr* nodeMgr,
+	rtl::Array <Node*>* parseTable,
+	size_t lookeaheadLimit
 	)
 {
-	m_pNodeMgr = pNodeMgr;
-	m_pParseTable = pParseTable;
-	m_LookeaheadLimit = LookeaheadLimit;
-	m_Lookeahead = 1;
+	m_nodeMgr = nodeMgr;
+	m_parseTable = parseTable;
+	m_lookeaheadLimit = lookeaheadLimit;
+	m_lookeahead = 1;
 }
 
 static
 int
-CmpResolverThreadPriority (
+cmpResolverThreadPriority (
 	const void* p1,
 	const void* p2
 	)
 {
-	CLaDfaThread* pThread1 = *(CLaDfaThread**) p1;
-	CLaDfaThread* pThread2 = *(CLaDfaThread**) p2;
+	LaDfaThread* thread1 = *(LaDfaThread**) p1;
+	LaDfaThread* thread2 = *(LaDfaThread**) p2;
 
 	// sort from highest priority to lowest
 
 	return
-		pThread1->m_ResolverPriority < pThread2->m_ResolverPriority ? 1 :
-		pThread1->m_ResolverPriority > pThread2->m_ResolverPriority ? -1 : 0;
+		thread1->m_resolverPriority < thread2->m_resolverPriority ? 1 :
+		thread1->m_resolverPriority > thread2->m_resolverPriority ? -1 : 0;
 }
 
-CNode*
-CLaDfaBuilder::Build (
-	TCmdLine* pCmdLine,
-	CConflictNode* pConflict,
-	size_t* pLookahead
+Node*
+LaDfaBuilder::build (
+	CmdLine* cmdLine,
+	ConflictNode* conflict,
+	size_t* lookahead_o
 	)
 {
-	ASSERT (pConflict->m_Kind == ENode_Conflict);
+	ASSERT (conflict->m_kind == NodeKind_Conflict);
 
-	size_t TokenCount = m_pNodeMgr->m_TokenArray.GetCount ();
+	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount ();
 
-	m_StateList.Clear ();
+	m_stateList.clear ();
 
-	CLaDfaState* pState0 = CreateState ();
-	pState0->m_pDfaNode = m_pNodeMgr->CreateLaDfaNode ();
+	LaDfaState* state0 = createState ();
+	state0->m_dfaNode = m_nodeMgr->createLaDfaNode ();
 
-	size_t Count = pConflict->m_ProductionArray.GetCount ();
-	for (size_t i = 0; i < Count; i++)
+	size_t count = conflict->m_productionArray.getCount ();
+	for (size_t i = 0; i < count; i++)
 	{
-		CNode* pProduction = pConflict->m_ProductionArray [i];
-		CLaDfaThread* pThread = pState0->CreateThread ();
-		pThread->m_pProduction = pProduction;
+		Node* production = conflict->m_productionArray [i];
+		LaDfaThread* thread = state0->createThread ();
+		thread->m_production = production;
 
-		if (pProduction->m_Kind == ENode_Symbol)
+		if (production->m_kind == NodeKind_Symbol)
 		{
-			CSymbolNode* pSymbolNode = (CSymbolNode*) pProduction;
-			if (pSymbolNode->m_pResolver)
+			SymbolNode* symbolNode = (SymbolNode*) production;
+			if (symbolNode->m_resolver)
 			{
-				ASSERT (pSymbolNode->m_ProductionArray.GetCount () == 1);
-				pThread->m_pProduction = pSymbolNode->m_ProductionArray [0]; // adjust root production
+				ASSERT (symbolNode->m_productionArray.getCount () == 1);
+				thread->m_production = symbolNode->m_productionArray [0]; // adjust root production
 			}
 		}
 
-		if (pProduction->m_Kind != ENode_Epsilon)
-			pThread->m_Stack.Append (pProduction);
+		if (production->m_kind != NodeKind_Epsilon)
+			thread->m_stack.append (production);
 		else
-			pState0->m_Flags |= ELaDfaStateFlag_EpsilonProduction;
+			state0->m_flags |= LaDfaStateFlagKind_EpsilonProduction;
 	}
 
-	CLaDfaState* pState1 = Transition (pState0, pConflict->m_pToken);
+	LaDfaState* state1 = transition (state0, conflict->m_token);
 
-	size_t Lookahead = 1;
+	size_t lookahead = 1;
 
-	if (!pState1->IsResolved ())
+	if (!state1->isResolved ())
 	{
-		rtl::CArrayT <CLaDfaState*> StateArray;
-		StateArray.Append (pState1);
+		rtl::Array <LaDfaState*> stateArray;
+		stateArray.append (state1);
 
-		while (!StateArray.IsEmpty () && Lookahead < m_LookeaheadLimit)
+		while (!stateArray.isEmpty () && lookahead < m_lookeaheadLimit)
 		{
-			Lookahead++;
+			lookahead++;
 
-			rtl::CArrayT <CLaDfaState*> NextStateArray;
+			rtl::Array <LaDfaState*> nextStateArray;
 
-			size_t StateCount = StateArray.GetCount ();
-			for (size_t j = 0; j < StateCount; j++)
+			size_t stateCount = stateArray.getCount ();
+			for (size_t j = 0; j < stateCount; j++)
 			{
-				CLaDfaState* pState = StateArray [j];
+				LaDfaState* state = stateArray [j];
 
-				for (size_t k = 0; k < TokenCount; k++)
+				for (size_t k = 0; k < tokenCount; k++)
 				{
-					CSymbolNode* pToken = m_pNodeMgr->m_TokenArray [k];
+					SymbolNode* token = m_nodeMgr->m_tokenArray [k];
 
-					CLaDfaState* pNewState = Transition (pState, pToken);
-					if (pNewState && !pNewState->IsResolved ())
-						NextStateArray.Append (pNewState);
+					LaDfaState* newState = transition (state, token);
+					if (newState && !newState->isResolved ())
+						nextStateArray.append (newState);
 				}
 			}
 
-			StateArray = NextStateArray;
+			stateArray = nextStateArray;
 		}
 
-		if (!StateArray.IsEmpty ())
+		if (!stateArray.isEmpty ())
 		{
-			size_t Count = StateArray.GetCount ();
-			CLaDfaState* pState = StateArray [0];
-			rtl::CBoxListT <rtl::CString> TokenNameList;
+			size_t count = stateArray.getCount ();
+			LaDfaState* state = stateArray [0];
+			rtl::BoxList <rtl::String> tokenNameList;
 
-			for (; pState != pState0; pState = pState->m_pFromState)
-				TokenNameList.InsertHead (pState->m_pToken->m_Name);
+			for (; state != state0; state = state->m_fromState)
+				tokenNameList.insertHead (state->m_token->m_name);
 
-			rtl::CString TokenSeqString;
-			rtl::CBoxIteratorT <rtl::CString> TokenName = TokenNameList.GetHead ();
-			for (; TokenName; TokenName++)
+			rtl::String tokenSeqString;
+			rtl::BoxIterator <rtl::String> tokenName = tokenNameList.getHead ();
+			for (; tokenName; tokenName++)
 			{
-				TokenSeqString.Append (*TokenName);
-				TokenSeqString.Append (' ');
+				tokenSeqString.append (*tokenName);
+				tokenSeqString.append (' ');
 			}
 
-			err::SetFormatStringError (
+			err::setFormatStringError (
 				"conflict at %s:%s could not be resolved with %d token lookahead; e.g. %s",
-				pConflict->m_pSymbol->m_Name.cc (), // thanks a lot gcc
-				pConflict->m_pToken->m_Name.cc (),
-				m_LookeaheadLimit,
-				TokenSeqString.cc ()
+				conflict->m_symbol->m_name.cc (), // thanks a lot gcc
+				conflict->m_token->m_name.cc (),
+				m_lookeaheadLimit,
+				tokenSeqString.cc ()
 				);
 
-			err::PushSrcPosError (pConflict->m_pSymbol->m_SrcPos);
+			err::pushSrcPosError (conflict->m_symbol->m_srcPos);
 			return NULL;
 		}
 	}
 
-	if (Lookahead > m_Lookeahead)
-		m_Lookeahead = Lookahead;
+	if (lookahead > m_lookeahead)
+		m_lookeahead = lookahead;
 
-	if (pLookahead)
-		*pLookahead = Lookahead;
+	if (lookahead_o)
+		*lookahead_o = lookahead;
 
-	rtl::CIteratorT <CLaDfaState> State = m_StateList.GetHead ();
-	for (; State; State++)
+	rtl::Iterator <LaDfaState> it = m_stateList.getHead ();
+	for (; it; it++)
 	{
-		CLaDfaState* pState = *State;
+		LaDfaState* state = *it;
 
-		if (pState->m_CompleteThreadList.GetCount () > 1 ||
-			pState->m_EpsilonThreadList.GetCount () > 1)
+		if (state->m_completeThreadList.getCount () > 1 ||
+			state->m_epsilonThreadList.getCount () > 1)
 		{
-			err::SetFormatStringError (
+			err::setFormatStringError (
 				"conflict at %s:%s: multiple productions complete with %s",
-				pConflict->m_pSymbol->m_Name.cc (),
-				pConflict->m_pToken->m_Name.cc (),
-				pState->m_pToken->m_Name.cc ()
+				conflict->m_symbol->m_name.cc (),
+				conflict->m_token->m_name.cc (),
+				state->m_token->m_name.cc ()
 				);
-			err::PushSrcPosError (pConflict->m_pSymbol->m_SrcPos);
+			err::pushSrcPosError (conflict->m_symbol->m_srcPos);
 			return NULL;
 		}
 
-		if (!pState->m_ResolverThreadList.IsEmpty ()) // chain all resolvers
+		if (!state->m_resolverThreadList.isEmpty ()) // chain all resolvers
 		{
-			size_t Count = pState->m_ResolverThreadList.GetCount ();
+			size_t count = state->m_resolverThreadList.getCount ();
 
-			rtl::CArrayT <CLaDfaThread*> ResolverThreadArray;
-			ResolverThreadArray.SetCount (Count);
+			rtl::Array <LaDfaThread*> resolverThreadArray;
+			resolverThreadArray.setCount (count);
 
-			rtl::CIteratorT <CLaDfaThread> ResolverThread = pState->m_ResolverThreadList.GetHead ();
-			for (size_t i = 0; ResolverThread; ResolverThread++, i++)
-				ResolverThreadArray [i] = *ResolverThread;
+			rtl::Iterator <LaDfaThread> resolverThread = state->m_resolverThreadList.getHead ();
+			for (size_t i = 0; resolverThread; resolverThread++, i++)
+				resolverThreadArray [i] = *resolverThread;
 
-			qsort (ResolverThreadArray, Count, sizeof (CLaDfaThread*), CmpResolverThreadPriority);
+			qsort (resolverThreadArray, count, sizeof (LaDfaThread*), cmpResolverThreadPriority);
 
-			for (size_t i = 0; i < Count; i++)
+			for (size_t i = 0; i < count; i++)
 			{
-				CLaDfaThread* pResolverThread = ResolverThreadArray [i];
+				LaDfaThread* resolverThread = resolverThreadArray [i];
 
-				CLaDfaNode* pDfaElse = m_pNodeMgr->CreateLaDfaNode ();
-				pDfaElse->m_Flags = pState->m_pDfaNode->m_Flags;
-				pDfaElse->m_TransitionArray = pState->m_pDfaNode->m_TransitionArray;
+				LaDfaNode* dfaElse = m_nodeMgr->createLaDfaNode ();
+				dfaElse->m_flags = state->m_dfaNode->m_flags;
+				dfaElse->m_transitionArray = state->m_dfaNode->m_transitionArray;
 
-				pState->m_pDfaNode->m_pResolver = pResolverThread->m_pResolver;
-				pState->m_pDfaNode->m_pProduction = pResolverThread->m_pProduction;
-				pState->m_pDfaNode->m_pResolverElse = pDfaElse;
-				pState->m_pDfaNode->m_TransitionArray.Clear ();
+				state->m_dfaNode->m_resolver = resolverThread->m_resolver;
+				state->m_dfaNode->m_production = resolverThread->m_production;
+				state->m_dfaNode->m_resolverElse = dfaElse;
+				state->m_dfaNode->m_transitionArray.clear ();
 
-				pDfaElse->m_pResolverUplink = pState->m_pDfaNode;
-				pState->m_pDfaNode = pDfaElse;
+				dfaElse->m_resolverUplink = state->m_dfaNode;
+				state->m_dfaNode = dfaElse;
 			}
 		}
 
-		ASSERT (!pState->m_pDfaNode->m_pResolver);
+		ASSERT (!state->m_dfaNode->m_resolver);
 
-		if (pState->IsResolved ())
+		if (state->isResolved ())
 		{
-			pState->m_pDfaNode->m_Flags |= ELaDfaNodeFlag_Leaf;
-			pState->m_pDfaNode->m_pProduction = pState->GetResolvedProduction ();
+			state->m_dfaNode->m_flags |= LaDfaNodeFlagKind_Leaf;
+			state->m_dfaNode->m_production = state->getResolvedProduction ();
 
-			if (pState->m_pDfaNode->m_pResolverUplink)
+			if (state->m_dfaNode->m_resolverUplink)
 			{
-				CLaDfaNode* pUplink = pState->m_pDfaNode->m_pResolverUplink;
+				LaDfaNode* uplink = state->m_dfaNode->m_resolverUplink;
 
-				if (!pState->m_pDfaNode->m_pProduction ||
-					pState->m_pDfaNode->m_pProduction == pUplink->m_pProduction)
+				if (!state->m_dfaNode->m_production ||
+					state->m_dfaNode->m_production == uplink->m_production)
 				{
 					// here we handle situation like
 					// 1) sym: resolver ({1}) 'a' | resolver ({2}) 'b' (we have a chain of 2 resolver with empty tail)
@@ -313,300 +313,300 @@ CLaDfaBuilder::Build (
 					// 2) both resolver 'then' and 'else' branch point to the same production (this happens when resolver applies not to the original conflict)
 					// in either case we we can safely eliminate the resolver {2}
 
-					pUplink->m_Flags |= ELaDfaNodeFlag_Leaf;
-					pUplink->m_pResolver = NULL;
-					pUplink->m_pResolverElse = NULL;
+					uplink->m_flags |= LaDfaNodeFlagKind_Leaf;
+					uplink->m_resolver = NULL;
+					uplink->m_resolverElse = NULL;
 
-					m_pNodeMgr->DeleteLaDfaNode (pState->m_pDfaNode);
-					pState->m_pDfaNode = pUplink;
+					m_nodeMgr->deleteLaDfaNode (state->m_dfaNode);
+					state->m_dfaNode = uplink;
 				}
 			}
 		}
 		else
 		{
-			pState->m_pDfaNode->m_pProduction = pState->GetDefaultProduction ();
+			state->m_dfaNode->m_production = state->getDefaultProduction ();
 		}
 	}
 
-	if (pCmdLine->m_Flags & ECmdLineFlag_Verbose)
-		Trace ();
+	if (cmdLine->m_flags & CmdLineFlagKind_Verbose)
+		trace ();
 
-	if (pState1->m_ResolverThreadList.IsEmpty () &&
-		(pState1->m_pDfaNode->m_Flags & ELaDfaNodeFlag_Leaf))
+	if (state1->m_resolverThreadList.isEmpty () &&
+		(state1->m_dfaNode->m_flags & LaDfaNodeFlagKind_Leaf))
 	{
 		// can happen on active-vs-complete-vs-epsion conflicts
 
-		pState0->m_pDfaNode->m_Flags |= ELaDfaNodeFlag_Leaf; // don't index state0
-		return pState1->m_pDfaNode->m_pProduction;
+		state0->m_dfaNode->m_flags |= LaDfaNodeFlagKind_Leaf; // don't index state0
+		return state1->m_dfaNode->m_production;
 	}
 
-	return pState0->m_pDfaNode;
+	return state0->m_dfaNode;
 }
 
 void
-CLaDfaBuilder::Trace ()
+LaDfaBuilder::trace ()
 {
-	rtl::CIteratorT <CLaDfaState> State = m_StateList.GetHead ();
-	for (; State; State++)
+	rtl::Iterator <LaDfaState> it = m_stateList.getHead ();
+	for (; it; it++)
 	{
-		CLaDfaState* pState = *State;
+		LaDfaState* state = *it;
 
 		printf (
 			"%3d %s %d/%d/%d/%d (a/r/c/e)\n",
-			pState->m_Index,
-			pState->IsResolved () ? "*" : " ",
-			pState->m_ActiveThreadList.GetCount (),
-			pState->m_ResolverThreadList.GetCount (),
-			pState->m_CompleteThreadList.GetCount (),
-			pState->m_EpsilonThreadList.GetCount ()
+			state->m_index,
+			state->isResolved () ? "*" : " ",
+			state->m_activeThreadList.getCount (),
+			state->m_resolverThreadList.getCount (),
+			state->m_completeThreadList.getCount (),
+			state->m_epsilonThreadList.getCount ()
 			);
 
-		rtl::CIteratorT <CLaDfaThread> Thread;
+		rtl::Iterator <LaDfaThread> thread;
 
-		if (!pState->m_ActiveThreadList.IsEmpty ())
+		if (!state->m_activeThreadList.isEmpty ())
 		{
 			printf ("\tACTIVE:   ");
 
-			Thread = pState->m_ActiveThreadList.GetHead ();
-			for (; Thread; Thread++)
-				printf ("%s ", Thread->m_pProduction->m_Name.cc ());
+			thread = state->m_activeThreadList.getHead ();
+			for (; thread; thread++)
+				printf ("%s ", thread->m_production->m_name.cc ());
 
 			printf ("\n");
 		}
 
-		if (!pState->m_ResolverThreadList.IsEmpty ())
+		if (!state->m_resolverThreadList.isEmpty ())
 		{
 			printf ("\tRESOLVER: ");
 
-			Thread = pState->m_ResolverThreadList.GetHead ();
-			for (; Thread; Thread++)
-				printf ("%s ", Thread->m_pProduction->m_Name.cc ());
+			thread = state->m_resolverThreadList.getHead ();
+			for (; thread; thread++)
+				printf ("%s ", thread->m_production->m_name.cc ());
 
 			printf ("\n");
 		}
 
-		if (!pState->m_CompleteThreadList.IsEmpty ())
+		if (!state->m_completeThreadList.isEmpty ())
 		{
 			printf ("\tCOMPLETE: ");
 
-			Thread = pState->m_CompleteThreadList.GetHead ();
-			for (; Thread; Thread++)
-				printf ("%s ", Thread->m_pProduction->m_Name.cc ());
+			thread = state->m_completeThreadList.getHead ();
+			for (; thread; thread++)
+				printf ("%s ", thread->m_production->m_name.cc ());
 
 			printf ("\n");
 		}
 
-		if (!pState->m_EpsilonThreadList.IsEmpty ())
+		if (!state->m_epsilonThreadList.isEmpty ())
 		{
 			printf ("\tEPSILON: ");
 
-			Thread = pState->m_EpsilonThreadList.GetHead ();
-			for (; Thread; Thread++)
-				printf ("%s ", Thread->m_pProduction->m_Name.cc ());
+			thread = state->m_epsilonThreadList.getHead ();
+			for (; thread; thread++)
+				printf ("%s ", thread->m_production->m_name.cc ());
 
 			printf ("\n");
 		}
 
-		if (!pState->IsResolved ())
+		if (!state->isResolved ())
 		{
-			size_t MoveCount = pState->m_TransitionArray.GetCount ();
-			for (size_t i = 0; i < MoveCount; i++)
+			size_t moveCount = state->m_transitionArray.getCount ();
+			for (size_t i = 0; i < moveCount; i++)
 			{
-				CLaDfaState* pMoveTo = pState->m_TransitionArray [i];
+				LaDfaState* moveTo = state->m_transitionArray [i];
 				printf (
 					"\t%s -> %d\n",
-					pMoveTo->m_pToken->m_Name.cc (),
-					pMoveTo->m_Index
+					moveTo->m_token->m_name.cc (),
+					moveTo->m_index
 					);
 			}
 		}
 	}
 }
 
-CLaDfaState*
-CLaDfaBuilder::CreateState ()
+LaDfaState*
+LaDfaBuilder::createState ()
 {
-	CLaDfaState* pState = AXL_MEM_NEW (CLaDfaState);
-	pState->m_Index = m_StateList.GetCount ();
-	m_StateList.InsertTail (pState);
+	LaDfaState* state = AXL_MEM_NEW (LaDfaState);
+	state->m_index = m_stateList.getCount ();
+	m_stateList.insertTail (state);
 
-	return pState;
+	return state;
 }
 
-CLaDfaState*
-CLaDfaBuilder::Transition (
-	CLaDfaState* pState,
-	CSymbolNode* pToken
+LaDfaState*
+LaDfaBuilder::transition (
+	LaDfaState* state,
+	SymbolNode* token
 	)
 {
-	CLaDfaState* pNewState = CreateState ();
-	pNewState->m_pToken = pToken;
-	pNewState->m_pFromState = pState;
-	pNewState->m_Flags = pState->m_Flags & ELaDfaStateFlag_EpsilonProduction; // propagate epsilon
+	LaDfaState* newState = createState ();
+	newState->m_token = token;
+	newState->m_fromState = state;
+	newState->m_flags = state->m_flags & LaDfaStateFlagKind_EpsilonProduction; // propagate epsilon
 
-	rtl::CIteratorT <CLaDfaThread> Thread = pState->m_ActiveThreadList.GetHead ();
-	for (; Thread; Thread++)
+	rtl::Iterator <LaDfaThread> threadIt = state->m_activeThreadList.getHead ();
+	for (; threadIt; threadIt++)
 	{
-		CLaDfaThread* pNewThread = pNewState->CreateThread (*Thread);
-		ProcessThread (pNewThread);
+		LaDfaThread* newThread = newState->createThread (*threadIt);
+		processThread (newThread);
 	}
 
-	Thread = pNewState->m_ActiveThreadList.GetHead ();
-	while (Thread)
+	threadIt = newState->m_activeThreadList.getHead ();
+	while (threadIt)
 	{
-		CLaDfaThread* pThread = *Thread++;
+		LaDfaThread* thread = *threadIt++;
 
-		if (pThread->m_Match == ELaDfaThreadMatch_AnyToken && pNewState->IsAnyTokenIgnored ())
+		if (thread->m_match == LaDfaThreadMatchKind_AnyToken && newState->isAnyTokenIgnored ())
 		{
-			pNewState->m_ActiveThreadList.Delete (pThread); // delete anytoken thread in favor of concrete token
+			newState->m_activeThreadList.erase (thread); // delete anytoken thread in favor of concrete token
 		}
-		else if (pThread->m_Stack.IsEmpty ())
+		else if (thread->m_stack.isEmpty ())
 		{
-			pNewState->m_ActiveThreadList.Remove (pThread);
+			newState->m_activeThreadList.remove (thread);
 
-			if (pThread->m_Match)
-				pNewState->m_CompleteThreadList.InsertTail (pThread);
+			if (thread->m_match)
+				newState->m_completeThreadList.insertTail (thread);
 			else
-				pNewState->m_EpsilonThreadList.InsertTail (pThread);
+				newState->m_epsilonThreadList.insertTail (thread);
 		}
 	}
 
-	if (pNewState->IsEmpty ())
+	if (newState->isEmpty ())
 	{
-		m_StateList.Delete (pNewState);
+		m_stateList.erase (newState);
 		return NULL;
 	}
 
-	pNewState->m_pDfaNode = m_pNodeMgr->CreateLaDfaNode ();
-	pNewState->m_pDfaNode->m_pToken = pToken;
-	pNewState->CalcResolved ();
+	newState->m_dfaNode = m_nodeMgr->createLaDfaNode ();
+	newState->m_dfaNode->m_token = token;
+	newState->calcResolved ();
 
-	pState->m_pDfaNode->m_TransitionArray.Append (pNewState->m_pDfaNode);
-	pState->m_TransitionArray.Append (pNewState);
-	return pNewState;
+	state->m_dfaNode->m_transitionArray.append (newState->m_dfaNode);
+	state->m_transitionArray.append (newState);
+	return newState;
 }
 
 void
-CLaDfaBuilder::ProcessThread (CLaDfaThread* pThread)
+LaDfaBuilder::processThread (LaDfaThread* thread)
 {
-	CSymbolNode* pToken = pThread->m_pState->m_pToken;
+	SymbolNode* token = thread->m_state->m_token;
 
-	pThread->m_Match = ELaDfaThreadMatch_None;
+	thread->m_match = LaDfaThreadMatchKind_None;
 
-	size_t TokenCount = m_pNodeMgr->m_TokenArray.GetCount ();
+	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount ();
 	for (;;)
 	{
-		if (pThread->m_Stack.IsEmpty ())
+		if (thread->m_stack.isEmpty ())
 			break;
 
-		CNode* pNode = pThread->m_Stack.GetBack ();
-		CNode* pProduction;
-		CSymbolNode* pSymbol;
-		CConflictNode* pConflict;
-		CSequenceNode* pSequence;
-		size_t ChildrenCount;
+		Node* node = thread->m_stack.getBack ();
+		Node* production;
+		SymbolNode* symbol;
+		ConflictNode* conflict;
+		SequenceNode* sequence;
+		size_t childrenCount;
 
-		switch (pNode->m_Kind)
+		switch (node->m_kind)
 		{
-		case ENode_Token:
-			if (pThread->m_Match)
+		case NodeKind_Token:
+			if (thread->m_match)
 				return;
 
-			ASSERT (pNode->m_MasterIndex);
+			ASSERT (node->m_masterIndex);
 
-			if ((pNode->m_Flags & ESymbolNodeFlag_AnyToken) && pToken->m_MasterIndex != 0) // EOF does not match ANY
+			if ((node->m_flags & SymbolNodeFlagKind_AnyToken) && token->m_masterIndex != 0) // EOF does not match ANY
 			{
-				pThread->m_Stack.Pop ();
-				pThread->m_Match = ELaDfaThreadMatch_AnyToken;
+				thread->m_stack.pop ();
+				thread->m_match = LaDfaThreadMatchKind_AnyToken;
 				break;
 			}
 
-			if (pNode != pToken) // could happen after epsilon production
+			if (node != token) // could happen after epsilon production
 			{
-				pThread->m_pState->m_ActiveThreadList.Delete (pThread);
+				thread->m_state->m_activeThreadList.erase (thread);
 				return;
 			}
 
-			pThread->m_Stack.Pop ();
-			pThread->m_Match = ELaDfaThreadMatch_Token;
-			pThread->m_pState->m_Flags |= ELaDfaStateFlag_TokenMatch;
+			thread->m_stack.pop ();
+			thread->m_match = LaDfaThreadMatchKind_Token;
+			thread->m_state->m_flags |= LaDfaStateFlagKind_TokenMatch;
 			break;
 
-		case ENode_Symbol:
-			if (pThread->m_Match)
+		case NodeKind_Symbol:
+			if (thread->m_match)
 				return;
 
-			pProduction = (*m_pParseTable) [pNode->m_Index * TokenCount + pToken->m_Index];
-			if (!pProduction)  // could happen after epsilon production
+			production = (*m_parseTable) [node->m_index * tokenCount + token->m_index];
+			if (!production)  // could happen after epsilon production
 			{
-				pThread->m_pState->m_ActiveThreadList.Delete (pThread);
+				thread->m_state->m_activeThreadList.erase (thread);
 				return;
 			}
 
 			// ok this thread seems to stay active, let's check if we can eliminate it with resolver
 
-			pSymbol = (CSymbolNode*) pNode;
-			if (pSymbol->m_pResolver)
+			symbol = (SymbolNode*) node;
+			if (symbol->m_resolver)
 			{
-				pThread->m_pResolver = pSymbol->m_pResolver;
-				pThread->m_ResolverPriority = pSymbol->m_ResolverPriority;
-				pThread->m_pState->m_ActiveThreadList.Remove (pThread);
-				pThread->m_pState->m_ResolverThreadList.InsertTail (pThread);
+				thread->m_resolver = symbol->m_resolver;
+				thread->m_resolverPriority = symbol->m_resolverPriority;
+				thread->m_state->m_activeThreadList.remove (thread);
+				thread->m_state->m_resolverThreadList.insertTail (thread);
 				return;
 			}
 
-			pThread->m_Stack.Pop ();
+			thread->m_stack.pop ();
 
-			if (pProduction->m_Kind != ENode_Epsilon)
-				pThread->m_Stack.Append (pProduction);
+			if (production->m_kind != NodeKind_Epsilon)
+				thread->m_stack.append (production);
 			else
-				pThread->m_pState->m_Flags |= ELaDfaStateFlag_EpsilonProduction;
+				thread->m_state->m_flags |= LaDfaStateFlagKind_EpsilonProduction;
 
 			break;
 
-		case ENode_Sequence:
-			if (pThread->m_Match)
+		case NodeKind_Sequence:
+			if (thread->m_match)
 				return;
 
-			pThread->m_Stack.Pop ();
+			thread->m_stack.pop ();
 
-			pSequence = (CSequenceNode*) pNode;
-			ChildrenCount = pSequence->m_Sequence.GetCount ();
-			for (intptr_t i = ChildrenCount - 1; i >= 0; i--)
+			sequence = (SequenceNode*) node;
+			childrenCount = sequence->m_sequence.getCount ();
+			for (intptr_t i = childrenCount - 1; i >= 0; i--)
 			{
-				CNode* pChild = pSequence->m_Sequence [i];
-				pThread->m_Stack.Append (pChild);
+				Node* child = sequence->m_sequence [i];
+				thread->m_stack.append (child);
 			}
 
 			break;
 
-		case ENode_Beacon:
-			pThread->m_Stack.Pop ();
-			pThread->m_Stack.Append (((CBeaconNode*) pNode)->m_pTarget);
+		case NodeKind_Beacon:
+			thread->m_stack.pop ();
+			thread->m_stack.append (((BeaconNode*) node)->m_target);
 			break;
 
-		case ENode_Action:
-		case ENode_Argument:
-			pThread->m_Stack.Pop ();
+		case NodeKind_Action:
+		case NodeKind_Argument:
+			thread->m_stack.pop ();
 			break;
 
-		case ENode_Conflict:
-			pThread->m_Stack.Pop ();
+		case NodeKind_Conflict:
+			thread->m_stack.pop ();
 
-			pConflict = (CConflictNode*) pNode;
-			ChildrenCount = pConflict->m_ProductionArray.GetCount ();
-			for (size_t i = 0; i < ChildrenCount; i++)
+			conflict = (ConflictNode*) node;
+			childrenCount = conflict->m_productionArray.getCount ();
+			for (size_t i = 0; i < childrenCount; i++)
 			{
-				CNode* pChild = pConflict->m_ProductionArray [i];
-				CLaDfaThread* pNewThread = pThread->m_pState->CreateThread (pThread);
+				Node* child = conflict->m_productionArray [i];
+				LaDfaThread* newThread = thread->m_state->createThread (thread);
 
-				if (pChild->m_Kind != ENode_Epsilon)
-					pNewThread->m_Stack.Append (pChild);
+				if (child->m_kind != NodeKind_Epsilon)
+					newThread->m_stack.append (child);
 
-				ProcessThread (pNewThread);
+				processThread (newThread);
 			}
 
-			pThread->m_pState->m_ActiveThreadList.Delete (pThread);
+			thread->m_state->m_activeThreadList.erase (thread);
 			return;
 
 		default:

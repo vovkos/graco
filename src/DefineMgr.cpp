@@ -3,18 +3,18 @@
 
 //.............................................................................
 	
-CDefine*
-CDefineMgr::GetDefine (const rtl::CString& Name)
+Define*
+DefineMgr::getDefine (const rtl::String& name)
 {
-	rtl::CStringHashTableMapIteratorT <CDefine*> It = m_DefineMap.Goto (Name);
-	if (It->m_Value)
-		return It->m_Value;
+	rtl::StringHashTableMapIterator <Define*> it = m_defineMap.visit (name);
+	if (it->m_value)
+		return it->m_value;
 
-	CDefine* pDefine = AXL_MEM_NEW (CDefine);
-	pDefine->m_Name = Name;
-	m_DefineList.InsertTail (pDefine);
-	It->m_Value = pDefine;
-	return pDefine;
+	Define* define = AXL_MEM_NEW (Define);
+	define->m_name = name;
+	m_defineList.insertTail (define);
+	it->m_value = define;
+	return define;
 }
 
 //.............................................................................

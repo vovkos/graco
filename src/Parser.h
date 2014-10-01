@@ -10,153 +10,153 @@
 
 //.............................................................................
 
-class CParser: protected CLexer
+class Parser: protected Lexer
 {
 protected:
-	class CProductionSpecifiers
+	class ProductionSpecifiers
 	{
 	public:
-		CClass* m_pClass;
-		int m_SymbolFlags;
+		Class* m_class;
+		int m_symbolFlags;
 
 	public:
-		CProductionSpecifiers ()
+		ProductionSpecifiers ()
 		{
-			Reset ();
+			reset ();
 		}
 
-		void Reset ()
+		void reset ()
 		{
-			m_pClass = NULL;
-			m_SymbolFlags = 0;
+			m_class = NULL;
+			m_symbolFlags = 0;
 		}
 	};
 
 protected:
-	rtl::CString m_Dir;
-	CModule* m_pModule;
-	const TCmdLine* m_pCmdLine;
-	CProductionSpecifiers m_DefaultProductionSpecifiers;
+	rtl::String m_dir;
+	Module* m_module;
+	const CmdLine* m_cmdLine;
+	ProductionSpecifiers m_defaultProductionSpecifiers;
 
 public:
-	CParser ()
+	Parser ()
 	{
-		m_pModule = NULL;
-		m_pCmdLine = NULL;
+		m_module = NULL;
+		m_cmdLine = NULL;
 	}
 
 	bool
-	Parse (
-		CModule* pModule,
-		const TCmdLine* pCmdLine,
-		const rtl::CString& FilePath,
-		const char* pSource,
-		size_t Length = -1
+	parse (
+		Module* module,
+		const CmdLine* cmdLine,
+		const rtl::String& filePath,
+		const char* source,
+		size_t length = -1
 		);
 
 	bool
-	ParseFile (
-		CModule* pModule,
-		TCmdLine* pCmdLine,
-		const rtl::CString& FilePath
+	parseFile (
+		Module* module,
+		CmdLine* cmdLine,
+		const rtl::String& filePath
 		);
 
 protected:
 	// grammar
 
 	bool
-	Program ();
+	program ();
 
 	bool
-	LookaheadStatement ();
+	lookaheadStatement ();
 
 	bool
-	ImportStatement ();
+	importStatement ();
 
 	bool
-	DeclarationStatement ();
+	declarationStatement ();
 
 	bool
-	ProductionSpecifiers (CProductionSpecifiers* pSpecifiers);
+	productionSpecifiers (ProductionSpecifiers* specifiers);
 
 	bool
-	ClassStatement ();
+	classStatement ();
 
 	bool
-	UsingStatement ();
+	usingStatement ();
 
 	bool
-	DefineStatement ();
+	defineStatement ();
 
 	bool
-	Production (const CProductionSpecifiers* pSpecifiers);
+	production (const ProductionSpecifiers* specifiers);
 
-	CClass*
-	ClassSpecifier ();
+	Class*
+	classSpecifier ();
 
-	CGrammarNode*
-	Alternative ();
+	GrammarNode*
+	alternative ();
 
-	CGrammarNode*
-	Sequence ();
+	GrammarNode*
+	sequence ();
 
-	CGrammarNode*
-	Quantifier ();
+	GrammarNode*
+	quantifier ();
 
-	CGrammarNode*
-	Primary ();
+	GrammarNode*
+	primary ();
 
-	CSymbolNode*
-	Resolver ();
+	SymbolNode*
+	resolver ();
 
-	CBeaconNode*
-	Beacon ();
+	BeaconNode*
+	beacon ();
 
 	bool
-	UserCode (
-		int OpenBracket,
-		rtl::CString* pString,
-		lex::CSrcPos* pSrcPos
+	userCode (
+		int openBracket,
+		rtl::String* string,
+		lex::SrcPos* srcPos
 		);
 
 	bool
-	UserCode (
-		int OpenBracket,
-		rtl::CString* pString,
-		lex::CLineCol* pLineCol
+	userCode (
+		int openBracket,
+		rtl::String* string,
+		lex::LineCol* lineCol
 		);
 
 	bool
-	CustomizeSymbol (CSymbolNode* pNode);
+	customizeSymbol (SymbolNode* node);
 
 	bool
-	ProcessLocalList (CSymbolNode* pNode);
+	processLocalList (SymbolNode* node);
 
 	bool
-	ProcessFormalArgList (CSymbolNode* pNode);
+	processFormalArgList (SymbolNode* node);
 
 	bool
-	ProcessActualArgList (
-		CArgumentNode* pNode,
-		const rtl::CString& String
+	processActualArgList (
+		ArgumentNode* node,
+		const rtl::String& string
 		);
 
 	bool
-	ProcessSymbolEventHandler (
-		CSymbolNode* pNode,
-		rtl::CString* pString
-		);
-
-	void
-	SetGrammarNodeSrcPos (
-		CGrammarNode* pNode,
-		const lex::CLineCol& LineCol
+	processSymbolEventHandler (
+		SymbolNode* node,
+		rtl::String* string
 		);
 
 	void
-	SetGrammarNodeSrcPos (CGrammarNode* pNode)
+	setGrammarNodeSrcPos (
+		GrammarNode* node,
+		const lex::LineCol& lineCol
+		);
+
+	void
+	setGrammarNodeSrcPos (GrammarNode* node)
 	{
-		SetGrammarNodeSrcPos (pNode, m_LastTokenPos);
+		setGrammarNodeSrcPos (node, m_lastTokenPos);
 	}
 };
 

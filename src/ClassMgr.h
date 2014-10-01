@@ -8,96 +8,96 @@
 
 //.............................................................................
 
-enum EClassFlag
+enum ClassFlagKind
 {
-	EClassFlag_Default   = 0x01,
-	EClassFlag_Named     = 0x02,
-	EClassFlag_Defined   = 0x04,
-	EClassFlag_Used      = 0x08,
-	EClassFlag_Reachable = 0x10,
+	ClassFlagKind_Default   = 0x01,
+	ClassFlagKind_Named     = 0x02,
+	ClassFlagKind_Defined   = 0x04,
+	ClassFlagKind_Used      = 0x08,
+	ClassFlagKind_Reachable = 0x10,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CClass: public rtl::TListLink
+class Class: public rtl::ListLink
 {
 public:
-	int m_Flags;
+	int m_flags;
 
-	lex::CSrcPos m_SrcPos;
+	lex::SrcPos m_srcPos;
 
-	CClass* m_pBaseClass;
+	Class* m_baseClass;
 
-	rtl::CString m_Name;
-	rtl::CString m_Members;
+	rtl::String m_name;
+	rtl::String m_members;
 
-	CClass ()
+	Class ()
 	{
-		m_Flags = 0;
-		m_pBaseClass = NULL;
+		m_flags = 0;
+		m_baseClass = NULL;
 	}
 
-	void Export (lua::CLuaState* pLuaState);
+	void luaExport (lua::LuaState* luaState);
 };
 
 //.............................................................................
 
-class CClassMgr
+class ClassMgr
 {
 protected:
-	rtl::CStdListT <CClass> m_ClassList;
-	rtl::CStringHashTableMapT <CClass*> m_ClassMap; 
+	rtl::StdList <Class> m_classList;
+	rtl::StringHashTableMap <Class*> m_classMap; 
 
 public:
 	bool
-	IsEmpty ()
+	isEmpty ()
 	{
-		return m_ClassList.IsEmpty ();
+		return m_classList.isEmpty ();
 	}
 	
 	size_t
-	GetCount ()
+	getCount ()
 	{
-		return m_ClassList.GetCount ();
+		return m_classList.getCount ();
 	}
 
-	rtl::CIteratorT <CClass>
-	GetHead ()
+	rtl::Iterator <Class>
+	getHead ()
 	{
-		return m_ClassList.GetHead ();
+		return m_classList.getHead ();
 	}
 
 	void
-	Clear ()
+	clear ()
 	{
-		m_ClassList.Clear ();
-		m_ClassMap.Clear ();
+		m_classList.clear ();
+		m_classMap.clear ();
 	}
 
-	CClass*
-	GetClass (const rtl::CString& Name);
+	Class*
+	getClass (const rtl::String& name);
 
-	CClass*
-	CreateUnnamedClass ();
+	Class*
+	createUnnamedClass ();
 	
-	CClass*
-	FindClass (const char* pName)
+	Class*
+	findClass (const char* name)
 	{
-		rtl::CStringHashTableMapIteratorT <CClass*> It = m_ClassMap.Find (pName);
-		return It ? It->m_Value : NULL;
+		rtl::StringHashTableMapIterator <Class*> it = m_classMap.find (name);
+		return it ? it->m_value : NULL;
 	}
 
 	void
-	DeleteClass (CClass* pClass);
+	deleteClass (Class* cls);
 
 	bool
-	Verify ();
+	verify ();
 
 	void
-	DeleteUnusedClasses ();
+	deleteUnusedClasses ();
 
 	void
-	DeleteUnreachableClasses ();
+	deleteUnreachableClasses ();
 };
 
 //.............................................................................

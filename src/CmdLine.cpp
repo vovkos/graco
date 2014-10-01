@@ -4,62 +4,62 @@
 //.............................................................................
 
 bool
-CCmdLineParser::OnValue (const char* pValue)
+CmdLineParser::onValue (const char* value)
 {
-	m_pCmdLine->m_InputFileName = pValue;
+	m_cmdLine->m_inputFileName = value;
 	return true;
 }
 
 bool
-CCmdLineParser::OnSwitch (
-	ESwitch Switch,
-	const char* pValue
+CmdLineParser::onSwitch (
+	SwitchKind switchKind,
+	const char* value
 	)
 {
-	switch (Switch)
+	switch (switchKind)
 	{
-	case ECmdLineSwitch_Help:
-		m_pCmdLine->m_Flags |= ECmdLineFlag_Help;
+	case CmdLineSwitchKind_Help:
+		m_cmdLine->m_flags |= CmdLineFlagKind_Help;
 		break;
 
-	case ECmdLineSwitch_Version:
-		m_pCmdLine->m_Flags |= ECmdLineFlag_Version;
+	case CmdLineSwitchKind_Version:
+		m_cmdLine->m_flags |= CmdLineFlagKind_Version;
 		break;
 
-	case ECmdLineSwitch_NoPpLine:
-		m_pCmdLine->m_Flags |= ECmdLineFlag_NoPpLine;
+	case CmdLineSwitchKind_NoPpLine:
+		m_cmdLine->m_flags |= CmdLineFlagKind_NoPpLine;
 		break;
 
-	case ECmdLineSwitch_Verbose:
-		m_pCmdLine->m_Flags |= ECmdLineFlag_Verbose;
+	case CmdLineSwitchKind_Verbose:
+		m_cmdLine->m_flags |= CmdLineFlagKind_Verbose;
 		break;
 
-	case ECmdLineSwitch_OutputFileName:
-		m_pCmdLine->m_OutputFileNameList.InsertTail (pValue);
+	case CmdLineSwitchKind_OutputFileName:
+		m_cmdLine->m_outputFileNameList.insertTail (value);
 		break;
 
-	case ECmdLineSwitch_FrameFileName:
-		m_pCmdLine->m_FrameFileNameList.InsertTail (pValue);
+	case CmdLineSwitchKind_FrameFileName:
+		m_cmdLine->m_frameFileNameList.insertTail (value);
 		break;
 
-	case ECmdLineSwitch_BnfFileName:
-		m_pCmdLine->m_BnfFileName = pValue;
+	case CmdLineSwitchKind_BnfFileName:
+		m_cmdLine->m_bnfFileName = value;
 		break;
 
-	case ECmdLineSwitch_TraceFileName:
-		m_pCmdLine->m_TraceFileName = pValue;
+	case CmdLineSwitchKind_TraceFileName:
+		m_cmdLine->m_traceFileName = value;
 		break;
 
-	case ECmdLineSwitch_OutputDir:
-		m_pCmdLine->m_OutputDir = pValue;
+	case CmdLineSwitchKind_OutputDir:
+		m_cmdLine->m_outputDir = value;
 		break;
 
-	case ECmdLineSwitch_FrameDir:
-		m_pCmdLine->m_FrameDirList.InsertTail (pValue);
+	case CmdLineSwitchKind_FrameDir:
+		m_cmdLine->m_frameDirList.insertTail (value);
 		break;
 
-	case ECmdLineSwitch_ImportDir:
-		m_pCmdLine->m_ImportDirList.InsertTail (pValue);
+	case CmdLineSwitchKind_ImportDir:
+		m_cmdLine->m_importDirList.insertTail (value);
 		break;
 	}
 
@@ -67,12 +67,12 @@ CCmdLineParser::OnSwitch (
 }
 
 bool
-CCmdLineParser::Finalize ()
+CmdLineParser::finalize ()
 {
-	if (m_pCmdLine->m_OutputFileNameList.GetCount () != 
-		m_pCmdLine->m_FrameFileNameList.GetCount ())
+	if (m_cmdLine->m_outputFileNameList.getCount () != 
+		m_cmdLine->m_frameFileNameList.getCount ())
 	{
-		err::SetStringError ("output-file-count vs frame-file-count mismatch\n");
+		err::setStringError ("output-file-count vs frame-file-count mismatch\n");
 		return false;
 	}
 

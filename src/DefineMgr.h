@@ -6,72 +6,72 @@
 
 //.............................................................................
 
-enum EDefine
+enum DefineKind
 {
-	EDefine_String,
-	EDefine_Integer
+	DefineKind_String,
+	DefineKind_Integer
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CDefine: public rtl::TListLink
+class Define: public rtl::ListLink
 {
 public:
-	EDefine m_Kind;
-	lex::CSrcPos m_SrcPos;
-	rtl::CString m_Name;
-	rtl::CString m_StringValue;
-	int m_IntegerValue;
+	DefineKind m_kind;
+	lex::SrcPos m_srcPos;
+	rtl::String m_name;
+	rtl::String m_stringValue;
+	int m_integerValue;
 
-	CDefine ()
+	Define ()
 	{
-		m_Kind = EDefine_String;
-		m_IntegerValue = 0;
+		m_kind = DefineKind_String;
+		m_integerValue = 0;
 	}
 };
 
 //.............................................................................
 
-class CDefineMgr
+class DefineMgr
 {
 protected:
-	rtl::CStdListT <CDefine> m_DefineList;
-	rtl::CStringHashTableMapT <CDefine*> m_DefineMap;
+	rtl::StdList <Define> m_defineList;
+	rtl::StringHashTableMap <Define*> m_defineMap;
 
 public:
 	bool
-	IsEmpty ()
+	isEmpty ()
 	{
-		return m_DefineList.IsEmpty ();
+		return m_defineList.isEmpty ();
 	}
 
 	size_t
-	GetCount ()
+	getCount ()
 	{
-		return m_DefineList.GetCount ();
+		return m_defineList.getCount ();
 	}
 
 	void
-	Clear ()
+	clear ()
 	{
-		m_DefineList.Clear ();
-		m_DefineMap.Clear ();
+		m_defineList.clear ();
+		m_defineMap.clear ();
 	}
 
-	rtl::CIteratorT <CDefine>
-	GetHead ()
+	rtl::Iterator <Define>
+	getHead ()
 	{
-		return m_DefineList.GetHead ();
+		return m_defineList.getHead ();
 	}
 
-	CDefine*
-	GetDefine (const rtl::CString& Name);
+	Define*
+	getDefine (const rtl::String& name);
 
-	CDefine*
-	FindDefine (const char* pName)
+	Define*
+	findDefine (const char* name)
 	{
-		rtl::CStringHashTableMapIteratorT <CDefine*> It = m_DefineMap.Find (pName);
-		return It ? It->m_Value : NULL;
+		rtl::StringHashTableMapIterator <Define*> it = m_defineMap.find (name);
+		return it ? it->m_value : NULL;
 	}
 };
 

@@ -4,74 +4,74 @@
 //.............................................................................
 
 bool
-CParseTableBuilder::Build ()
+ParseTableBuilder::build ()
 {
-	CalcFirstFollow ();
+	calcFirstFollow ();
 
 	// build parse table
 
-	size_t SymbolCount = m_pNodeMgr->m_SymbolArray.GetCount ();
-	size_t TerminalCount = m_pNodeMgr->m_TokenArray.GetCount ();
+	size_t symbolCount = m_nodeMgr->m_symbolArray.getCount ();
+	size_t terminalCount = m_nodeMgr->m_tokenArray.getCount ();
 
-	m_pParseTable->SetCount (SymbolCount * TerminalCount);
+	m_parseTable->setCount (symbolCount * terminalCount);
 
 	// normal productions
 
-	for (size_t i = 0; i < SymbolCount; i++)
+	for (size_t i = 0; i < symbolCount; i++)
 	{
-		CSymbolNode* pNode = m_pNodeMgr->m_SymbolArray [i];
+		SymbolNode* node = m_nodeMgr->m_symbolArray [i];
 
-		if (pNode->m_Flags & ESymbolNodeFlag_Named)
+		if (node->m_flags & SymbolNodeFlagKind_Named)
 		{
-			if (pNode->IsNullable () && !(pNode->m_Flags & ESymbolNodeFlag_Nullable))
+			if (node->isNullable () && !(node->m_flags & SymbolNodeFlagKind_Nullable))
 			{
-				err::SetFormatStringError (
+				err::setFormatStringError (
 					"'%s': nullable symbols must be explicitly marked as 'nullable'", 
-					pNode->m_Name.cc () // thanks a lot gcc
+					node->m_name.cc () // thanks a lot gcc
 					);
-				err::PushSrcPosError (pNode->m_SrcPos);
+				err::pushSrcPosError (node->m_srcPos);
 				return false;
 			}
 
-			if (!pNode->IsNullable () && (pNode->m_Flags & ESymbolNodeFlag_Nullable))
+			if (!node->isNullable () && (node->m_flags & SymbolNodeFlagKind_Nullable))
 			{
-				err::SetFormatStringError (
+				err::setFormatStringError (
 					"'%s': marked as 'nullable' but is not nullable", 
-					pNode->m_Name.cc () 
+					node->m_name.cc () 
 					);
-				err::PushSrcPosError (pNode->m_SrcPos);
+				err::pushSrcPosError (node->m_srcPos);
 				return false;
 			}
 		}
 
-		if (pNode->m_Flags & ESymbolNodeFlag_Pragma)
+		if (node->m_flags & SymbolNodeFlagKind_Pragma)
 		{
-			if (pNode->IsNullable ())
+			if (node->isNullable ())
 			{
-				err::SetFormatStringError (
+				err::setFormatStringError (
 					"'%s': pragma cannot be nullable", 
-					pNode->m_Name.cc () 
+					node->m_name.cc () 
 					);
-				err::PushSrcPosError (pNode->m_SrcPos);
+				err::pushSrcPosError (node->m_srcPos);
 				return false;
 			}
 
-			if (pNode->m_FirstSet.GetBit (1))
+			if (node->m_firstSet.getBit (1))
 			{
-				err::SetFormatStringError (
+				err::setFormatStringError (
 					"'%s': pragma cannot start with 'anytoken'", 
-					pNode->m_Name.cc () 
+					node->m_name.cc () 
 					);
-				err::PushSrcPosError (pNode->m_SrcPos);
+				err::pushSrcPosError (node->m_srcPos);
 				return false;
 			}
 		}
 
-		size_t ChildrenCount = pNode->m_ProductionArray.GetCount ();
-		for (size_t j = 0; j < ChildrenCount; j++)
+		size_t childrenCount = node->m_productionArray.getCount ();
+		for (size_t j = 0; j < childrenCount; j++)
 		{
-			CGrammarNode* pProduction = pNode->m_ProductionArray [j];
-			AddProductionToParseTable (pNode, pProduction); 
+			GrammarNode* production = node->m_productionArray [j];
+			addProductionToParseTable (node, production); 
 		}
 	}
 
@@ -84,17 +84,17 @@ CParseTableBuilder::Build ()
 	// then 
 	//	set all parse table entries to this production
 
-	for (size_t i = 0; i < SymbolCount; i++)
+	for (size_t i = 0; i < symbolCount; i++)
 	{
-		CSymbolNode* pNode = m_pNodeMgr->m_SymbolArray [i];
+		SymbolNode* node = m_nodeMgr->m_symbolArray [i];
 
-		size_t ChildrenCount = pNode->m_ProductionArray.GetCount ();
-		for (size_t j = 0; j < ChildrenCount; j++)
+		size_t childrenCount = node->m_productionArray.getCount ();
+		for (size_t j = 0; j < childrenCount; j++)
 		{
-			CGrammarNode* pProduction = pNode->m_ProductionArray [j];
+			GrammarNode* production = node->m_productionArray [j];
 			
-			if (pProduction->m_FirstSet.GetBit (1) || (pProduction->IsNullable () && pNode->m_FollowSet.GetBit (1)))
-				AddAnyTokenProductionToParseTable (pNode, pProduction); 
+			if (production->m_firstSet.getBit (1) || (production->isNullable () && node->m_followSet.getBit (1)))
+				addAnyTokenProductionToParseTable (node, production); 
 		}
 	}
 
@@ -102,304 +102,304 @@ CParseTableBuilder::Build ()
 }
 
 void
-CParseTableBuilder::AddProductionToParseTable (
-	CSymbolNode* pSymbol,
-	CGrammarNode* pProduction
+ParseTableBuilder::addProductionToParseTable (
+	SymbolNode* symbol,
+	GrammarNode* production
 	)
 {
-	size_t Count;
+	size_t count;
 	
-	Count = pProduction->m_FirstArray.GetCount ();
-	for (size_t i = 0; i < Count; i++)
+	count = production->m_firstArray.getCount ();
+	for (size_t i = 0; i < count; i++)
 	{
-		CSymbolNode* pToken = pProduction->m_FirstArray [i];
-		AddParseTableEntry (pSymbol, pToken, pProduction);
+		SymbolNode* token = production->m_firstArray [i];
+		addParseTableEntry (symbol, token, production);
 	}
 
-	if (!pProduction->IsNullable ())
+	if (!production->isNullable ())
 		return;
 
-	Count = pSymbol->m_FollowArray.GetCount ();
-	for (size_t i = 0; i < Count; i++)
+	count = symbol->m_followArray.getCount ();
+	for (size_t i = 0; i < count; i++)
 	{
-		CSymbolNode* pToken = pSymbol->m_FollowArray [i];
-		AddParseTableEntry (pSymbol, pToken, pProduction);
+		SymbolNode* token = symbol->m_followArray [i];
+		addParseTableEntry (symbol, token, production);
 	}
 
-	if (pSymbol->IsFinal ())
-		AddParseTableEntry (pSymbol, &m_pNodeMgr->m_EofTokenNode, pProduction);
+	if (symbol->isFinal ())
+		addParseTableEntry (symbol, &m_nodeMgr->m_eofTokenNode, production);
 }
 
 void
-CParseTableBuilder::AddAnyTokenProductionToParseTable (
-	CSymbolNode* pSymbol,
-	CGrammarNode* pProduction
+ParseTableBuilder::addAnyTokenProductionToParseTable (
+	SymbolNode* symbol,
+	GrammarNode* production
 	)
 {
-	size_t TokenCount = m_pNodeMgr->m_TokenArray.GetCount ();
+	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount ();
 
 	// skip EOF and ANYTOKEN
 
-	for (size_t i = 2; i < TokenCount; i++)
+	for (size_t i = 2; i < tokenCount; i++)
 	{
-		CSymbolNode* pToken = m_pNodeMgr->m_TokenArray [i];
-		AddParseTableEntry (pSymbol, pToken, pProduction);
+		SymbolNode* token = m_nodeMgr->m_tokenArray [i];
+		addParseTableEntry (symbol, token, production);
 	}
 }
 
 size_t
-CParseTableBuilder::AddParseTableEntry (
-	CSymbolNode* pSymbol,
-	CSymbolNode* pToken,
-	CGrammarNode* pProduction
+ParseTableBuilder::addParseTableEntry (
+	SymbolNode* symbol,
+	SymbolNode* token,
+	GrammarNode* production
 	)
 {
-	size_t TokenCount = m_pNodeMgr->m_TokenArray.GetCount ();
+	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount ();
 		
-	CNode** ppProduction = *m_pParseTable + pSymbol->m_Index * TokenCount + pToken->m_Index;
-	CNode* pOldProduction = *ppProduction;
+	Node** productionSlot = *m_parseTable + symbol->m_index * tokenCount + token->m_index;
+	Node* oldProduction = *productionSlot;
 
-	if (!pOldProduction)
+	if (!oldProduction)
 	{
-		*ppProduction = pProduction;
+		*productionSlot = production;
 		return 0;
 	}
 	
-	if (pOldProduction == pProduction)
+	if (oldProduction == production)
 		return 0;
 
-	CConflictNode* pConflict;
-	if (pOldProduction->m_Kind != ENode_Conflict)
+	ConflictNode* conflict;
+	if (oldProduction->m_kind != NodeKind_Conflict)
 	{
-		pConflict = m_pNodeMgr->CreateConflictNode ();
-		pConflict->m_pSymbol = pSymbol;
-		pConflict->m_pToken = pToken;
+		conflict = m_nodeMgr->createConflictNode ();
+		conflict->m_symbol = symbol;
+		conflict->m_token = token;
 
-		pConflict->m_ProductionArray.SetCount (2);
-		pConflict->m_ProductionArray [0] = (CGrammarNode*) pOldProduction; 
-		pConflict->m_ProductionArray [1] = pProduction;
+		conflict->m_productionArray.setCount (2);
+		conflict->m_productionArray [0] = (GrammarNode*) oldProduction; 
+		conflict->m_productionArray [1] = production;
 	
-		*ppProduction = pConflict; // later will be replaced with lookahead DFA
+		*productionSlot = conflict; // later will be replaced with lookahead DFA
 	}
 	else
 	{
-		pConflict = (CConflictNode*) pOldProduction;
-		size_t Count = pConflict->m_ProductionArray.GetCount ();
+		conflict = (ConflictNode*) oldProduction;
+		size_t count = conflict->m_productionArray.getCount ();
 		
 		size_t i = 0;
-		for (; i < Count; i++)
-			if (pConflict->m_ProductionArray [i] == pProduction)
+		for (; i < count; i++)
+			if (conflict->m_productionArray [i] == production)
 				break;
 
-		if (i >= Count) // not found
-			pConflict->m_ProductionArray.Append (pProduction);
+		if (i >= count) // not found
+			conflict->m_productionArray.append (production);
 	}
 
-	return pConflict->m_ProductionArray.GetCount ();
+	return conflict->m_productionArray.getCount ();
 }
 
 bool
-PropagateParentChild (
-	CGrammarNode* pParent,
-	CGrammarNode* pChild
+propagateParentChild (
+	GrammarNode* parent,
+	GrammarNode* child
 	)
 {
-	bool HasChanged = false;
+	bool hasChanged = false;
 
-	if (pParent->m_FirstSet.Merge (pChild->m_FirstSet, rtl::EBitOp_Or))
-		HasChanged = true;			
+	if (parent->m_firstSet.merge (child->m_firstSet, rtl::BitOpKind_Or))
+		hasChanged = true;			
 
-	if (pChild->m_FollowSet.Merge (pParent->m_FollowSet, rtl::EBitOp_Or))
-		HasChanged = true;			
+	if (child->m_followSet.merge (parent->m_followSet, rtl::BitOpKind_Or))
+		hasChanged = true;			
 
-	if (pChild->IsNullable ())
-		if (pParent->MarkNullable ())
-			HasChanged = true;
+	if (child->isNullable ())
+		if (parent->markNullable ())
+			hasChanged = true;
 
-	if (pParent->IsFinal ())
-		if (pChild->MarkFinal ())
-			HasChanged = true;
+	if (parent->isFinal ())
+		if (child->markFinal ())
+			hasChanged = true;
 
-	return HasChanged;
+	return hasChanged;
 }
 
 void
-CParseTableBuilder::CalcFirstFollow ()
+ParseTableBuilder::calcFirstFollow ()
 {
-	bool HasChanged;
+	bool hasChanged;
 
-	CGrammarNode* pStartSymbol = m_pNodeMgr->m_SymbolArray [0];
-	pStartSymbol->MarkFinal ();
+	GrammarNode* startSymbol = m_nodeMgr->m_symbolArray [0];
+	startSymbol->markFinal ();
 	
-	size_t TokenCount = m_pNodeMgr->m_TokenArray.GetCount ();
-	size_t SymbolCount = m_pNodeMgr->m_SymbolArray.GetCount ();
+	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount ();
+	size_t symbolCount = m_nodeMgr->m_symbolArray.getCount ();
 
-	for (size_t i = 1; i < TokenCount; i++) 
+	for (size_t i = 1; i < tokenCount; i++) 
 	{
-		CSymbolNode* pNode = m_pNodeMgr->m_TokenArray [i];
-		pNode->m_FirstSet.SetBitResize (pNode->m_MasterIndex, true);
+		SymbolNode* node = m_nodeMgr->m_tokenArray [i];
+		node->m_firstSet.setBitResize (node->m_masterIndex, true);
 	}
 
-	for (size_t i = 0; i < SymbolCount; i++)
+	for (size_t i = 0; i < symbolCount; i++)
 	{
-		CSymbolNode* pNode = m_pNodeMgr->m_SymbolArray [i];
-		pNode->m_FirstSet.SetBitCount (TokenCount);
-		pNode->m_FollowSet.SetBitCount (TokenCount);
+		SymbolNode* node = m_nodeMgr->m_symbolArray [i];
+		node->m_firstSet.setBitCount (tokenCount);
+		node->m_followSet.setBitCount (tokenCount);
 
-		if (pNode->m_pResolver)
-			pNode->m_pResolver->m_FollowSet.SetBitResize (1); // set anytoken FOLLOW for resolver
+		if (node->m_resolver)
+			node->m_resolver->m_followSet.setBitResize (1); // set anytoken FOLLOW for resolver
 
-		if (pNode->m_Flags & ESymbolNodeFlag_Start)
-			pNode->MarkFinal ();
+		if (node->m_flags & SymbolNodeFlagKind_Start)
+			node->markFinal ();
 	}
 
-	rtl::CIteratorT <CSequenceNode> Sequence = m_pNodeMgr->m_SequenceList.GetHead ();
-	for (; Sequence; Sequence++)
+	rtl::Iterator <SequenceNode> sequence = m_nodeMgr->m_sequenceList.getHead ();
+	for (; sequence; sequence++)
 	{
-		Sequence->m_FirstSet.SetBitCount (TokenCount);
-		Sequence->m_FollowSet.SetBitCount (TokenCount);
+		sequence->m_firstSet.setBitCount (tokenCount);
+		sequence->m_followSet.setBitCount (tokenCount);
 	}
 
-	rtl::CIteratorT <CBeaconNode> Beacon = m_pNodeMgr->m_BeaconList.GetHead ();
-	for (; Beacon; Beacon++)
+	rtl::Iterator <BeaconNode> beacon = m_nodeMgr->m_beaconList.getHead ();
+	for (; beacon; beacon++)
 	{
-		Beacon->m_FirstSet.SetBitCount (TokenCount);
-		Beacon->m_FollowSet.SetBitCount (TokenCount);
+		beacon->m_firstSet.setBitCount (tokenCount);
+		beacon->m_followSet.setBitCount (tokenCount);
 	}
 
 	do 
 	{
-		HasChanged = false;
+		hasChanged = false;
 
-		for (size_t i = 0; i < SymbolCount; i++)
+		for (size_t i = 0; i < symbolCount; i++)
 		{
-			CSymbolNode* pNode = m_pNodeMgr->m_SymbolArray [i];
-			size_t ChildrenCount = pNode->m_ProductionArray.GetCount ();
+			SymbolNode* node = m_nodeMgr->m_symbolArray [i];
+			size_t childrenCount = node->m_productionArray.getCount ();
 
-			for (size_t j = 0; j < ChildrenCount; j++)
+			for (size_t j = 0; j < childrenCount; j++)
 			{
-				CGrammarNode* pProduction = pNode->m_ProductionArray [j];
-				if (PropagateParentChild (pNode, pProduction))
-					HasChanged = true;
+				GrammarNode* production = node->m_productionArray [j];
+				if (propagateParentChild (node, production))
+					hasChanged = true;
 			}
 		}
 
-		Sequence = m_pNodeMgr->m_SequenceList.GetHead ();
-		for (; Sequence; Sequence++)
+		sequence = m_nodeMgr->m_sequenceList.getHead ();
+		for (; sequence; sequence++)
 		{
-			CSequenceNode* pNode = *Sequence;
-			size_t ChildrenCount = pNode->m_Sequence.GetCount ();
+			SequenceNode* node = *sequence;
+			size_t childrenCount = node->m_sequence.getCount ();
 
 			// FIRST between parent-child
 
-			bool IsNullable = true;
-			for (size_t j = 0; j < ChildrenCount; j++)
+			bool isNullable = true;
+			for (size_t j = 0; j < childrenCount; j++)
 			{
-				CGrammarNode* pChild = pNode->m_Sequence [j];
-				if (pNode->m_FirstSet.Merge (pChild->m_FirstSet, rtl::EBitOp_Or))
-					HasChanged = true;
+				GrammarNode* child = node->m_sequence [j];
+				if (node->m_firstSet.merge (child->m_firstSet, rtl::BitOpKind_Or))
+					hasChanged = true;
 
-				if (!pChild->IsNullable ())
+				if (!child->isNullable ())
 				{
-					IsNullable = false;
+					isNullable = false;
 					break;
 				}
 			}
 
-			if (IsNullable) // all nullable
-				if (pNode->MarkNullable ())
-					HasChanged = true;
+			if (isNullable) // all nullable
+				if (node->markNullable ())
+					hasChanged = true;
 
 			// FOLLOW between parent-child
 
-			for (intptr_t j = ChildrenCount - 1; j >= 0; j--)
+			for (intptr_t j = childrenCount - 1; j >= 0; j--)
 			{
-				CGrammarNode* pChild = pNode->m_Sequence [j];
-				if (pChild->m_FollowSet.Merge (pNode->m_FollowSet, rtl::EBitOp_Or))
-					HasChanged = true;
+				GrammarNode* child = node->m_sequence [j];
+				if (child->m_followSet.merge (node->m_followSet, rtl::BitOpKind_Or))
+					hasChanged = true;
 
-				if (pNode->IsFinal ())
-					if (pChild->MarkFinal ())
-						HasChanged = true;
+				if (node->isFinal ())
+					if (child->markFinal ())
+						hasChanged = true;
 
-				if (!pChild->IsNullable ())
+				if (!child->isNullable ())
 					break;
 			}
 
 			// FOLLOW between child-child
 
-			if (ChildrenCount >= 2)
-				for (size_t j = 0; j < ChildrenCount - 1; j++)
+			if (childrenCount >= 2)
+				for (size_t j = 0; j < childrenCount - 1; j++)
 				{
-					CGrammarNode* pChild = pNode->m_Sequence [j];
-					for (size_t k = j + 1; k < ChildrenCount; k++)
+					GrammarNode* child = node->m_sequence [j];
+					for (size_t k = j + 1; k < childrenCount; k++)
 					{
-						CGrammarNode* pNext = pNode->m_Sequence [k];
-						if (pChild->m_FollowSet.Merge (pNext->m_FirstSet, rtl::EBitOp_Or))
-							HasChanged = true;
+						GrammarNode* next = node->m_sequence [k];
+						if (child->m_followSet.merge (next->m_firstSet, rtl::BitOpKind_Or))
+							hasChanged = true;
 
-						if (!pNext->IsNullable ())
+						if (!next->isNullable ())
 							break;
 					}
 				}
 		}
 
-		Beacon = m_pNodeMgr->m_BeaconList.GetHead ();
-		for (; Beacon; Beacon++)
+		beacon = m_nodeMgr->m_beaconList.getHead ();
+		for (; beacon; beacon++)
 		{
-			if (PropagateParentChild (*Beacon, Beacon->m_pTarget))
-				HasChanged = true;
+			if (propagateParentChild (*beacon, beacon->m_target))
+				hasChanged = true;
 		}
 
-	} while (HasChanged);
+	} while (hasChanged);
 
-	BuildFirstFollowArrays (&m_pNodeMgr->m_AnyTokenNode);
+	buildFirstFollowArrays (&m_nodeMgr->m_anyTokenNode);
 
-	for (size_t i = 2; i < TokenCount; i++)
+	for (size_t i = 2; i < tokenCount; i++)
 	{
-		CSymbolNode* pNode = m_pNodeMgr->m_TokenArray [i];
-		BuildFirstFollowArrays (pNode);
+		SymbolNode* node = m_nodeMgr->m_tokenArray [i];
+		buildFirstFollowArrays (node);
 	}
 
-	for (size_t i = 0; i < SymbolCount; i++)
+	for (size_t i = 0; i < symbolCount; i++)
 	{
-		CSymbolNode* pNode = m_pNodeMgr->m_SymbolArray [i];
-		BuildFirstFollowArrays (pNode);
+		SymbolNode* node = m_nodeMgr->m_symbolArray [i];
+		buildFirstFollowArrays (node);
 	}
 
-	Sequence = m_pNodeMgr->m_SequenceList.GetHead ();
-	for (; Sequence; Sequence++)
-		BuildFirstFollowArrays (*Sequence);
+	sequence = m_nodeMgr->m_sequenceList.getHead ();
+	for (; sequence; sequence++)
+		buildFirstFollowArrays (*sequence);
 
-	Beacon = m_pNodeMgr->m_BeaconList.GetHead ();
-	for (; Beacon; Beacon++)
-		BuildFirstFollowArrays (*Beacon);
+	beacon = m_nodeMgr->m_beaconList.getHead ();
+	for (; beacon; beacon++)
+		buildFirstFollowArrays (*beacon);
 }
 
 void
-CParseTableBuilder::BuildFirstFollowArrays (CGrammarNode* pNode)
+ParseTableBuilder::buildFirstFollowArrays (GrammarNode* node)
 {
-	pNode->m_FirstArray.Clear ();
-	pNode->m_FollowArray.Clear ();
+	node->m_firstArray.clear ();
+	node->m_followArray.clear ();
 
 	for (
-		size_t i = pNode->m_FirstSet.FindBit (0);
+		size_t i = node->m_firstSet.findBit (0);
 		i != -1;
-		i = pNode->m_FirstSet.FindBit (i + 1)
+		i = node->m_firstSet.findBit (i + 1)
 		)
 	{
-		CSymbolNode* pToken = m_pNodeMgr->m_TokenArray [i];
-		pNode->m_FirstArray.Append (pToken);
+		SymbolNode* token = m_nodeMgr->m_tokenArray [i];
+		node->m_firstArray.append (token);
 	}
 
 	for (
-		size_t i = pNode->m_FollowSet.FindBit (0);
+		size_t i = node->m_followSet.findBit (0);
 		i != -1;
-		i = pNode->m_FollowSet.FindBit (i + 1)
+		i = node->m_followSet.findBit (i + 1)
 		)
 	{
-		CSymbolNode* pToken = m_pNodeMgr->m_TokenArray [i];
-		pNode->m_FollowArray.Append (pToken);
+		SymbolNode* token = m_nodeMgr->m_tokenArray [i];
+		node->m_followArray.append (token);
 	}
 }
 

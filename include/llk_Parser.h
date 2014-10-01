@@ -14,164 +14,164 @@ namespace llk {
 
 template <
 	typename T,
-	typename TToken
+	typename Token
 	>
-class CParserT
+class Parser
 {
 public:
-	typedef TToken CToken;
-	typedef typename TToken::EToken EToken;
-	typedef CAstNodeT <CToken> CAstNode;
-	typedef CAstT <CAstNode> CAst;
-	typedef CTokenNodeT <CToken> CTokenNode;
-	typedef CSymbolNodeT <CAstNode> CSymbolNode;
-	typedef CLaDfaNodeT <CToken> CLaDfaNode;
+	typedef Token Token;
+	typedef typename Token::TokenKind TokenKind;
+	typedef AstNode <Token> AstNode;
+	typedef Ast <AstNode> Ast;
+	typedef TokenNode <Token> TokenNode;
+	typedef SymbolNode <AstNode> SymbolNode;
+	typedef LaDfaNode <Token> LaDfaNode;
 
 protected:
-	enum EFlag
+	enum FlagKind
 	{
-		EFlag_BuildingAst = 1,
-		EFlag_TokenMatch  = 2,
+		FlagKind_BuildingAst = 1,
+		FlagKind_TokenMatch  = 2,
 	};
 
-	enum EMatchResult
+	enum MatchResultKind
 	{
-		EMatchResult_Fail,
-		EMatchResult_NextToken,
-		EMatchResult_NextTokenNoAdvance,
-		EMatchResult_Continue,
+		MatchResultKind_Fail,
+		MatchResultKind_NextToken,
+		MatchResultKind_NextTokenNoAdvance,
+		MatchResultKind_Continue,
 	};
 
-	enum ELaDfaResult
+	enum LaDfaResultKind
 	{
-		ELaDfaResult_Fail,
-		ELaDfaResult_Production,
-		ELaDfaResult_Resolver,
+		LaDfaResultKind_Fail,
+		LaDfaResultKind_Production,
+		LaDfaResultKind_Resolver,
 	};
 
-	struct TLaDfaTransition
+	struct LaDfaTransition
 	{
-		uint_t m_Flags;
-		size_t m_ProductionIndex;
-		size_t m_ResolverIndex;
-		size_t m_ResolverElseIndex;
+		uint_t m_flags;
+		size_t m_productionIndex;
+		size_t m_resolverIndex;
+		size_t m_resolverElseIndex;
 	};
 
 protected:
-	axl::rtl::CStdListT <CNode> m_NodeList;
-	axl::ref::CBufT <CAst> m_Ast;
+	axl::rtl::StdList <Node> m_nodeList;
+	axl::ref::Buf <Ast> m_ast;
 
-	axl::rtl::CArrayT <CNode*> m_PredictionStack;
-	axl::rtl::CArrayT <CSymbolNode*> m_SymbolStack;
-	axl::rtl::CArrayT <CLaDfaNode*> m_ResolverStack;
+	axl::rtl::Array <Node*> m_predictionStack;
+	axl::rtl::Array <SymbolNode*> m_symbolStack;
+	axl::rtl::Array <LaDfaNode*> m_resolverStack;
 
-	axl::rtl::CBoxListT <CToken> m_TokenList;
-	axl::rtl::CBoxIteratorT <CToken> m_TokenCursor;
+	axl::rtl::BoxList <Token> m_tokenList;
+	axl::rtl::BoxIterator <Token> m_tokenCursor;
 
-	CToken m_CurrentToken;
-	CToken m_LastMatchedToken;
+	Token m_currentToken;
+	Token m_lastMatchedToken;
 
-	uint_t m_Flags;
+	uint_t m_flags;
 
 public:
-	CParserT ()
+	Parser ()
 	{
-		m_Flags = 0;
+		m_flags = 0;
 	}
 
-	CSymbolNode*
-	Create (
-		int Symbol = T::StartSymbol,
-		bool IsBuildingAst = false
+	SymbolNode*
+	create (
+		int symbol = T::startSymbol,
+		bool isBuildingAst = false
 		)
 	{
-		Clear ();
+		clear ();
 
-		if (IsBuildingAst)
-			m_Flags |= EFlag_BuildingAst;
+		if (isBuildingAst)
+			m_flags |= FlagKind_BuildingAst;
 
-		return (CSymbolNode*) PushPrediction (T::SymbolFirst + Symbol);
+		return (SymbolNode*) pushPrediction (T::symbolFirst + symbol);
 	}
 
-	axl::ref::CBufT <CAst>
-	GetAst ()
+	axl::ref::Buf <Ast>
+	getAst ()
 	{
-		return m_Ast;
+		return m_ast;
 	}
 
 	void
-	Clear ()
+	clear ()
 	{
-		m_NodeList.Clear ();
-		m_PredictionStack.Clear ();
-		m_SymbolStack.Clear ();
-		m_ResolverStack.Clear ();
-		m_TokenList.Clear ();
-		m_TokenCursor = NULL;
-		m_Ast.Release ();
-		m_Flags = 0;
+		m_nodeList.clear ();
+		m_predictionStack.clear ();
+		m_symbolStack.clear ();
+		m_resolverStack.clear ();
+		m_tokenList.clear ();
+		m_tokenCursor = NULL;
+		m_ast.release ();
+		m_flags = 0;
 	}
 
 	bool
-	ParseToken (const CToken* pToken)
+	parseToken (const Token* token)
 	{
-		bool Result;
+		bool result;
 
-		m_TokenCursor = m_TokenList.InsertTail (*pToken);
-		m_CurrentToken = *pToken;
+		m_tokenCursor = m_tokenList.insertTail (*token);
+		m_currentToken = *token;
 
-		size_t* pParseTable = static_cast <T*> (this)->GetParseTable ();
-		size_t TokenIndex = static_cast <T*> (this)->GetTokenIndex (pToken->m_Token);
-		ASSERT (TokenIndex < T::TokenCount);
+		size_t* parseTable = static_cast <T*> (this)->getParseTable ();
+		size_t tokenIndex = static_cast <T*> (this)->getTokenIndex (token->m_token);
+		ASSERT (tokenIndex < T::tokenCount);
 
 		// first check for pragma productions out of band
 
-		if (T::StartPragmaSymbol != -1)
+		if (T::startPragmaSymbol != -1)
 		{
-			size_t ProductionIndex = pParseTable [T::StartPragmaSymbol * T::TokenCount + TokenIndex];
-			if (ProductionIndex != -1 && ProductionIndex != 0)
-				PushPrediction (ProductionIndex);
+			size_t productionIndex = parseTable [T::startPragmaSymbol * T::tokenCount + tokenIndex];
+			if (productionIndex != -1 && productionIndex != 0)
+				pushPrediction (productionIndex);
 		}
 
-		m_Flags &= ~EFlag_TokenMatch;
+		m_flags &= ~FlagKind_TokenMatch;
 
 		for (;;)
 		{
-			EMatchResult MatchResult;
+			MatchResultKind matchResult;
 
-			CNode* pNode = GetPredictionTop ();
-			if (!pNode)
+			Node* node = getPredictionTop ();
+			if (!node)
 			{
-				MatchResult = MatchEmptyPredictionStack ();
+				matchResult = matchEmptyPredictionStack ();
 			}
 			else
 			{
-				switch (pNode->m_Kind)
+				switch (node->m_kind)
 				{
-				case ENode_Token:
-					MatchResult = MatchTokenNode ((CTokenNode*) pNode, TokenIndex);
+				case NodeKind_Token:
+					matchResult = matchTokenNode ((TokenNode*) node, tokenIndex);
 					break;
 
-				case ENode_Symbol:
-					MatchResult = MatchSymbolNode ((CSymbolNode*) pNode, pParseTable, TokenIndex);
+				case NodeKind_Symbol:
+					matchResult = matchSymbolNode ((SymbolNode*) node, parseTable, tokenIndex);
 					break;
 
-				case ENode_Sequence:
-					MatchResult = MatchSequenceNode (pNode);
+				case NodeKind_Sequence:
+					matchResult = matchSequenceNode (node);
 					break;
 
-				case ENode_Action:
-					MatchResult = MatchActionNode (pNode);
+				case NodeKind_Action:
+					matchResult = matchActionNode (node);
 					break;
 
-				case ENode_Argument:
-					ASSERT (pNode->m_Flags & ENodeFlag_Matched); // was handled during matching ENode_Symbol
-					PopPrediction ();
-					MatchResult = EMatchResult_Continue;
+				case NodeKind_Argument:
+					ASSERT (node->m_flags & NodeFlagKind_Matched); // was handled during matching ENode_Symbol
+					popPrediction ();
+					matchResult = MatchResultKind_Continue;
 					break;
 
-				case ENode_LaDfa:
-					MatchResult = MatchLaDfaNode ((CLaDfaNode*) pNode);
+				case NodeKind_LaDfa:
+					matchResult = matchLaDfaNode ((LaDfaNode*) node);
 					break;
 
 				default:
@@ -179,32 +179,32 @@ public:
 				}
 			}
 
-			if (MatchResult == EMatchResult_Fail)
+			if (matchResult == MatchResultKind_Fail)
 			{
-				if (m_ResolverStack.IsEmpty ())
+				if (m_resolverStack.isEmpty ())
 					return false;
 
-				MatchResult = RollbackResolver ();
-				ASSERT (MatchResult != EMatchResult_Fail); // failed resolver means there is another possibility!
+				matchResult = rollbackResolver ();
+				ASSERT (matchResult != MatchResultKind_Fail); // failed resolver means there is another possibility!
 			}
 
-			switch (MatchResult)
+			switch (matchResult)
 			{
-			case EMatchResult_Continue:
+			case MatchResultKind_Continue:
 				break;
 
-			case EMatchResult_NextToken:
-				Result = AdvanceTokenCursor ();
-				if (!Result)
+			case MatchResultKind_NextToken:
+				result = advanceTokenCursor ();
+				if (!result)
 					return true; // no more tokens, we are done
 
 				// fall through
 
-			case EMatchResult_NextTokenNoAdvance:
-				m_CurrentToken = *m_TokenCursor;
-				TokenIndex = static_cast <T*> (this)->GetTokenIndex (m_CurrentToken.m_Token);
-				ASSERT (TokenIndex < T::TokenCount);
-				m_Flags &= ~EFlag_TokenMatch;
+			case MatchResultKind_NextTokenNoAdvance:
+				m_currentToken = *m_tokenCursor;
+				tokenIndex = static_cast <T*> (this)->getTokenIndex (m_currentToken.m_token);
+				ASSERT (tokenIndex < T::tokenCount);
+				m_flags &= ~FlagKind_TokenMatch;
 				break;
 
 			default:
@@ -216,96 +216,96 @@ public:
 	// debug
 
 	void
-	TraceSymbolStack ()
+	traceSymbolStack ()
 	{
-		intptr_t Count = m_SymbolStack.GetCount ();
+		intptr_t count = m_symbolStack.getCount ();
 
-		axl::dbg::Trace ("SYMBOL STACK (%d symbols):\n", Count);
-		for (intptr_t i = 0; i < Count; i++)
+		axl::dbg::trace ("SYMBOL STACK (%d symbols):\n", count);
+		for (intptr_t i = 0; i < count; i++)
 		{
-			CSymbolNode* pNode = m_SymbolStack [i];
-			axl::dbg::Trace ("%s", static_cast <T*> (this)->GetSymbolName (pNode->m_Index));
+			SymbolNode* node = m_symbolStack [i];
+			axl::dbg::trace ("%s", static_cast <T*> (this)->getSymbolName (node->m_index));
 
-			if (pNode->m_pAstNode)
-				axl::dbg::Trace (" (%d:%d)", pNode->m_pAstNode->m_FirstToken.m_Pos.m_Line + 1, pNode->m_pAstNode->m_FirstToken.m_Pos.m_Col + 1);
+			if (node->m_astNode)
+				axl::dbg::trace (" (%d:%d)", node->m_astNode->m_firstToken.m_pos.m_line + 1, node->m_astNode->m_firstToken.m_pos.m_col + 1);
 
-			axl::dbg::Trace ("\n");
+			axl::dbg::trace ("\n");
 		}
 	}
 
 	void
-	TracePredictionStack ()
+	tracePredictionStack ()
 	{
-		intptr_t Count = m_PredictionStack.GetCount ();
+		intptr_t count = m_predictionStack.getCount ();
 
-		axl::dbg::Trace ("PREDICTION STACK (%d nodes):\n", Count);
-		for (intptr_t i = 0; i < Count; i++)
+		axl::dbg::trace ("PREDICTION STACK (%d nodes):\n", count);
+		for (intptr_t i = 0; i < count; i++)
 		{
-			CNode* pNode = m_PredictionStack [i];
-			axl::dbg::Trace ("%s (%d)\n", GetNodeKindString (pNode->m_Kind), pNode->m_Index);
+			Node* node = m_predictionStack [i];
+			axl::dbg::trace ("%s (%d)\n", getNodeKindString (node->m_kind), node->m_index);
 		}
 	}
 
 	void
-	TraceTokenList ()
+	traceTokenList ()
 	{
-		axl::rtl::CBoxIteratorT <CToken> Token = m_TokenList.GetHead ();
+		axl::rtl::BoxIterator <Token> token = m_tokenList.getHead ();
 
-		axl::dbg::Trace ("TOKEN LIST (%d tokens):\n", m_TokenList.GetCount ());
-		for (; Token; Token++)
+		axl::dbg::trace ("TOKEN LIST (%d tokens):\n", m_tokenList.getCount ());
+		for (; token; token++)
 		{
-			axl::dbg::Trace ("%s '%s' %s\n", Token->GetName (), Token->GetText (), Token == m_TokenCursor ? "<--" : "");
+			axl::dbg::trace ("%s '%s' %s\n", token->getName (), token->getText (), token == m_tokenCursor ? "<--" : "");
 		}
 	}
 
 	// public info
 
-	const CToken&
-	GetLastMatchedToken ()
+	const Token&
+	getLastMatchedToken ()
 	{
-		return m_LastMatchedToken;
+		return m_lastMatchedToken;
 	}
 
-	const CToken&
-	GetCurrentToken ()
+	const Token&
+	getCurrentToken ()
 	{
-		return m_CurrentToken;
+		return m_currentToken;
 	}
 
-	CNode*
-	GetPredictionTop ()
+	Node*
+	getPredictionTop ()
 	{
-		size_t Count = m_PredictionStack.GetCount ();
-		return Count ? m_PredictionStack [Count - 1] : NULL;
+		size_t count = m_predictionStack.getCount ();
+		return count ? m_predictionStack [count - 1] : NULL;
 	}
 
 	size_t
-	GetSymbolStackSize ()
+	getSymbolStackSize ()
 	{
-		return m_SymbolStack.GetCount ();
+		return m_symbolStack.getCount ();
 	}
 
-	CSymbolNode*
-	GetSymbolTop ()
+	SymbolNode*
+	getSymbolTop ()
 	{
-		size_t Count = m_SymbolStack.GetCount ();
-		return Count ? m_SymbolStack [Count - 1] : NULL;
+		size_t count = m_symbolStack.getCount ();
+		return count ? m_symbolStack [count - 1] : NULL;
 	}
 
 protected:
 	bool
-	AdvanceTokenCursor ()
+	advanceTokenCursor ()
 	{
-		m_TokenCursor++;
+		m_tokenCursor++;
 
-		CNode* pNode = GetPredictionTop ();
-		if (m_ResolverStack.IsEmpty () && (!pNode || pNode->m_Kind != ENode_LaDfa))
+		Node* node = getPredictionTop ();
+		if (m_resolverStack.isEmpty () && (!node || node->m_kind != NodeKind_LaDfa))
 		{
-			m_TokenList.RemoveHead (); // nobody gonna reparse you bitch
-			ASSERT (m_TokenCursor == m_TokenList.GetHead());
+			m_tokenList.removeHead (); // nobody gonna reparse you bitch
+			ASSERT (m_tokenCursor == m_tokenList.getHead());
 		}
 
-		if (!m_TokenCursor)
+		if (!m_tokenCursor)
 			return false;
 
 		return true;
@@ -313,569 +313,569 @@ protected:
 
 	// match against different kinds of nodes on top of prediction stack
 
-	EMatchResult
-	MatchEmptyPredictionStack ()
+	MatchResultKind
+	matchEmptyPredictionStack ()
 	{
-		if ((m_Flags & EFlag_TokenMatch) || m_CurrentToken.m_Token == T::EofToken)
-			return EMatchResult_NextToken;
+		if ((m_flags & FlagKind_TokenMatch) || m_currentToken.m_token == T::eofToken)
+			return MatchResultKind_NextToken;
 
-		axl::err::SetFormatStringError ("prediction stack empty while parsing '%s'", m_CurrentToken.GetName ());
-		return EMatchResult_Fail;
+		axl::err::setFormatStringError ("prediction stack empty while parsing '%s'", m_currentToken.getName ());
+		return MatchResultKind_Fail;
 	}
 
-	EMatchResult
-	MatchTokenNode (
-		CTokenNode* pNode,
-		size_t TokenIndex
+	MatchResultKind
+	matchTokenNode (
+		TokenNode* node,
+		size_t tokenIndex
 		)
 	{
-		if (m_Flags & EFlag_TokenMatch)
-			return EMatchResult_NextToken;
+		if (m_flags & FlagKind_TokenMatch)
+			return MatchResultKind_NextToken;
 
-		if (pNode->m_Index != T::AnyToken && pNode->m_Index != TokenIndex)
+		if (node->m_index != T::anyToken && node->m_index != tokenIndex)
 		{
-			if (m_ResolverStack.IsEmpty ()) // can't rollback so set error
+			if (m_resolverStack.isEmpty ()) // can't rollback so set error
 			{
-				int ExpectedToken = static_cast <T*> (this)->GetTokenFromIndex (pNode->m_Index);
-				axl::err::SetExpectedTokenError (CToken::GetName (ExpectedToken), m_CurrentToken.GetName ());
+				int expectedToken = static_cast <T*> (this)->getTokenFromIndex (node->m_index);
+				axl::err::setExpectedTokenError (Token::getName (expectedToken), m_currentToken.getName ());
 			}
 
-			return EMatchResult_Fail;
+			return MatchResultKind_Fail;
 		}
 
-		if (pNode->m_Flags & ENodeFlag_Locator)
+		if (node->m_flags & NodeFlagKind_Locator)
 		{
-			pNode->m_Token = m_CurrentToken;
-			pNode->m_Flags |= ENodeFlag_Matched;
+			node->m_token = m_currentToken;
+			node->m_flags |= NodeFlagKind_Matched;
 		}
 
-		m_LastMatchedToken = m_CurrentToken;
-		m_Flags |= EFlag_TokenMatch;
+		m_lastMatchedToken = m_currentToken;
+		m_flags |= FlagKind_TokenMatch;
 
-		PopPrediction ();
-		return EMatchResult_Continue; // don't advance to next token just yet (execute following actions)
+		popPrediction ();
+		return MatchResultKind_Continue; // don't advance to next token just yet (execute following actions)
 	}
 
-	EMatchResult
-	MatchSymbolNode (
-		CSymbolNode* pNode,
-		size_t* pParseTable,
-		size_t TokenIndex
+	MatchResultKind
+	matchSymbolNode (
+		SymbolNode* node,
+		size_t* parseTable,
+		size_t tokenIndex
 		)
 	{
-		bool Result;
+		bool result;
 
-		if (pNode->m_Flags & ESymbolNodeFlag_Stacked)
+		if (node->m_flags & SymbolNodeFlagKind_Stacked)
 		{
-			CSymbolNode* pTop = GetSymbolTop ();
+			SymbolNode* top = getSymbolTop ();
 
-			ASSERT (GetSymbolTop () == pNode);
+			ASSERT (getSymbolTop () == node);
 
-			if (pNode->m_pAstNode)
-				pNode->m_pAstNode->m_LastToken = m_LastMatchedToken;
+			if (node->m_astNode)
+				node->m_astNode->m_lastToken = m_lastMatchedToken;
 
-			pNode->m_Flags |= ENodeFlag_Matched;
+			node->m_flags |= NodeFlagKind_Matched;
 
-			if (pNode->m_Flags & ESymbolNodeFlag_HasLeave)
+			if (node->m_flags & SymbolNodeFlagKind_HasLeave)
 			{
-				Result = static_cast <T*> (this)->Leave (pNode->m_Index);
-				if (!Result)
-					return EMatchResult_Fail;
+				result = static_cast <T*> (this)->leave (node->m_index);
+				if (!result)
+					return MatchResultKind_Fail;
 			}
 
-			PopSymbol ();
-			PopPrediction ();
-			return EMatchResult_Continue;
+			popSymbol ();
+			popPrediction ();
+			return MatchResultKind_Continue;
 		}
 
-		if (m_Flags & EFlag_TokenMatch)
-			return EMatchResult_NextToken;
+		if (m_flags & FlagKind_TokenMatch)
+			return MatchResultKind_NextToken;
 
-		if (pNode->m_Flags & ESymbolNodeFlag_Named)
+		if (node->m_flags & SymbolNodeFlagKind_Named)
 		{
-			if (pNode->m_pAstNode)
+			if (node->m_astNode)
 			{
-				pNode->m_pAstNode->m_FirstToken = m_CurrentToken;
-				pNode->m_pAstNode->m_LastToken = m_CurrentToken;
-				m_LastMatchedToken = m_CurrentToken;
+				node->m_astNode->m_firstToken = m_currentToken;
+				node->m_astNode->m_lastToken = m_currentToken;
+				m_lastMatchedToken = m_currentToken;
 			}
 
-			CNode* pArgument = GetArgument ();
-			if (pArgument)
+			Node* argument = getArgument ();
+			if (argument)
 			{
-				static_cast <T*> (this)->Argument (pArgument->m_Index, pNode);
-				pArgument->m_Flags |= ENodeFlag_Matched;
+				static_cast <T*> (this)->argument (argument->m_index, node);
+				argument->m_flags |= NodeFlagKind_Matched;
 			}
 
-			PushSymbol (pNode);
+			pushSymbol (node);
 
-			if (pNode->m_Flags & ESymbolNodeFlag_HasEnter)
+			if (node->m_flags & SymbolNodeFlagKind_HasEnter)
 			{
-				Result = static_cast <T*> (this)->Enter (pNode->m_Index);
-				if (!Result)
-					return EMatchResult_Fail;
+				result = static_cast <T*> (this)->enter (node->m_index);
+				if (!result)
+					return MatchResultKind_Fail;
 			}
 		}
 
-		size_t ProductionIndex = pParseTable [pNode->m_Index * T::TokenCount + TokenIndex];
-		if (ProductionIndex == -1)
+		size_t productionIndex = parseTable [node->m_index * T::tokenCount + tokenIndex];
+		if (productionIndex == -1)
 		{
-			if (m_ResolverStack.IsEmpty ()) // can't rollback so set error
+			if (m_resolverStack.isEmpty ()) // can't rollback so set error
 			{
-				CSymbolNode* pSymbol = GetSymbolTop ();
-				ASSERT (pSymbol);
-				axl::err::SetFormatStringError (
+				SymbolNode* symbol = getSymbolTop ();
+				ASSERT (symbol);
+				axl::err::setFormatStringError (
 					"unexpected token '%s' in '%s'",
-					m_CurrentToken.GetName (),
-					static_cast <T*> (this)->GetSymbolName (pSymbol->m_Index)
+					m_currentToken.getName (),
+					static_cast <T*> (this)->getSymbolName (symbol->m_index)
 					);
 			}
 
-			return EMatchResult_Fail;
+			return MatchResultKind_Fail;
 		}
 
-		ASSERT (ProductionIndex < T::TotalCount);
+		ASSERT (productionIndex < T::totalCount);
 
-		if (!(pNode->m_Flags & ESymbolNodeFlag_Named))
-			PopPrediction ();
+		if (!(node->m_flags & SymbolNodeFlagKind_Named))
+			popPrediction ();
 
-		PushPrediction (ProductionIndex);
-		return EMatchResult_Continue;
+		pushPrediction (productionIndex);
+		return MatchResultKind_Continue;
 	}
 
-	EMatchResult
-	MatchSequenceNode (CNode* pNode)
+	MatchResultKind
+	matchSequenceNode (Node* node)
 	{
-		if (m_Flags & EFlag_TokenMatch)
-			return EMatchResult_NextToken;
+		if (m_flags & FlagKind_TokenMatch)
+			return MatchResultKind_NextToken;
 
-		size_t* p = static_cast <T*> (this)->GetSequence (pNode->m_Index);
+		size_t* p = static_cast <T*> (this)->getSequence (node->m_index);
 
-		PopPrediction ();
+		popPrediction ();
 		for (; *p != -1; *p++)
-			PushPrediction (*p);
+			pushPrediction (*p);
 
-		return EMatchResult_Continue;
+		return MatchResultKind_Continue;
 	}
 
-	EMatchResult
-	MatchActionNode (CNode* pNode)
+	MatchResultKind
+	matchActionNode (Node* node)
 	{
-		bool Result = static_cast <T*> (this)->Action (pNode->m_Index);
-		if (!Result)
-			return EMatchResult_Fail;
+		bool result = static_cast <T*> (this)->action (node->m_index);
+		if (!result)
+			return MatchResultKind_Fail;
 
-		PopPrediction ();
-		return EMatchResult_Continue;
+		popPrediction ();
+		return MatchResultKind_Continue;
 	}
 
-	EMatchResult
-	MatchLaDfaNode (CLaDfaNode* pNode)
+	MatchResultKind
+	matchLaDfaNode (LaDfaNode* node)
 	{
-		if (pNode->m_Flags & ELaDfaNodeFlag_PreResolver)
+		if (node->m_flags & LaDfaNodeFlagKind_PreResolver)
 		{
-			ASSERT (GetPreResolverTop () == pNode);
+			ASSERT (getPreResolverTop () == node);
 
 			// successful match of resolver
 
-			size_t ProductionIndex = pNode->m_ResolverThenIndex;
-			ASSERT (ProductionIndex < T::LaDfaFirst);
+			size_t productionIndex = node->m_resolverThenIndex;
+			ASSERT (productionIndex < T::laDfaFirst);
 
-			m_TokenCursor = pNode->m_ReparseLaDfaTokenCursor;
+			m_tokenCursor = node->m_reparseLaDfaTokenCursor;
 
-			PopPreResolver ();
-			PopPrediction ();
-			PushPrediction (ProductionIndex);
+			popPreResolver ();
+			popPrediction ();
+			pushPrediction (productionIndex);
 
-			return EMatchResult_NextTokenNoAdvance;
+			return MatchResultKind_NextTokenNoAdvance;
 		}
 
-		if (!pNode->m_ReparseLaDfaTokenCursor)
-			pNode->m_ReparseLaDfaTokenCursor = m_TokenCursor;
+		if (!node->m_reparseLaDfaTokenCursor)
+			node->m_reparseLaDfaTokenCursor = m_tokenCursor;
 
-		TLaDfaTransition Transition = { 0 };
+		LaDfaTransition transition = { 0 };
 
-		ELaDfaResult LaDfaResult = static_cast <T*> (this)->LaDfa (
-			pNode->m_Index,
-			m_CurrentToken.m_Token,
-			&Transition
+		LaDfaResultKind laDfaResult = static_cast <T*> (this)->laDfa (
+			node->m_index,
+			m_currentToken.m_token,
+			&transition
 			);
 
-		switch (LaDfaResult)
+		switch (laDfaResult)
 		{
-		case ELaDfaResult_Production:
-			if (Transition.m_ProductionIndex >= T::LaDfaFirst &&
-				Transition.m_ProductionIndex < T::LaDfaEnd)
+		case LaDfaResultKind_Production:
+			if (transition.m_productionIndex >= T::laDfaFirst &&
+				transition.m_productionIndex < T::laDfaEnd)
 			{
 				// stil in lookahead DFA, need more tokens...
-				pNode->m_Index = Transition.m_ProductionIndex - T::LaDfaFirst;
-				return EMatchResult_NextToken;
+				node->m_index = transition.m_productionIndex - T::laDfaFirst;
+				return MatchResultKind_NextToken;
 			}
 			else
 			{
 				// resolved! continue parsing
-				m_TokenCursor = pNode->m_ReparseLaDfaTokenCursor;
+				m_tokenCursor = node->m_reparseLaDfaTokenCursor;
 
-				PopPrediction ();
-				PushPrediction (Transition.m_ProductionIndex);
+				popPrediction ();
+				pushPrediction (transition.m_productionIndex);
 
-				return EMatchResult_NextTokenNoAdvance;
+				return MatchResultKind_NextTokenNoAdvance;
 			}
 
 			break;
 
-		case ELaDfaResult_Resolver:
-			pNode->m_Flags = Transition.m_Flags;
-			pNode->m_ResolverThenIndex = Transition.m_ProductionIndex;
-			pNode->m_ResolverElseIndex = Transition.m_ResolverElseIndex;
-			pNode->m_ReparseResolverTokenCursor = m_TokenCursor;
-			PushPreResolver (pNode);
-			PushPrediction (Transition.m_ResolverIndex);
-			return EMatchResult_Continue;
+		case LaDfaResultKind_Resolver:
+			node->m_flags = transition.m_flags;
+			node->m_resolverThenIndex = transition.m_productionIndex;
+			node->m_resolverElseIndex = transition.m_resolverElseIndex;
+			node->m_reparseResolverTokenCursor = m_tokenCursor;
+			pushPreResolver (node);
+			pushPrediction (transition.m_resolverIndex);
+			return MatchResultKind_Continue;
 
 		default:
-			ASSERT (LaDfaResult == ELaDfaResult_Fail);
+			ASSERT (laDfaResult == LaDfaResultKind_Fail);
 
-			if (m_ResolverStack.IsEmpty ()) // can't rollback so set error
+			if (m_resolverStack.isEmpty ()) // can't rollback so set error
 			{
-				CSymbolNode* pSymbol = GetSymbolTop ();
-				ASSERT (pSymbol);
-				axl::err::SetFormatStringError (
+				SymbolNode* symbol = getSymbolTop ();
+				ASSERT (symbol);
+				axl::err::setFormatStringError (
 					"unexpected token '%s' while trying to resolve conflict in '%s'",
-					m_CurrentToken.GetName (),
-					static_cast <T*> (this)->GetSymbolName (pSymbol->m_Index)
+					m_currentToken.getName (),
+					static_cast <T*> (this)->getSymbolName (symbol->m_index)
 					);
 			}
 
-			return EMatchResult_Fail;
+			return MatchResultKind_Fail;
 		}
 	}
 
 	// rollback
 
-	EMatchResult
-	RollbackResolver ()
+	MatchResultKind
+	rollbackResolver ()
 	{
-		CLaDfaNode* pLaDfaNode = GetPreResolverTop ();
-		ASSERT (pLaDfaNode);
-		ASSERT (pLaDfaNode->m_Flags & ELaDfaNodeFlag_PreResolver);
+		LaDfaNode* laDfaNode = getPreResolverTop ();
+		ASSERT (laDfaNode);
+		ASSERT (laDfaNode->m_flags & LaDfaNodeFlagKind_PreResolver);
 
 		// keep popping prediction stack until pre-resolver dfa node
 
-		while (!m_PredictionStack.IsEmpty ())
+		while (!m_predictionStack.isEmpty ())
 		{
-			CNode* pNode = GetPredictionTop ();
+			Node* node = getPredictionTop ();
 
-			if (pNode->m_Kind == ENode_Symbol && (pNode->m_Flags & ESymbolNodeFlag_Stacked))
+			if (node->m_kind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlagKind_Stacked))
 			{
-				ASSERT (GetSymbolTop () == pNode);
+				ASSERT (getSymbolTop () == node);
 
 				// do NOT call OnLeave () during resolver unwinding
 				// cause OnLeave () assumes parsing of the symbol is complete
 
-				PopSymbol ();
+				popSymbol ();
 			}
 
-			if (pNode == pLaDfaNode)
+			if (node == laDfaNode)
 				break; // found it!!
 
-			PopPrediction ();
+			popPrediction ();
 		}
 
-		ASSERT (GetPredictionTop () == pLaDfaNode);
-		PopPreResolver ();
+		ASSERT (getPredictionTop () == laDfaNode);
+		popPreResolver ();
 
-		m_TokenCursor = pLaDfaNode->m_ReparseResolverTokenCursor;
+		m_tokenCursor = laDfaNode->m_reparseResolverTokenCursor;
 
 		// switch to resolver-else branch
 
-		if (pLaDfaNode->m_ResolverElseIndex >= T::LaDfaFirst &&
-			pLaDfaNode->m_ResolverElseIndex < T::LaDfaEnd)
+		if (laDfaNode->m_resolverElseIndex >= T::laDfaFirst &&
+			laDfaNode->m_resolverElseIndex < T::laDfaEnd)
 		{
 			// still in lookahead DFA after rollback...
 
-			pLaDfaNode->m_Index = pLaDfaNode->m_ResolverElseIndex - T::LaDfaFirst;
+			laDfaNode->m_index = laDfaNode->m_resolverElseIndex - T::laDfaFirst;
 
-			if (!(pLaDfaNode->m_Flags & ELaDfaNodeFlag_HasChainedResolver))
-				return EMatchResult_NextToken; // if no chained resolver, advance to next token
+			if (!(laDfaNode->m_flags & LaDfaNodeFlagKind_HasChainedResolver))
+				return MatchResultKind_NextToken; // if no chained resolver, advance to next token
 		}
 		else
 		{
-			size_t ProductionIndex = pLaDfaNode->m_ResolverElseIndex;
-			PopPrediction ();
-			PushPrediction (ProductionIndex);
+			size_t productionIndex = laDfaNode->m_resolverElseIndex;
+			popPrediction ();
+			pushPrediction (productionIndex);
 		}
 
-		return EMatchResult_NextTokenNoAdvance;
+		return MatchResultKind_NextTokenNoAdvance;
 	}
 
 	// create nodes
 
 	static
-	CSymbolNode*
-	CreateStdSymbolNode (size_t Index)
+	SymbolNode*
+	createStdSymbolNode (size_t index)
 	{
-		CSymbolNode* pNode = AXL_MEM_NEW (CSymbolNode);
-		pNode->m_Kind = ENode_Symbol;
-		pNode->m_Flags |= ESymbolNodeFlag_Named;
-		pNode->m_Index = Index;
-		return pNode;
+		SymbolNode* node = AXL_MEM_NEW (SymbolNode);
+		node->m_kind = NodeKind_Symbol;
+		node->m_flags |= SymbolNodeFlagKind_Named;
+		node->m_index = index;
+		return node;
 	}
 
-	CNode*
-	CreateNode (size_t MasterIndex)
+	Node*
+	createNode (size_t masterIndex)
 	{
-		ASSERT (MasterIndex < T::TotalCount);
+		ASSERT (masterIndex < T::totalCount);
 
-		CNode* pNode = NULL;
+		Node* node = NULL;
 
-		if (MasterIndex < T::TokenEnd)
+		if (masterIndex < T::tokenEnd)
 		{
-			pNode = AXL_MEM_NEW (CTokenNode);
-			pNode->m_Index = MasterIndex;
+			node = AXL_MEM_NEW (TokenNode);
+			node->m_index = masterIndex;
 		}
-		else if (MasterIndex < T::NamedSymbolEnd)
+		else if (masterIndex < T::namedSymbolEnd)
 		{
-			size_t Index = MasterIndex - T::SymbolFirst;
-			CSymbolNode* pSymbolNode = static_cast <T*> (this)->CreateSymbolNode (Index);
-			if (pSymbolNode->m_pAstNode && (m_Flags & EFlag_BuildingAst))
+			size_t index = masterIndex - T::symbolFirst;
+			SymbolNode* symbolNode = static_cast <T*> (this)->createSymbolNode (index);
+			if (symbolNode->m_astNode && (m_flags & FlagKind_BuildingAst))
 			{
-				if (!m_Ast)
-					m_Ast.Create ();
+				if (!m_ast)
+					m_ast.create ();
 
-				m_Ast->Add (pSymbolNode->m_pAstNode);
-				pSymbolNode->m_Flags |= ESymbolNodeFlag_KeepAst;
+				m_ast->add (symbolNode->m_astNode);
+				symbolNode->m_flags |= SymbolNodeFlagKind_KeepAst;
 			}
 
-			pNode = pSymbolNode;
+			node = symbolNode;
 		}
-		else if (MasterIndex < T::SymbolEnd)
+		else if (masterIndex < T::symbolEnd)
 		{
-			pNode = AXL_MEM_NEW (CSymbolNode);
-			pNode->m_Index = MasterIndex - T::SymbolFirst;
+			node = AXL_MEM_NEW (SymbolNode);
+			node->m_index = masterIndex - T::symbolFirst;
 		}
-		else if (MasterIndex < T::SequenceEnd)
+		else if (masterIndex < T::sequenceEnd)
 		{
-			pNode = AXL_MEM_NEW (CNode);
-			pNode->m_Kind = ENode_Sequence;
-			pNode->m_Index = MasterIndex - T::SequenceFirst;
+			node = AXL_MEM_NEW (Node);
+			node->m_kind = NodeKind_Sequence;
+			node->m_index = masterIndex - T::sequenceFirst;
 		}
-		else if (MasterIndex < T::ActionEnd)
+		else if (masterIndex < T::actionEnd)
 		{
-			pNode = AXL_MEM_NEW (CNode);
-			pNode->m_Kind = ENode_Action;
-			pNode->m_Index = MasterIndex - T::ActionFirst;
+			node = AXL_MEM_NEW (Node);
+			node->m_kind = NodeKind_Action;
+			node->m_index = masterIndex - T::actionFirst;
 		}
-		else if (MasterIndex < T::ArgumentEnd)
+		else if (masterIndex < T::argumentEnd)
 		{
-			pNode = AXL_MEM_NEW (CNode);
-			pNode->m_Kind = ENode_Argument;
-			pNode->m_Index = MasterIndex - T::ArgumentFirst;
+			node = AXL_MEM_NEW (Node);
+			node->m_kind = NodeKind_Argument;
+			node->m_index = masterIndex - T::argumentFirst;
 		}
-		else if (MasterIndex < T::BeaconEnd)
+		else if (masterIndex < T::beaconEnd)
 		{
-			size_t* p = static_cast <T*> (this)->GetBeacon (MasterIndex - T::BeaconFirst);
-			size_t SlotIndex = p [0];
-			size_t TargetIndex = p [1];
+			size_t* p = static_cast <T*> (this)->getBeacon (masterIndex - T::beaconFirst);
+			size_t slotIndex = p [0];
+			size_t targetIndex = p [1];
 
-			pNode = CreateNode (TargetIndex);
-			ASSERT (pNode->m_Kind == ENode_Token || pNode->m_Kind == ENode_Symbol);
+			node = createNode (targetIndex);
+			ASSERT (node->m_kind == NodeKind_Token || node->m_kind == NodeKind_Symbol);
 
-			pNode->m_Flags |= ENodeFlag_Locator;
+			node->m_flags |= NodeFlagKind_Locator;
 
-			CSymbolNode* pSymbolNode = GetSymbolTop ();
-			ASSERT (pSymbolNode);
+			SymbolNode* symbolNode = getSymbolTop ();
+			ASSERT (symbolNode);
 
-			pSymbolNode->m_LocatorArray.EnsureCount (SlotIndex + 1);
-			pSymbolNode->m_LocatorArray [SlotIndex] = pNode;
-			pSymbolNode->m_LocatorList.InsertTail (pNode);
+			symbolNode->m_locatorArray.ensureCount (slotIndex + 1);
+			symbolNode->m_locatorArray [slotIndex] = node;
+			symbolNode->m_locatorList.insertTail (node);
 		}
 		else
 		{
-			ASSERT (MasterIndex < T::LaDfaEnd);
+			ASSERT (masterIndex < T::laDfaEnd);
 
-			pNode = AXL_MEM_NEW (CLaDfaNode);
-			pNode->m_Index = MasterIndex - T::LaDfaFirst;
+			node = AXL_MEM_NEW (LaDfaNode);
+			node->m_index = masterIndex - T::laDfaFirst;
 		}
 
-		return pNode;
+		return node;
 	}
 
 	// prediction stack
 
-	CNode*
-	GetArgument ()
+	Node*
+	getArgument ()
 	{
-		size_t Count = m_PredictionStack.GetCount ();
-		if (Count < 2)
+		size_t count = m_predictionStack.getCount ();
+		if (count < 2)
 			return NULL;
 
-		CNode* pNode = m_PredictionStack [Count - 2];
-		return pNode->m_Kind == ENode_Argument ? pNode : NULL;
+		Node* node = m_predictionStack [count - 2];
+		return node->m_kind == NodeKind_Argument ? node : NULL;
 	}
 
-	CNode*
-	PushPrediction (size_t MasterIndex)
+	Node*
+	pushPrediction (size_t masterIndex)
 	{
-		if (!MasterIndex) // check for epsilon production
+		if (!masterIndex) // check for epsilon production
 			return NULL;
 
-		CNode* pNode = CreateNode (MasterIndex);
-		if (!(pNode->m_Flags & ENodeFlag_Locator))
-			m_NodeList.InsertTail (pNode);
-		m_PredictionStack.Append (pNode);
-		return pNode;
+		Node* node = createNode (masterIndex);
+		if (!(node->m_flags & NodeFlagKind_Locator))
+			m_nodeList.insertTail (node);
+		m_predictionStack.append (node);
+		return node;
 	}
 
 	void
-	PopPrediction ()
+	popPrediction ()
 	{
-		size_t Count = m_PredictionStack.GetCount ();
-		if (!Count)
+		size_t count = m_predictionStack.getCount ();
+		if (!count)
 		{
 			ASSERT (false);
 			return;
 		}
 
-		CNode* pNode = m_PredictionStack [Count - 1];
-		if (!(pNode->m_Flags & ENodeFlag_Locator))
-			m_NodeList.Delete (pNode);
+		Node* node = m_predictionStack [count - 1];
+		if (!(node->m_flags & NodeFlagKind_Locator))
+			m_nodeList.erase (node);
 
-		m_PredictionStack.SetCount (Count - 1);
+		m_predictionStack.setCount (count - 1);
 	}
 
 	// symbol stack
 
-	CAstNode*
-	GetAst (size_t Index)
+	AstNode*
+	getAst (size_t index)
 	{
-		size_t Count = m_SymbolStack.GetCount ();
-		return Index < Count ? m_SymbolStack [Count - Index - 1]->m_pAstNode : NULL;
+		size_t count = m_symbolStack.getCount ();
+		return index < count ? m_symbolStack [count - index - 1]->m_astNode : NULL;
 	}
 
-	CAstNode*
-	GetAstTop ()
+	AstNode*
+	getAstTop ()
 	{
-		size_t Count = m_SymbolStack.GetCount ();
-		for (intptr_t i = Count - 1; i >= 0; i--)
+		size_t count = m_symbolStack.getCount ();
+		for (intptr_t i = count - 1; i >= 0; i--)
 		{
-			CSymbolNode* pNode = m_SymbolStack [i];
-			if (pNode->m_pAstNode)
-				return pNode->m_pAstNode;
+			SymbolNode* node = m_symbolStack [i];
+			if (node->m_astNode)
+				return node->m_astNode;
 		}
 
 		return NULL;
 	}
 
 	void
-	PushSymbol (CSymbolNode* pNode)
+	pushSymbol (SymbolNode* node)
 	{
-		if ((m_Flags & EFlag_BuildingAst) && pNode->m_pAstNode)
+		if ((m_flags & FlagKind_BuildingAst) && node->m_astNode)
 		{
-			CAstNode* pAstTop = GetAstTop ();
-			if (pAstTop)
+			AstNode* astTop = getAstTop ();
+			if (astTop)
 			{
-				pNode->m_pAstNode->m_pParent = pAstTop;
-				pAstTop->m_Children.Append (pNode->m_pAstNode);
+				node->m_astNode->m_parent = astTop;
+				astTop->m_children.append (node->m_astNode);
 			}
 		}
 
-		m_SymbolStack.Append (pNode);
-		pNode->m_Flags |= ESymbolNodeFlag_Stacked;
+		m_symbolStack.append (node);
+		node->m_flags |= SymbolNodeFlagKind_Stacked;
 	}
 
 	void
-	PopSymbol()
+	popSymbol()
 	{
-		size_t Count = m_SymbolStack.GetCount ();
-		if (!Count)
+		size_t count = m_symbolStack.getCount ();
+		if (!count)
 		{
 			ASSERT (false);
 			return;
 		}
 
-		CSymbolNode* pNode = m_SymbolStack [Count - 1];
-		pNode->m_Flags |= ESymbolNodeFlag_Stacked;
+		SymbolNode* node = m_symbolStack [count - 1];
+		node->m_flags |= SymbolNodeFlagKind_Stacked;
 
-		m_SymbolStack.SetCount (Count - 1);
+		m_symbolStack.setCount (count - 1);
 	}
 
 	// resolver stack
 
-	CLaDfaNode*
-	GetPreResolverTop ()
+	LaDfaNode*
+	getPreResolverTop ()
 	{
-		size_t Count = m_ResolverStack.GetCount ();
-		return Count ? m_ResolverStack [Count - 1] : NULL;
+		size_t count = m_resolverStack.getCount ();
+		return count ? m_resolverStack [count - 1] : NULL;
 	}
 
 	void
-	PushPreResolver (CLaDfaNode* pNode)
+	pushPreResolver (LaDfaNode* node)
 	{
-		m_ResolverStack.Append (pNode);
-		pNode->m_Flags |= ELaDfaNodeFlag_PreResolver;
+		m_resolverStack.append (node);
+		node->m_flags |= LaDfaNodeFlagKind_PreResolver;
 	}
 
 	void
-	PopPreResolver ()
+	popPreResolver ()
 	{
-		size_t Count = m_ResolverStack.GetCount ();
-		if (!Count)
+		size_t count = m_resolverStack.getCount ();
+		if (!count)
 		{
 			ASSERT (false);
 			return;
 		}
 
-		CLaDfaNode* pNode = m_ResolverStack [Count - 1];
-		pNode->m_Flags &= ~ELaDfaNodeFlag_PreResolver;
+		LaDfaNode* node = m_resolverStack [count - 1];
+		node->m_flags &= ~LaDfaNodeFlagKind_PreResolver;
 
-		m_ResolverStack.SetCount (Count - 1);
+		m_resolverStack.setCount (count - 1);
 	}
 
 	// locators
 
-	CNode*
-	GetLocator (size_t Index)
+	Node*
+	getLocator (size_t index)
 	{
-		CSymbolNode* pSymbolNode = GetSymbolTop ();
-		if (!pSymbolNode)
+		SymbolNode* symbolNode = getSymbolTop ();
+		if (!symbolNode)
 			return NULL;
 
-		size_t Count = pSymbolNode->m_LocatorArray.GetCount ();
-		if (Index >= Count)
+		size_t count = symbolNode->m_locatorArray.getCount ();
+		if (index >= count)
 			return NULL;
 
-		CNode* pNode = pSymbolNode->m_LocatorArray [Index];
-		if (!pNode || !(pNode->m_Flags & ENodeFlag_Matched))
+		Node* node = symbolNode->m_locatorArray [index];
+		if (!node || !(node->m_flags & NodeFlagKind_Matched))
 			return NULL;
 
-		return pNode;
+		return node;
 	}
 
-	CAstNode*
-	GetAstLocator (size_t Index)
+	AstNode*
+	getAstLocator (size_t index)
 	{
-		CNode* pNode = GetLocator (Index);
-		return pNode && pNode->m_Kind == ENode_Symbol ? ((CSymbolNode*) pNode)->m_pAstNode : NULL;
+		Node* node = getLocator (index);
+		return node && node->m_kind == NodeKind_Symbol ? ((SymbolNode*) node)->m_astNode : NULL;
 	}
 
-	const CToken*
-	GetTokenLocator (size_t Index)
+	const Token*
+	getTokenLocator (size_t index)
 	{
-		CNode* pNode = GetLocator (Index);
-		return pNode && pNode->m_Kind == ENode_Token ? &((CTokenNode*) pNode)->m_Token : NULL;
+		Node* node = getLocator (index);
+		return node && node->m_kind == NodeKind_Token ? &((TokenNode*) node)->m_token : NULL;
 	}
 
 	bool
-	IsValidLocator (CAstNode& Ast)
+	isValidLocator (AstNode& ast)
 	{
-		return &Ast != NULL;
+		return &ast != NULL;
 	}
 
 	bool
-	IsValidLocator (const CToken& Token)
+	isValidLocator (const Token& token)
 	{
-		return &Token != NULL;
+		return &token != NULL;
 	}
 
 	// must be implemented in derived class:

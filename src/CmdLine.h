@@ -2,77 +2,77 @@
 
 //.............................................................................
 
-enum ECmdLineFlag
+enum CmdLineFlagKind
 {
-	ECmdLineFlag_Help     = 0x01,
-	ECmdLineFlag_Version  = 0x02,
-	ECmdLineFlag_Verbose  = 0x04,
-	ECmdLineFlag_NoPpLine = 0x08,
+	CmdLineFlagKind_Help     = 0x01,
+	CmdLineFlagKind_Version  = 0x02,
+	CmdLineFlagKind_Verbose  = 0x04,
+	CmdLineFlagKind_NoPpLine = 0x08,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-struct TCmdLine
+struct CmdLine
 {
-	uint_t m_Flags;
-	rtl::CString m_InputFileName;
-	rtl::CBoxListT <rtl::CString> m_OutputFileNameList;
-	rtl::CBoxListT <rtl::CString> m_FrameFileNameList;
-	rtl::CString m_BnfFileName;
-	rtl::CString m_TraceFileName;
+	uint_t m_flags;
+	rtl::String m_inputFileName;
+	rtl::BoxList <rtl::String> m_outputFileNameList;
+	rtl::BoxList <rtl::String> m_frameFileNameList;
+	rtl::String m_bnfFileName;
+	rtl::String m_traceFileName;
 
-	rtl::CString  m_OutputDir;
-	rtl::CBoxListT <rtl::CString> m_FrameDirList;
-	rtl::CBoxListT <rtl::CString> m_ImportDirList;
+	rtl::String  m_outputDir;
+	rtl::BoxList <rtl::String> m_frameDirList;
+	rtl::BoxList <rtl::String> m_importDirList;
 
-	TCmdLine ()
+	CmdLine ()
 	{
-		m_Flags = 0;
+		m_flags = 0;
 	}
 };
 
 //.............................................................................
 
-enum ECmdLineSwitch
+enum CmdLineSwitchKind
 {
-	ECmdLineSwitch_None,
-	ECmdLineSwitch_Help,
-	ECmdLineSwitch_Version,
-	ECmdLineSwitch_NoPpLine,
-	ECmdLineSwitch_Verbose,
+	CmdLineSwitchKind_None,
+	CmdLineSwitchKind_Help,
+	CmdLineSwitchKind_Version,
+	CmdLineSwitchKind_NoPpLine,
+	CmdLineSwitchKind_Verbose,
 
-	ECmdLineSwitch_OutputFileName = rtl::ECmdLineSwitchFlag_HasValue,
-	ECmdLineSwitch_FrameFileName,
-	ECmdLineSwitch_BnfFileName,
-	ECmdLineSwitch_TraceFileName,
-	ECmdLineSwitch_OutputDir,
-	ECmdLineSwitch_FrameDir,
-	ECmdLineSwitch_ImportDir,
+	CmdLineSwitchKind_OutputFileName = rtl::CmdLineSwitchFlagKind_HasValue,
+	CmdLineSwitchKind_FrameFileName,
+	CmdLineSwitchKind_BnfFileName,
+	CmdLineSwitchKind_TraceFileName,
+	CmdLineSwitchKind_OutputDir,
+	CmdLineSwitchKind_FrameDir,
+	CmdLineSwitchKind_ImportDir,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-AXL_RTL_BEGIN_CMD_LINE_SWITCH_TABLE (CCmdLineSwitchTable, ECmdLineSwitch)
+AXL_RTL_BEGIN_CMD_LINE_SWITCH_TABLE (CmdLineSwitchTable, CmdLineSwitchKind)
 	AXL_RTL_CMD_LINE_SWITCH_GROUP ("General options")
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_Help,
+		CmdLineSwitchKind_Help,
 		"h", "help", NULL,
 		"Display this help"
 		)
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_Version,
+		CmdLineSwitchKind_Version,
 		"v", "version", NULL,
 		"Display Bulldozer version"
 		)
 
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_NoPpLine,
+		CmdLineSwitchKind_NoPpLine,
 		"l", "no-line", NULL,
 		"Suppress #line preprocessor directives"
 		)
 
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_Verbose,
+		CmdLineSwitchKind_Verbose,
 		"z", "verbose", NULL,
 		"Verbose mode"
 		)
@@ -80,25 +80,25 @@ AXL_RTL_BEGIN_CMD_LINE_SWITCH_TABLE (CCmdLineSwitchTable, ECmdLineSwitch)
 	AXL_RTL_CMD_LINE_SWITCH_GROUP ("Files")
 	
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_OutputFileName,
+		CmdLineSwitchKind_OutputFileName,
 		"o", "output", "<file>",
 		"Specify output file (multiple allowed)"
 		)
 
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_FrameFileName,
+		CmdLineSwitchKind_FrameFileName,
 		"f", "frame", "<file>",
 		"Specify Lua frame file (multiple allowed)"
 		)
 
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_BnfFileName,
+		CmdLineSwitchKind_BnfFileName,
 		"b", "bnf", "<file>",
 		"Generate \"clean\" EBNF file"
 		)
 
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_TraceFileName,
+		CmdLineSwitchKind_TraceFileName,
 		"t", "trace", "<file>",
 		"Write verbose information into trace file"
 		)
@@ -106,19 +106,19 @@ AXL_RTL_BEGIN_CMD_LINE_SWITCH_TABLE (CCmdLineSwitchTable, ECmdLineSwitch)
 	AXL_RTL_CMD_LINE_SWITCH_GROUP ("Directories")
 
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_OutputDir,
+		CmdLineSwitchKind_OutputDir,
 		"O", "output-dir", "<dir>",
 		"Specify output directory"
 		)
 
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_FrameDir,
+		CmdLineSwitchKind_FrameDir,
 		"F", "frame-dir", "<dir>",
 		"Add Lua frame directory (multiple allowed)"
 		)
 
 	AXL_RTL_CMD_LINE_SWITCH_2 (
-		ECmdLineSwitch_ImportDir,
+		CmdLineSwitchKind_ImportDir,
 		"I", "import-dir", "<dir>",
 		"Add import directory (multiple allowed)"
 		)
@@ -126,33 +126,33 @@ AXL_RTL_END_CMD_LINE_SWITCH_TABLE ()
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CCmdLineParser: public rtl::CCmdLineParserT <CCmdLineParser, CCmdLineSwitchTable>
+class CmdLineParser: public rtl::CmdLineParser <CmdLineParser, CmdLineSwitchTable>
 {
-	friend class rtl::CCmdLineParserT <CCmdLineParser, CCmdLineSwitchTable>;
+	friend class rtl::CmdLineParser <CmdLineParser, CmdLineSwitchTable>;
 
 protected:
-	TCmdLine* m_pCmdLine;
-	size_t m_TargetIdx;
+	CmdLine* m_cmdLine;
+	size_t m_targetIdx;
 
 public:
-	CCmdLineParser (TCmdLine* pCmdLine)
+	CmdLineParser (CmdLine* cmdLine)
 	{
-		m_pCmdLine = pCmdLine;
-		m_TargetIdx = 0;
+		m_cmdLine = cmdLine;
+		m_targetIdx = 0;
 	}
 
 protected:
 	bool
-	OnValue (const char* pValue);
+	onValue (const char* value);
 
 	bool
-	OnSwitch (
-		ESwitch Switch,
-		const char* pValue
+	onSwitch (
+		SwitchKind switchKind,
+		const char* value
 		);
 
 	bool
-	Finalize ();
+	finalize ();
 };
 
 //.............................................................................

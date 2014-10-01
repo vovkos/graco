@@ -11,51 +11,51 @@
 
 //.............................................................................
 
-class CModule
+class Module
 {	
-	friend class CParser;
+	friend class Parser;
 
 protected:
-	rtl::CArrayT <CNode*> m_ParseTable;
-	size_t m_LookaheadLimit;
-	size_t m_Lookahead;
-	CClassMgr m_ClassMgr;
-	CDefineMgr m_DefineMgr;
-	CNodeMgr m_NodeMgr;
+	rtl::Array <Node*> m_parseTable;
+	size_t m_lookaheadLimit;
+	size_t m_lookahead;
+	ClassMgr m_classMgr;
+	DefineMgr m_defineMgr;
+	NodeMgr m_nodeMgr;
 
 public:
-	rtl::CBoxListT <rtl::CString> m_ImportList;
+	rtl::BoxList <rtl::String> m_importList;
 
 public:
-	CModule ();
+	Module ();
 
 	void
-	Clear ();
+	clear ();
 
 	bool
-	Build (TCmdLine* pCmdLine);
+	build (CmdLine* cmdLine);
 
 	void
-	Export (lua::CLuaState* pLuaState);
+	luaExport (lua::LuaState* luaState);
 
 	void
-	Trace ();
-
-	rtl::CString 
-	GenerateBnfString ();
+	trace ();
+	
+	rtl::String 
+	generateBnfString ();
 
 	bool
-	WriteBnfFile (const char* pFileName);
+	writeBnfFile (const char* fileName);
 
 protected:
 	void
-	ExportDefines (lua::CLuaState* pLuaState);
+	luaExportDefines (lua::LuaState* luaState);
 
 	void
-	ExportClassTable (lua::CLuaState* pLuaState);
+	luaExportClassTable (lua::LuaState* luaState);
 
 	void
-	ExportParseTable (lua::CLuaState* pLuaState);
+	luaExportParseTable (lua::LuaState* luaState);
 };
 
 //.............................................................................

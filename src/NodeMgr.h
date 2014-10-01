@@ -8,169 +8,169 @@
 
 //.............................................................................
 
-class CNodeMgr
+class NodeMgr
 {
-	friend class CModule;
-	friend class CParser;
-	friend class CLaDfaBuilder;
-	friend class CParseTableBuilder;
+	friend class Module;
+	friend class Parser;
+	friend class LaDfaBuilder;
+	friend class ParseTableBuilder;
 
 protected:
-	rtl::CHashTableMapT <int, CSymbolNode*, rtl::CHashIdT <int>, rtl::CCmpT <int> > m_TokenMap;
-	rtl::CStringHashTableMapT <CSymbolNode*> m_SymbolMap;
+	rtl::HashTableMap <int, SymbolNode*, rtl::HashId <int>, rtl::Cmp <int> > m_tokenMap;
+	rtl::StringHashTableMap <SymbolNode*> m_symbolMap;
 
-	CGrammarNode m_EpsilonNode;
-	CSymbolNode m_EofTokenNode;
-	CSymbolNode m_AnyTokenNode;
-	CSymbolNode m_StartPragmaSymbol;
-	CSymbolNode* m_pPrimaryStartSymbol;
+	GrammarNode m_epsilonNode;
+	SymbolNode m_eofTokenNode;
+	SymbolNode m_anyTokenNode;
+	SymbolNode m_startPragmaSymbol;
+	SymbolNode* m_primaryStartSymbol;
 
-	rtl::CStdListT <CSymbolNode> m_CharTokenList;
-	rtl::CStdListT <CSymbolNode> m_NamedTokenList;
-	rtl::CStdListT <CSymbolNode> m_NamedSymbolList;
-	rtl::CStdListT <CSymbolNode> m_TempSymbolList;
-	rtl::CStdListT <CSequenceNode> m_SequenceList;
-	rtl::CStdListT <CBeaconNode> m_BeaconList;
-	rtl::CStdListT <CDispatcherNode> m_DispatcherList;
-	rtl::CStdListT <CActionNode> m_ActionList;
-	rtl::CStdListT <CArgumentNode> m_ArgumentList;
-	rtl::CStdListT <CConflictNode> m_ConflictList;
-	rtl::CStdListT <CLaDfaNode> m_LaDfaList;
+	rtl::StdList <SymbolNode> m_charTokenList;
+	rtl::StdList <SymbolNode> m_namedTokenList;
+	rtl::StdList <SymbolNode> m_namedSymbolList;
+	rtl::StdList <SymbolNode> m_tempSymbolList;
+	rtl::StdList <SequenceNode> m_sequenceList;
+	rtl::StdList <BeaconNode> m_beaconList;
+	rtl::StdList <DispatcherNode> m_dispatcherList;
+	rtl::StdList <ActionNode> m_actionList;
+	rtl::StdList <ArgumentNode> m_argumentList;
+	rtl::StdList <ConflictNode> m_conflictList;
+	rtl::StdList <LaDfaNode> m_laDfaList;
 
-	rtl::CArrayT <CSymbolNode*> m_TokenArray;  // char tokens + named tokens
-	rtl::CArrayT <CSymbolNode*> m_SymbolArray; // named symbols + temp symbols
+	rtl::Array <SymbolNode*> m_tokenArray;  // char tokens + named tokens
+	rtl::Array <SymbolNode*> m_symbolArray; // named symbols + temp symbols
 
-	size_t m_MasterCount;
+	size_t m_masterCount;
 
 public:
-	CNodeMgr ();
+	NodeMgr ();
 
 	bool
-	IsEmpty ()
+	isEmpty ()
 	{
-		return m_NamedSymbolList.IsEmpty ();
+		return m_namedSymbolList.isEmpty ();
 	}
 
 	void
-	Clear ();
+	clear ();
 
 	void
-	Export (lua::CLuaState* pLuaState);
+	luaExport (lua::LuaState* luaState);
 
-	CSymbolNode*
-	GetTokenNode (int Token);
+	SymbolNode*
+	getTokenNode (int token);
 
-	CSymbolNode*
-	GetSymbolNode (const rtl::CString& Name);
+	SymbolNode*
+	getSymbolNode (const rtl::String& name);
 
-	CSymbolNode*
-	CreateTempSymbolNode ();
+	SymbolNode*
+	createTempSymbolNode ();
 
-	CSequenceNode*
-	CreateSequenceNode ();
+	SequenceNode*
+	createSequenceNode ();
 
-	CSequenceNode*
-	CreateSequenceNode (CGrammarNode* pNode);
+	SequenceNode*
+	createSequenceNode (GrammarNode* node);
 
-	CBeaconNode*
-	CreateBeaconNode (CSymbolNode* pTarget);
+	BeaconNode*
+	createBeaconNode (SymbolNode* target);
 
 	void
-	DeleteBeaconNode (CBeaconNode* pNode)
+	deleteBeaconNode (BeaconNode* node)
 	{
-		m_BeaconList.Delete (pNode);
+		m_beaconList.erase (node);
 	}
 
 	void
-	DeleteLaDfaNode (CLaDfaNode* pNode)
+	deleteLaDfaNode (LaDfaNode* node)
 	{
-		m_LaDfaList.Delete (pNode);
+		m_laDfaList.erase (node);
 	}
 
-	CDispatcherNode*
-	CreateDispatcherNode (CSymbolNode* pSymbol);
+	DispatcherNode*
+	createDispatcherNode (SymbolNode* symbol);
 
-	CActionNode*
-	CreateActionNode ();
+	ActionNode*
+	createActionNode ();
 
-	CArgumentNode*
-	CreateArgumentNode ();
+	ArgumentNode*
+	createArgumentNode ();
 
-	CConflictNode*
-	CreateConflictNode ();
+	ConflictNode*
+	createConflictNode ();
 
-	CLaDfaNode*
-	CreateLaDfaNode ();
+	LaDfaNode*
+	createLaDfaNode ();
 
-	CGrammarNode*
-	CreateQuantifierNode (
-		CGrammarNode* pNode,
-		int Kind
+	GrammarNode*
+	createQuantifierNode (
+		GrammarNode* node,
+		int kind
 		);
 
 	void
-	Trace ();
+	trace ();
 
 	void
-	Export ();
+	luaExport ();
 
 	void
-	MarkReachableNodes ();
+	markReachableNodes ();
 
 	void
-	DeleteUnreachableNodes ();
+	deleteUnreachableNodes ();
 
 	void 
-	IndexTokens ();
+	indexTokens ();
 
 	void 
-	IndexSymbols ();
+	indexSymbols ();
 
 	void 
-	IndexSequences ();
+	indexSequences ();
 
 	void 
-	IndexBeacons ();
+	indexBeacons ();
 
 	void 
-	IndexDispatchers ();
+	indexDispatchers ();
 
 	void 
-	IndexActions ();
+	indexActions ();
 
 	void 
-	IndexArguments ();
+	indexArguments ();
 
 	void 
-	IndexLaDfaNodes ();
+	indexLaDfaNodes ();
 
 protected:
 	void
-	ExportTokenTable (lua::CLuaState* pLuaState);
+	luaExportTokenTable (lua::LuaState* luaState);
 
 	void
-	ExportSymbolTable (lua::CLuaState* pLuaState);
+	luaExportSymbolTable (lua::LuaState* luaState);
 
 	void
-	ExportSequenceTable (lua::CLuaState* pLuaState);
+	luaExportSequenceTable (lua::LuaState* luaState);
 
 	void
-	ExportLaDfaTable (lua::CLuaState* pLuaState);
+	luaExportLaDfaTable (lua::LuaState* luaState);
 
 	void
-	ExportNodeArray (
-		lua::CLuaState* pLuaState,
-		const char* pName,
-		CNode* const* ppNode,
-		size_t Count
+	luaExportNodeArray (
+		lua::LuaState* luaState,
+		const char* name,
+		Node* const* node,
+		size_t count
 		);
 
 	void
-	ExportNodeList (
-		lua::CLuaState* pLuaState,
-		const char* pName,
-		rtl::CIteratorT <CNode> Node,
-		size_t CountHint = 1
+	luaExportNodeList (
+		lua::LuaState* luaState,
+		const char* name,
+		rtl::Iterator <Node> node,
+		size_t countHint = 1
 		);
 };
 

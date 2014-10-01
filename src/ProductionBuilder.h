@@ -13,72 +13,72 @@
 // removes unnecessary locators,
 // assigns slot indexes 
 
-class CProductionBuilder: public CLexer
+class ProductionBuilder: public Lexer
 {
 protected:
-	enum EVariable
+	enum VariableKind
 	{
-		EVariable_Undefined = 0,
-		EVariable_TokenBeacon,
-		EVariable_SymbolBeacon,
-		EVariable_This,
-		EVariable_Arg,
-		EVariable_Local,
+		VariableKind_Undefined = 0,
+		VariableKind_TokenBeacon,
+		VariableKind_SymbolBeacon,
+		VariableKind_This,
+		VariableKind_Arg,
+		VariableKind_Local,
 	};
 
 protected:
-	CNodeMgr* m_pNodeMgr;
+	NodeMgr* m_nodeMgr;
 	
-	CSymbolNode* m_pSymbol;
-	CGrammarNode* m_pProduction;
-	CDispatcherNode* m_pDispatcher;
-	CGrammarNode* m_pResolver;
+	SymbolNode* m_symbol;
+	GrammarNode* m_production;
+	DispatcherNode* m_dispatcher;
+	GrammarNode* m_resolver;
 
-	rtl::CArrayT <CActionNode*> m_ActionArray;
-	rtl::CArrayT <CArgumentNode*> m_ArgumentArray;
-	rtl::CArrayT <CBeaconNode*> m_BeaconArray;
-	rtl::CArrayT <CBeaconNode*> m_BeaconDeleteArray;
-	rtl::CStringHashTableMapT <CBeaconNode*> m_BeaconMap;
+	rtl::Array <ActionNode*> m_actionArray;
+	rtl::Array <ArgumentNode*> m_argumentArray;
+	rtl::Array <BeaconNode*> m_beaconArray;
+	rtl::Array <BeaconNode*> m_beaconDeleteArray;
+	rtl::StringHashTableMap <BeaconNode*> m_beaconMap;
 
 public:
-	CProductionBuilder (CNodeMgr* pNodeMgr);
+	ProductionBuilder (NodeMgr* nodeMgr);
 
-	CGrammarNode*
-	Build (
-		CSymbolNode* pSymbol,
-		CGrammarNode* pProduction
+	GrammarNode*
+	build (
+		SymbolNode* symbol,
+		GrammarNode* production
 		);
 
 protected:
 	bool
-	Scan (CGrammarNode* pNode);
+	scan (GrammarNode* node);
 
 	bool
-	AddBeacon (CBeaconNode* pBeacon);
+	addBeacon (BeaconNode* beacon);
 
 	void
-	FindAndReplaceUnusedBeacons (CGrammarNode*& pNode);
+	findAndReplaceUnusedBeacons (GrammarNode*& node);
 
 	bool
-	ProcessAllUserCode ();
+	processAllUserCode ();
 
 	bool
-	ProcessUserCode (
-		lex::CSrcPos& SrcPos,
-		rtl::CString* pUserCode,
-		CGrammarNode* pResolver
+	processUserCode (
+		lex::SrcPos& srcPos,
+		rtl::String* userCode,
+		GrammarNode* resolver
 		);
 
-	EVariable
-	FindVariable (
-		int Index,
-		CBeaconNode** ppBeacon
+	VariableKind
+	findVariable (
+		int index,
+		BeaconNode** beacon
 		);
 
-	EVariable
-	FindVariable (
-		const char* pName,
-		CBeaconNode** ppBeacon
+	VariableKind
+	findVariable (
+		const char* name,
+		BeaconNode** beacon
 		);
 };
 

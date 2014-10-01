@@ -7,143 +7,143 @@
 #include "NodeMgr.h"
 #include "CmdLine.h"
 
-class CLaDfaState;
+class LaDfaState;
 
 //.............................................................................
 
-enum ELaDfaThreadMatch
+enum LaDfaThreadMatchKind
 {
-	ELaDfaThreadMatch_None,
-	ELaDfaThreadMatch_Token,
-	ELaDfaThreadMatch_AnyToken,
+	LaDfaThreadMatchKind_None,
+	LaDfaThreadMatchKind_Token,
+	LaDfaThreadMatchKind_AnyToken,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CLaDfaThread: public rtl::TListLink
+class LaDfaThread: public rtl::ListLink
 {
 public:
-	ELaDfaThreadMatch m_Match;
-	CLaDfaState* m_pState;
-	CGrammarNode* m_pResolver;
-	size_t m_ResolverPriority;
-	CNode* m_pProduction;
-	rtl::CArrayT <CNode*> m_Stack;
+	LaDfaThreadMatchKind m_match;
+	LaDfaState* m_state;
+	GrammarNode* m_resolver;
+	size_t m_resolverPriority;
+	Node* m_production;
+	rtl::Array <Node*> m_stack;
 
 public:
-	CLaDfaThread ();
+	LaDfaThread ();
 };
 
 //.............................................................................
 
-enum ELaDfaStateFlag
+enum LaDfaStateFlagKind
 {
-	ELaDfaStateFlag_TokenMatch        = 1,
-	ELaDfaStateFlag_EpsilonProduction = 2, 
+	LaDfaStateFlagKind_TokenMatch        = 1,
+	LaDfaStateFlagKind_EpsilonProduction = 2, 
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CLaDfaState: public rtl::TListLink
+class LaDfaState: public rtl::ListLink
 {
 public:
-	size_t m_Index;
-	int m_Flags;
+	size_t m_index;
+	int m_flags;
 
-	rtl::CStdListT <CLaDfaThread> m_ActiveThreadList;
-	rtl::CStdListT <CLaDfaThread> m_ResolverThreadList;
-	rtl::CStdListT <CLaDfaThread> m_CompleteThreadList;
-	rtl::CStdListT <CLaDfaThread> m_EpsilonThreadList;
+	rtl::StdList <LaDfaThread> m_activeThreadList;
+	rtl::StdList <LaDfaThread> m_resolverThreadList;
+	rtl::StdList <LaDfaThread> m_completeThreadList;
+	rtl::StdList <LaDfaThread> m_epsilonThreadList;
 
-	CLaDfaState* m_pFromState;
-	CSymbolNode* m_pToken;
-	rtl::CArrayT <CLaDfaState*> m_TransitionArray;
-	CLaDfaNode* m_pDfaNode;
+	LaDfaState* m_fromState;
+	SymbolNode* m_token;
+	rtl::Array <LaDfaState*> m_transitionArray;
+	LaDfaNode* m_dfaNode;
 
 public:
-	CLaDfaState ();
+	LaDfaState ();
 
 	bool
-	IsResolved ()
+	isResolved ()
 	{
-		return (m_pDfaNode->m_Flags & ELaDfaNodeFlag_Resolved) != 0;
+		return (m_dfaNode->m_flags & LaDfaNodeFlagKind_Resolved) != 0;
 	}
 
 	bool
-	IsAnyTokenIgnored ()
+	isAnyTokenIgnored ()
 	{
-		return (m_Flags & ELaDfaStateFlag_TokenMatch) || (m_Flags & ELaDfaStateFlag_EpsilonProduction);
+		return (m_flags & LaDfaStateFlagKind_TokenMatch) || (m_flags & LaDfaStateFlagKind_EpsilonProduction);
 	}
 
 	bool
-	IsEmpty ()
+	isEmpty ()
 	{
 		return 
-			m_ActiveThreadList.IsEmpty () &&
-			m_ResolverThreadList.IsEmpty () &&
-			m_CompleteThreadList.IsEmpty () &&
-			m_EpsilonThreadList.IsEmpty ();
+			m_activeThreadList.isEmpty () &&
+			m_resolverThreadList.isEmpty () &&
+			m_completeThreadList.isEmpty () &&
+			m_epsilonThreadList.isEmpty ();
 	}
 
 	bool
-	CalcResolved ();
+	calcResolved ();
 
-	CLaDfaThread*
-	CreateThread (CLaDfaThread* pSrc = NULL);
+	LaDfaThread*
+	createThread (LaDfaThread* src = NULL);
 
-	CNode* 
-	GetResolvedProduction ();
+	Node* 
+	getResolvedProduction ();
 
-	CNode* 
-	GetDefaultProduction ();
+	Node* 
+	getDefaultProduction ();
 };
 
 //.............................................................................
 
-class CLaDfaBuilder
+class LaDfaBuilder
 {
 protected:
-	rtl::CStdListT <CLaDfaState> m_StateList;
-	CNodeMgr* m_pNodeMgr;
-	rtl::CArrayT <CNode*>* m_pParseTable;
-	size_t m_LookeaheadLimit;
-	size_t m_Lookeahead;
+	rtl::StdList <LaDfaState> m_stateList;
+	NodeMgr* m_nodeMgr;
+	rtl::Array <Node*>* m_parseTable;
+	size_t m_lookeaheadLimit;
+	size_t m_lookeahead;
 
 public:
-	CLaDfaBuilder (	
-		CNodeMgr* pNodeMgr,
-		rtl::CArrayT <CNode*>* pParseTable,
-		size_t LookeaheadLimit = 2
+	LaDfaBuilder (	
+		NodeMgr* nodeMgr,
+		rtl::Array <Node*>* parseTable,
+		size_t lookeaheadLimit = 2
 		);
 
-	CNode*
-	Build (
-		TCmdLine* pCmdLine,
-		CConflictNode* pConflict,
-		size_t* pLookahead = NULL
+	Node*
+	build (
+		CmdLine* cmdLine,
+		ConflictNode* conflict,
+		size_t* lookahead = NULL
 		); // returns DFA or immediate production
 
 	void
-	Trace ();
+	trace ();
 
 	size_t
-	GetLookahead ()
+	getLookahead ()
 	{
-		return m_Lookeahead;
+		return m_lookeahead;
 	}
 
 protected:
-	CLaDfaState* 
-	CreateState ();
+	LaDfaState* 
+	createState ();
 
-	CLaDfaState*
-	Transition (
-		CLaDfaState* pState,
-		CSymbolNode* pToken
+	LaDfaState*
+	transition (
+		LaDfaState* state,
+		SymbolNode* token
 		);
 
 	void
-	ProcessThread (CLaDfaThread* pThread);
+	processThread (LaDfaThread* thread);
 };
 
 //.............................................................................

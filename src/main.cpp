@@ -6,19 +6,19 @@
 
 //.............................................................................
 
-enum EError
+enum ErrorKind
 {
-	EError_Success = 0,
-	EError_InvalidCmdLine,
-	EError_ParseFailure,
-	EError_BuildFailure,
-	EError_GenerateFailure,
+	ErrorKind_Success = 0,
+	ErrorKind_InvalidCmdLine,
+	ErrorKind_ParseFailure,
+	ErrorKind_BuildFailure,
+	ErrorKind_GenerateFailure,
 };
 
 //.............................................................................
 
 void
-PrintVersion ()
+printVersion ()
 {
 	printf (
 		"Bulldozer (%s) v%d.%d.%d\n",
@@ -30,12 +30,12 @@ PrintVersion ()
 }
 
 void
-PrintUsage ()
+printUsage ()
 {
-	PrintVersion ();
+	printVersion ();
 
-	rtl::CString HelpString = CCmdLineSwitchTable::GetHelpString ();
-	printf ("Usage: bulldozer [<options>...] <source_file>\n%s", HelpString.cc ());
+	rtl::String helpString = CmdLineSwitchTable::getHelpString ();
+	printf ("Usage: bulldozer [<options>...] <source_file>\n%s", helpString.cc ());
 }
 
 //.............................................................................
@@ -54,108 +54,108 @@ main (
 	)
 #endif
 {
-	bool Result;
+	bool result;
 
-	err::CParseErrorProvider::Register ();
+	err::registerParseErrorProvider ();
 
-	TCmdLine CmdLine;
-	CCmdLineParser CmdLineParser (&CmdLine);
-	Result = CmdLineParser.Parse (argc, argv);
-	if (!Result)
+	CmdLine cmdLine;
+	CmdLineParser cmdLineParser (&cmdLine);
+	result = cmdLineParser.parse (argc, argv);
+	if (!result)
 		return false;
 
-	if (CmdLine.m_InputFileName.IsEmpty ())
+	if (cmdLine.m_inputFileName.isEmpty ())
 	{
-		PrintUsage ();
-		return EError_Success;
+		printUsage ();
+		return ErrorKind_Success;
 	}
 
-	rtl::CString SrcFilePath = io::GetFullFilePath (CmdLine.m_InputFileName);
-	if (SrcFilePath.IsEmpty ())
+	rtl::String srcFilePath = io::getFullFilePath (cmdLine.m_inputFileName);
+	if (srcFilePath.isEmpty ())
 	{
 		printf (
 			"Cannot get full file path of '%s': %s\n",
-			CmdLine.m_InputFileName.cc (), // thanks a lot gcc
-			err::GetError ()->GetDescription ().cc ()
+			cmdLine.m_inputFileName.cc (), // thanks a lot gcc
+			err::getError ()->getDescription ().cc ()
 			);
-		return EError_ParseFailure;
+		return ErrorKind_ParseFailure;
 	}
 
 	//if (pTraceFileName)
 	//	stdout = fopen (pTraceFileName, "rwt");
 
-	CModule Module;
-	CParser Parser;
+	Module module;
+	Parser parser;
 
-	Result = Parser.ParseFile (&Module, &CmdLine, SrcFilePath);
-	if (!Result)
+	result = parser.parseFile (&module, &cmdLine, srcFilePath);
+	if (!result)
 	{
-		printf ("%s\n", err::GetError ()->GetDescription ().cc ());
-		return EError_ParseFailure;
+		printf ("%s\n", err::getError ()->getDescription ().cc ());
+		return ErrorKind_ParseFailure;
 	}
 
-	if (!Module.m_ImportList.IsEmpty ())
+	if (!module.m_importList.isEmpty ())
 	{
-		rtl::CStringHashTable FilePathSet;
-		FilePathSet.Goto (SrcFilePath);
+		rtl::StringHashTable filePathSet;
+		filePathSet.visit (srcFilePath);
 
-		rtl::CBoxIteratorT <rtl::CString> Import = Module.m_ImportList.GetHead ();
-		for (; Import; Import++)
+		rtl::BoxIterator <rtl::String> import = module.m_importList.getHead ();
+		for (; import; import++)
 		{
-			rtl::CString ImportFilePath = *Import;
-			if (FilePathSet.Find (ImportFilePath))
+			rtl::String importFilePath = *import;
+			if (filePathSet.find (importFilePath))
 				continue;
 
-			Result = Parser.ParseFile (&Module, &CmdLine, ImportFilePath);
-			if (!Result)
+			result = parser.parseFile (&module, &cmdLine, importFilePath);
+			if (!result)
 			{
-				printf ("%s\n", err::GetError ()->GetDescription ().cc ());
-				return EError_ParseFailure;
+				printf ("%s\n", err::getError ()->getDescription ().cc ());
+				return ErrorKind_ParseFailure;
 			}
 
-			FilePathSet.Goto (ImportFilePath);
+			filePathSet.visit (importFilePath);
 		}
 	}
 
-	if (!CmdLine.m_BnfFileName.IsEmpty ())
+	if (!cmdLine.m_bnfFileName.isEmpty ())
 	{
-		Result = Module.WriteBnfFile (CmdLine.m_BnfFileName);
-		if (!Result)
+		result = module.writeBnfFile (cmdLine.m_bnfFileName);
+		if (!result)
 		{
-			printf ("%s\n", err::GetError ()->GetDescription ().cc ());
-			return EError_BuildFailure;
+			printf ("%s\n", err::getError ()->getDescription ().cc ());
+			return ErrorKind_BuildFailure;
 		}
 	}
 
-	Result = Module.Build (&CmdLine);
-	if (!Result)
+	result = module.build (&cmdLine);
+	if (!result)
 	{
-		printf ("%s\n", err::GetError ()->GetDescription ().cc ());
-		return EError_BuildFailure;
+		printf ("%s\n", err::getError ()->getDescription ().cc ());
+		return ErrorKind_BuildFailure;
 	}
 
-	if (CmdLine.m_Flags & ECmdLineFlag_Verbose)
-		Module.Trace ();
+	if (cmdLine.m_flags & CmdLineFlagKind_Verbose)
+		module.trace ();
 
-	CGenerator Generator;
-	Generator.Prepare (&Module);
-	Generator.m_pCmdLine = &CmdLine;
+	Generator generator;
+	generator.prepare (&module);
+	generator.m_cmdLine = &cmdLine;
 
-	ASSERT (CmdLine.m_OutputFileNameList.GetCount () == CmdLine.m_FrameFileNameList.GetCount ());
-	rtl::CBoxIteratorT <rtl::CString> OutputFileNameIt = CmdLine.m_OutputFileNameList.GetHead ();
-	rtl::CBoxIteratorT <rtl::CString> FrameFileNameIt = CmdLine.m_FrameFileNameList.GetHead ();
+	ASSERT (cmdLine.m_outputFileNameList.getCount () == cmdLine.m_frameFileNameList.getCount ());
+	rtl::BoxIterator <rtl::String> outputFileNameIt = cmdLine.m_outputFileNameList.getHead ();
+	rtl::BoxIterator <rtl::String> frameFileNameIt = cmdLine.m_frameFileNameList.getHead ();
 
-	for (; OutputFileNameIt && FrameFileNameIt; OutputFileNameIt++, FrameFileNameIt++)
+	for (; outputFileNameIt && frameFileNameIt; outputFileNameIt++, frameFileNameIt++)
 	{
-		Result = Generator.Generate (*OutputFileNameIt, *FrameFileNameIt);
-		if (!Result)
+		result = generator.generate (*outputFileNameIt, *frameFileNameIt);
+		if (!result)
 		{
-			printf ("%s\n", err::GetError ()->GetDescription ().cc ());
-			return EError_GenerateFailure;
+			printf ("%s\n", err::getError ()->getDescription ().cc ());
+			return ErrorKind_GenerateFailure;
 		}
 	}
 
-	return EError_Success;
+	return ErrorKind_Success;
 }
 
 //.............................................................................

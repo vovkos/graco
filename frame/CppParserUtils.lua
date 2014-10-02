@@ -5,11 +5,11 @@ if NoPpLine then
 end
 
 if ParserClassName == nil then
-	ParserClassName = "CParser"
+	ParserClassName = "Parser"
 end
 
-AstNodeVariableName = "__pAstNode"
-SymbolVariableName  = "__pSymbol"
+AstNodeVariableName = "__astNode"
+SymbolVariableName  = "__symbol"
 
 ClassCount      = #ClassTable
 TokenCount      = #TokenTable
@@ -74,9 +74,9 @@ function GetSymbolDeclaration (
 	Value
 	)
 	if Symbol.IsCustom then
-		return string.format ("CSymbolNode_%s* %s = (CSymbolNode_%s*) %s;", Symbol.Name, Name, Symbol.Name, Value)
+		return string.format ("SymbolNode_%s* %s = (SymbolNode_%s*) %s;", Symbol.Name, Name, Symbol.Name, Value)
 	else
-		return string.format ("CSymbolNode* %s = %s;", Name, Value)
+		return string.format ("SymbolNode* %s = %s;", Name, Value)
 	end
 end
 
@@ -88,9 +88,9 @@ function GetAstDeclaration (
 	SymbolName
 	)
 	if Symbol.Class then
-		return string.format ("%s* %s = (%s*) %s->m_pAstNode;", Symbol.Class, AstName, Symbol.Class, SymbolName)
+		return string.format ("%s* %s = (%s*) %s->m_astNode;", Symbol.Class, AstName, Symbol.Class, SymbolName)
 	else
-		return string.format ("CAstNode* %s = %s->m_pAstNode;", AstName, SymbolName)
+		return string.format ("AstNode* %s = %s->m_astNode;", AstName, SymbolName)
 	end
 end
 
@@ -109,9 +109,9 @@ function ProcessActionUserCode (
 			if s == "" or s == "ast" then
 				return string.format ("(*%s)", AstName)
 			elseif s == "arg" then
-				return string.format ("%s->m_Arg", SymbolName)
+				return string.format ("%s->m_arg", SymbolName)
 			elseif s == "local" then
-				return string.format ("%s->m_Local", SymbolName)
+				return string.format ("%s->m_local", SymbolName)
 			elseif not Dispatcher then
 				error (string.format ("invalid locator $%s", s))
 			else
@@ -119,11 +119,11 @@ function ProcessActionUserCode (
 				Symbol = Dispatcher.BeaconTable [SlotIndex + 1].Symbol
 
 				if not Symbol then
-					return string.format ("(*GetTokenLocator (%d))", SlotIndex)
+					return string.format ("(*getTokenLocator (%d))", SlotIndex)
 				elseif Symbol.Class then
-					return string.format ("(*(%s*) GetAstLocator (%d))", Symbol.Class, SlotIndex)
+					return string.format ("(*(%s*) getAstLocator (%d))", Symbol.Class, SlotIndex)
 				else
-					return string.format ("(*GetAstLocator (%d))", SlotIndex)
+					return string.format ("(*getAstLocator (%d))", SlotIndex)
 				end
 			end
 		end

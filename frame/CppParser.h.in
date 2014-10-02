@@ -12,19 +12,19 @@ $OpenNamespace
 
 //.............................................................................
 
-enum ESymbol
+enum SymbolKind
 {
 	%{
 	for i = 1, NamedSymbolCount do
 		Symbol = SymbolTable [i]
-		Emit ("ESymbol_", Symbol.Name, " = ", i - 1, ", ")
+		Emit ("SymbolKind_", Symbol.Name, " = ", i - 1, ", ")
 	}
 	%{ end }
 };
 
 //.............................................................................
 
-class $ParserClassName: public llk::CParserT <$ParserClassName, CToken>
+class $ParserClassName: public llk::Parser <$ParserClassName, Token>
 {
 public:
 	enum
@@ -77,7 +77,7 @@ public:
 		if Class.BaseClass then
 			BaseClass = Class.BaseClass
 		else
-			BaseClass = "CAstNode"
+			BaseClass = "AstNode"
 		end
 	}
 	class $(Class.Name): public $BaseClass
@@ -95,7 +95,7 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 	for i = 1, NamedSymbolCount do
 		Symbol = SymbolTable [i]
 		if Symbol.IsCustom then }
-	class CSymbolNode_$(Symbol.Name): public CSymbolNode
+	class SymbolNode_$(Symbol.Name): public SymbolNode
 	{
 	public:
 			%{ if Symbol.Arg then }
@@ -104,7 +104,7 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 $PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.ArgLine))
 			$((string.gsub (Symbol.Arg, ",", ";")));
 $PpLinePrefix #line $(GetPpLineDefault ())
-		} m_Arg;
+		} m_arg;
 			%{ end
 			if Symbol.Local then }
 		struct
@@ -112,17 +112,17 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 $PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.LocalLine))
 			$(Symbol.Local);
 $PpLinePrefix #line $(GetPpLineDefault ())
-		} m_Local;
+		} m_local;
 			%{ end }
-		CSymbolNode_$(Symbol.Name) ()
+		SymbolNode_$(Symbol.Name) ()
 		{
-			m_Flags = llk::ESymbolNodeFlag_Named;
-			m_Index = ESymbol_$(Symbol.Name);
+			m_flags = llk::SymbolNodeFlagKind_Named;
+			m_index = SymbolKind_$(Symbol.Name);
 			%{ if Symbol.Enter then }
-			m_Flags |= llk::ESymbolNodeFlag_HasEnter;
+			m_flags |= llk::SymbolNodeFlagKind_HasEnter;
 			%{ end
 				if Symbol.Leave then }
-			m_Flags |= llk::ESymbolNodeFlag_HasLeave;
+			m_flags |= llk::SymbolNodeFlagKind_HasLeave;
 			%{ end }
 		}
 	};
@@ -137,52 +137,52 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 
 	static
 	size_t*
-	GetParseTable ();
+	getParseTable ();
 
 	static
 	size_t*
-	GetSequence (size_t Index);
+	getSequence (size_t Index);
 
 	static
 	size_t
-	GetTokenIndex (int Token);
+	getTokenIndex (int Token);
 
 	static
 	int
-	GetTokenFromIndex (size_t Index);
+	getTokenFromIndex (size_t Index);
 
 	static
 	const char*
-	GetSymbolName (size_t Index);
+	getSymbolName (size_t Index);
 
 	static
-	CSymbolNode*
-	CreateSymbolNode (size_t Index);
+	SymbolNode*
+	createSymbolNode (size_t Index);
 
 	static
 	size_t*
-	GetBeacon (size_t Index);
+	getBeacon (size_t Index);
 
 	bool
-	Action (size_t Index);
+	action (size_t Index);
 
 	void
-	Argument (
+	argument (
 		size_t Index,
-		CSymbolNode* pSymbol
+		SymbolNode* pSymbol
 		);
 
 	bool
-	Enter (size_t Index);
+	enter (size_t Index);
 
 	bool
-	Leave (size_t Index);
+	leave (size_t Index);
 
-	ELaDfaResult
-	LaDfa (
+	LaDfaResultKind
+	laDfa (
 		size_t Index,
 		int LookaheadToken,
-		TLaDfaTransition* pTransition
+		LaDfaTransition* pTransition
 		);
 };
 

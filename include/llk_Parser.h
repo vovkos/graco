@@ -81,7 +81,7 @@ public:
 
 	SymbolNode*
 	create (
-		int symbol = T::startSymbol,
+		int symbol = T::StartSymbol,
 		bool isBuildingAst = false
 		)
 	{
@@ -90,7 +90,7 @@ public:
 		if (isBuildingAst)
 			m_flags |= FlagKind_BuildingAst;
 
-		return (SymbolNode*) pushPrediction (T::symbolFirst + symbol);
+		return (SymbolNode*) pushPrediction (T::SymbolFirst + symbol);
 	}
 
 	axl::ref::Buf <Ast>
@@ -122,13 +122,13 @@ public:
 
 		size_t* parseTable = static_cast <T*> (this)->getParseTable ();
 		size_t tokenIndex = static_cast <T*> (this)->getTokenIndex (token->m_token);
-		ASSERT (tokenIndex < T::tokenCount);
+		ASSERT (tokenIndex < T::TokenCount);
 
 		// first check for pragma productions out of band
 
-		if (T::startPragmaSymbol != -1)
+		if (T::StartPragmaSymbol != -1)
 		{
-			size_t productionIndex = parseTable [T::startPragmaSymbol * T::tokenCount + tokenIndex];
+			size_t productionIndex = parseTable [T::StartPragmaSymbol * T::TokenCount + tokenIndex];
 			if (productionIndex != -1 && productionIndex != 0)
 				pushPrediction (productionIndex);
 		}
@@ -203,7 +203,7 @@ public:
 			case MatchResultKind_NextTokenNoAdvance:
 				m_currentToken = *m_tokenCursor;
 				tokenIndex = static_cast <T*> (this)->getTokenIndex (m_currentToken.m_token);
-				ASSERT (tokenIndex < T::tokenCount);
+				ASSERT (tokenIndex < T::TokenCount);
 				m_flags &= ~FlagKind_TokenMatch;
 				break;
 
@@ -316,7 +316,7 @@ protected:
 	MatchResultKind
 	matchEmptyPredictionStack ()
 	{
-		if ((m_flags & FlagKind_TokenMatch) || m_currentToken.m_token == T::eofToken)
+		if ((m_flags & FlagKind_TokenMatch) || m_currentToken.m_token == T::EofToken)
 			return MatchResultKind_NextToken;
 
 		axl::err::setFormatStringError ("prediction stack empty while parsing '%s'", m_currentToken.getName ());
@@ -332,7 +332,7 @@ protected:
 		if (m_flags & FlagKind_TokenMatch)
 			return MatchResultKind_NextToken;
 
-		if (node->m_index != T::anyToken && node->m_index != tokenIndex)
+		if (node->m_index != T::AnyToken && node->m_index != tokenIndex)
 		{
 			if (m_resolverStack.isEmpty ()) // can't rollback so set error
 			{
@@ -417,7 +417,7 @@ protected:
 			}
 		}
 
-		size_t productionIndex = parseTable [node->m_index * T::tokenCount + tokenIndex];
+		size_t productionIndex = parseTable [node->m_index * T::TokenCount + tokenIndex];
 		if (productionIndex == -1)
 		{
 			if (m_resolverStack.isEmpty ()) // can't rollback so set error
@@ -434,7 +434,7 @@ protected:
 			return MatchResultKind_Fail;
 		}
 
-		ASSERT (productionIndex < T::totalCount);
+		ASSERT (productionIndex < T::TotalCount);
 
 		if (!(node->m_flags & SymbolNodeFlagKind_Named))
 			popPrediction ();
@@ -479,7 +479,7 @@ protected:
 			// successful match of resolver
 
 			size_t productionIndex = node->m_resolverThenIndex;
-			ASSERT (productionIndex < T::laDfaFirst);
+			ASSERT (productionIndex < T::LaDfaFirst);
 
 			m_tokenCursor = node->m_reparseLaDfaTokenCursor;
 
@@ -504,11 +504,11 @@ protected:
 		switch (laDfaResult)
 		{
 		case LaDfaResultKind_Production:
-			if (transition.m_productionIndex >= T::laDfaFirst &&
-				transition.m_productionIndex < T::laDfaEnd)
+			if (transition.m_productionIndex >= T::LaDfaFirst &&
+				transition.m_productionIndex < T::LaDfaEnd)
 			{
 				// stil in lookahead DFA, need more tokens...
-				node->m_index = transition.m_productionIndex - T::laDfaFirst;
+				node->m_index = transition.m_productionIndex - T::LaDfaFirst;
 				return MatchResultKind_NextToken;
 			}
 			else
@@ -589,12 +589,12 @@ protected:
 
 		// switch to resolver-else branch
 
-		if (laDfaNode->m_resolverElseIndex >= T::laDfaFirst &&
-			laDfaNode->m_resolverElseIndex < T::laDfaEnd)
+		if (laDfaNode->m_resolverElseIndex >= T::LaDfaFirst &&
+			laDfaNode->m_resolverElseIndex < T::LaDfaEnd)
 		{
 			// still in lookahead DFA after rollback...
 
-			laDfaNode->m_index = laDfaNode->m_resolverElseIndex - T::laDfaFirst;
+			laDfaNode->m_index = laDfaNode->m_resolverElseIndex - T::LaDfaFirst;
 
 			if (!(laDfaNode->m_flags & LaDfaNodeFlagKind_HasChainedResolver))
 				return MatchResultKind_NextToken; // if no chained resolver, advance to next token
@@ -625,18 +625,18 @@ protected:
 	Node*
 	createNode (size_t masterIndex)
 	{
-		ASSERT (masterIndex < T::totalCount);
+		ASSERT (masterIndex < T::TotalCount);
 
 		Node* node = NULL;
 
-		if (masterIndex < T::tokenEnd)
+		if (masterIndex < T::TokenEnd)
 		{
 			node = AXL_MEM_NEW (TokenNode);
 			node->m_index = masterIndex;
 		}
-		else if (masterIndex < T::namedSymbolEnd)
+		else if (masterIndex < T::NamedSymbolEnd)
 		{
-			size_t index = masterIndex - T::symbolFirst;
+			size_t index = masterIndex - T::SymbolFirst;
 			SymbolNode* symbolNode = static_cast <T*> (this)->createSymbolNode (index);
 			if (symbolNode->m_astNode && (m_flags & FlagKind_BuildingAst))
 			{
@@ -649,32 +649,32 @@ protected:
 
 			node = symbolNode;
 		}
-		else if (masterIndex < T::symbolEnd)
+		else if (masterIndex < T::SymbolEnd)
 		{
 			node = AXL_MEM_NEW (SymbolNode);
-			node->m_index = masterIndex - T::symbolFirst;
+			node->m_index = masterIndex - T::SymbolFirst;
 		}
-		else if (masterIndex < T::sequenceEnd)
+		else if (masterIndex < T::SequenceEnd)
 		{
 			node = AXL_MEM_NEW (Node);
 			node->m_kind = NodeKind_Sequence;
-			node->m_index = masterIndex - T::sequenceFirst;
+			node->m_index = masterIndex - T::SequenceFirst;
 		}
-		else if (masterIndex < T::actionEnd)
+		else if (masterIndex < T::ActionEnd)
 		{
 			node = AXL_MEM_NEW (Node);
 			node->m_kind = NodeKind_Action;
-			node->m_index = masterIndex - T::actionFirst;
+			node->m_index = masterIndex - T::ActionFirst;
 		}
-		else if (masterIndex < T::argumentEnd)
+		else if (masterIndex < T::ArgumentEnd)
 		{
 			node = AXL_MEM_NEW (Node);
 			node->m_kind = NodeKind_Argument;
-			node->m_index = masterIndex - T::argumentFirst;
+			node->m_index = masterIndex - T::ArgumentFirst;
 		}
-		else if (masterIndex < T::beaconEnd)
+		else if (masterIndex < T::BeaconEnd)
 		{
-			size_t* p = static_cast <T*> (this)->getBeacon (masterIndex - T::beaconFirst);
+			size_t* p = static_cast <T*> (this)->getBeacon (masterIndex - T::BeaconFirst);
 			size_t slotIndex = p [0];
 			size_t targetIndex = p [1];
 
@@ -692,10 +692,10 @@ protected:
 		}
 		else
 		{
-			ASSERT (masterIndex < T::laDfaEnd);
+			ASSERT (masterIndex < T::LaDfaEnd);
 
 			node = AXL_MEM_NEW (LaDfaNode);
-			node->m_index = masterIndex - T::laDfaFirst;
+			node->m_index = masterIndex - T::LaDfaFirst;
 		}
 
 		return node;

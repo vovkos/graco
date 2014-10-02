@@ -11,7 +11,7 @@ $OpenNamespace
 //.............................................................................
 
 size_t*
-$ParserClassName::GetParseTable ()
+$ParserClassName::getParseTable ()
 {
 	static
 	size_t _ParseTable [] =
@@ -30,7 +30,7 @@ $ParserClassName::GetParseTable ()
 }
 
 size_t*
-$ParserClassName::GetSequence (size_t Index)
+$ParserClassName::getSequence (size_t Index)
 {
 	static
 	size_t _SequenceTable [] =
@@ -64,7 +64,7 @@ $ParserClassName::GetSequence (size_t Index)
 }
 
 size_t
-$ParserClassName::GetTokenIndex (int Token)
+$ParserClassName::getTokenIndex (int Token)
 {
 	switch (Token)
 	{
@@ -85,7 +85,7 @@ $ParserClassName::GetTokenIndex (int Token)
 }
 
 int
-$ParserClassName::GetTokenFromIndex (size_t Index)
+$ParserClassName::getTokenFromIndex (size_t Index)
 {
 	static
 	const int _TokenTable [] =
@@ -107,7 +107,7 @@ $ParserClassName::GetTokenFromIndex (size_t Index)
 }
 
 const char*
-$ParserClassName::GetSymbolName (size_t Index)
+$ParserClassName::getSymbolName (size_t Index)
 {
 	static
 	const char* _SymbolNameTable [NamedSymbolCount] =
@@ -123,10 +123,10 @@ $ParserClassName::GetSymbolName (size_t Index)
 	return _SymbolNameTable [Index];
 }
 
-$ParserClassName::CSymbolNode*
-$ParserClassName::CreateSymbolNode (size_t Index)
+$ParserClassName::SymbolNode*
+$ParserClassName::createSymbolNode (size_t Index)
 {
-	CSymbolNode* pNode;
+	SymbolNode* pNode;
 
 	switch (Index)
 	{
@@ -135,45 +135,45 @@ $ParserClassName::CreateSymbolNode (size_t Index)
 		Symbol = SymbolTable [i]
 		if Symbol.IsCustom then
 	}
-	case ESymbol_$(Symbol.Name):
-		pNode = AXL_MEM_NEW (CSymbolNode_$(Symbol.Name));
+	case SymbolKind_$(Symbol.Name):
+		pNode = AXL_MEM_NEW (SymbolNode_$(Symbol.Name));
 		%{	if Symbol.Class then }
-		pNode->m_pAstNode = AXL_MEM_NEW ($(Symbol.Class));
+		pNode->m_astNode = AXL_MEM_NEW ($(Symbol.Class));
 		%{ elseif not Symbol.IsNoAst then }
-		pNode->m_pAstNode = AXL_MEM_NEW (CAstNode);
+		pNode->m_astNode = AXL_MEM_NEW (AstNode);
 		%{ end }
 		break;
 		%{ elseif Symbol.Enter or Symbol.Leave or Symbol.Class or Symbol.IsNoAst then }
-	case ESymbol_$(Symbol.Name):
-		pNode = CreateStdSymbolNode (Index);
-		pNode->m_Flags |= llk::ESymbolNodeFlag_Named;
+	case SymbolKind_$(Symbol.Name):
+		pNode = createStdSymbolNode (Index);
+		pNode->m_flags |= llk::SymbolNodeFlagKind_Named;
 			%{ if Symbol.Enter then }
-		pNode->m_Flags |= llk::ESymbolNodeFlag_HasEnter;
+		pNode->m_flags |= llk::SymbolNodeFlagKind_HasEnter;
 			%{ end
 				if Symbol.Leave then }
-		pNode->m_Flags |= llk::ESymbolNodeFlag_HasLeave;
+		pNode->m_flags |= llk::SymbolNodeFlagKind_HasLeave;
 			%{ end
 				if Symbol.Class then }
-		pNode->m_pAstNode = AXL_MEM_NEW ($(Symbol.Class));
+		pNode->m_astNode = AXL_MEM_NEW ($(Symbol.Class));
 			%{ elseif not Symbol.IsNoAst then }
-		pNode->m_pAstNode = AXL_MEM_NEW (CAstNode);
+		pNode->m_astNode = AXL_MEM_NEW (AstNode);
 			%{ end }
 		break;
 		%{ end }
 	%{ end }
 	default:
-		pNode = CreateStdSymbolNode (Index);
-		pNode->m_pAstNode = AXL_MEM_NEW (CAstNode);
+		pNode = createStdSymbolNode (Index);
+		pNode->m_astNode = AXL_MEM_NEW (AstNode);
 	};
 
-	if (pNode->m_pAstNode)
-		pNode->m_pAstNode->m_Kind = (int) Index;
+	if (pNode->m_astNode)
+		pNode->m_astNode->m_kind = (int) Index;
 
 	return pNode;
 }
 
 size_t*
-$ParserClassName::GetBeacon (size_t Index)
+$ParserClassName::getBeacon (size_t Index)
 {
 	static
 	size_t _BeaconTable [] [2] =
@@ -192,7 +192,7 @@ $ParserClassName::GetBeacon (size_t Index)
 }
 
 bool
-$ParserClassName::Action (size_t Index)
+$ParserClassName::action (size_t Index)
 {
 	switch (Index)
 	{
@@ -203,7 +203,7 @@ $ParserClassName::Action (size_t Index)
 	}
 	case $(i - 1):
 		{
-		$(GetSymbolDeclaration (ProductionSymbol, SymbolVariableName, "GetSymbolTop ()"))
+		$(GetSymbolDeclaration (ProductionSymbol, SymbolVariableName, "getSymbolTop ()"))
 		$(GetAstDeclaration (ProductionSymbol, AstNodeVariableName, SymbolVariableName))
 $PpLinePrefix #line $(GetPpLine (Action.SrcPos.FilePath, Action.SrcPos.Line))
 		$(ProcessActionUserCode (Action.UserCode, Action.Dispatcher, SymbolVariableName, AstNodeVariableName));
@@ -219,9 +219,9 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 }
 
 void
-$ParserClassName::Argument (
+$ParserClassName::argument (
 	size_t Index,
-	CSymbolNode* pSymbol
+	SymbolNode* pSymbol
 	)
 {
 	switch (Index)
@@ -236,14 +236,14 @@ $ParserClassName::Argument (
 	case $(i - 1):
 		{
 		$(GetSymbolDeclaration (TargetSymbol, "__pTarget", "pSymbol"))
-		$(GetSymbolDeclaration (ProductionSymbol, SymbolVariableName, "GetSymbolTop ()"))
+		$(GetSymbolDeclaration (ProductionSymbol, SymbolVariableName, "getSymbolTop ()"))
 		$(GetAstDeclaration (ProductionSymbol, AstNodeVariableName, SymbolVariableName))
 		%{ for j = 1, #ValueTable do
 			ArgumentName = TargetSymbol.ArgNameTable [j]
 			ArgumentValue = ProcessActionUserCode (ValueTable [j], Argument.Dispatcher, SymbolVariableName, AstNodeVariableName)
 			}
 $PpLinePrefix #line $(GetPpLine (Argument.SrcPos.FilePath, Argument.SrcPos.Line))
-		__pTarget->m_Arg.$ArgumentName = $ArgumentValue;
+		__pTarget->m_arg.$ArgumentName = $ArgumentValue;
 $PpLinePrefix #line $(GetPpLineDefault ())
 		%{ end }
 		}
@@ -255,7 +255,7 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 }
 
 bool
-$ParserClassName::Enter (size_t Index)
+$ParserClassName::enter (size_t Index)
 {
 	switch (Index)
 	{
@@ -263,9 +263,9 @@ $ParserClassName::Enter (size_t Index)
 	for i = 1, NamedSymbolCount do
 		Symbol = SymbolTable [i]
 		if (Symbol.Enter) then }
-	case ESymbol_$(Symbol.Name):
+	case SymbolKind_$(Symbol.Name):
 		{
-			$(GetSymbolDeclaration (Symbol, SymbolVariableName, "GetSymbolTop ()"))
+			$(GetSymbolDeclaration (Symbol, SymbolVariableName, "getSymbolTop ()"))
 			$(GetAstDeclaration (Symbol, AstNodeVariableName, SymbolVariableName))
 $PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.EnterLine))
 			$(ProcessActionUserCode (Symbol.Enter, nil, SymbolVariableName, AstNodeVariableName));
@@ -280,7 +280,7 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 }
 
 bool
-$ParserClassName::Leave (size_t Index)
+$ParserClassName::leave (size_t Index)
 {
 	switch (Index)
 	{
@@ -288,9 +288,9 @@ $ParserClassName::Leave (size_t Index)
 	for i = 1, NamedSymbolCount do
 		Symbol = SymbolTable [i]
 		if (Symbol.Leave) then }
-	case ESymbol_$(Symbol.Name):
+	case SymbolKind_$(Symbol.Name):
 		{
-			$(GetSymbolDeclaration (Symbol, SymbolVariableName, "GetSymbolTop ()"))
+			$(GetSymbolDeclaration (Symbol, SymbolVariableName, "getSymbolTop ()"))
 			$(GetAstDeclaration (Symbol, AstNodeVariableName, SymbolVariableName))
 $PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.LeaveLine))
 			$(ProcessActionUserCode (Symbol.Leave, nil, SymbolVariableName, AstNodeVariableName));
@@ -304,11 +304,11 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 	}
 }
 
-$ParserClassName::ELaDfaResult
-$ParserClassName::LaDfa (
+$ParserClassName::LaDfaResultKind
+$ParserClassName::laDfa (
 	size_t Index,
 	int LookaheadToken,
-	TLaDfaTransition* pTransition
+	LaDfaTransition* pTransition
 	)
 {
 	switch (Index)
@@ -317,13 +317,13 @@ $ParserClassName::LaDfa (
 			DfaNode = LaDfaTable [i]	}
 	case $(i - 1):
 		%{ if DfaNode.Resolver then }
-		pTransition->m_ProductionIndex = $(DfaNode.Production);
-		pTransition->m_ResolverIndex = $(DfaNode.Resolver);
-		pTransition->m_ResolverElseIndex = $(DfaNode.ResolverElse);
+		pTransition->m_productionIndex = $(DfaNode.Production);
+		pTransition->m_resolverIndex = $(DfaNode.Resolver);
+		pTransition->m_resolverElseIndex = $(DfaNode.ResolverElse);
 			%{ if DfaNode.HasChainedResolver then }
-		pTransition->m_Flags = llk::ELaDfaNodeFlag_HasChainedResolver;
+		pTransition->m_flags = llk::LaDfaNodeFlagKind_HasChainedResolver;
 			%{ end }
-		return ELaDfaResult_Resolver;
+		return LaDfaResultKind_Resolver;
 		%{ else }
 		switch (LookaheadToken)
 		{
@@ -333,30 +333,30 @@ $ParserClassName::LaDfa (
 				local TokenString = GetTokenString (Transition.Token) }
 		case $TokenString:
 				%{ if (Transition.Resolver) then }
-			pTransition->m_ProductionIndex = $(Transition.Production);
-			pTransition->m_ResolverIndex = $(Transition.Resolver);
-			pTransition->m_ResolverElseIndex = $(Transition.ResolverElse);
+			pTransition->m_productionIndex = $(Transition.Production);
+			pTransition->m_resolverIndex = $(Transition.Resolver);
+			pTransition->m_resolverElseIndex = $(Transition.ResolverElse);
 					%{ if Transition.HasChainedResolver then }
-			pTransition->m_Flags = llk::ELaDfaNodeFlag_HasChainedResolver;
+			pTransition->m_flags = llk::LaDfaNodeFlagKind_HasChainedResolver;
 					%{ end }
-			return ELaDfaResult_Resolver;
+			return LaDfaResultKind_Resolver;
 				%{ else }
-			pTransition->m_ProductionIndex = $(Transition.Production);
-			return ELaDfaResult_Production;
+			pTransition->m_productionIndex = $(Transition.Production);
+			return LaDfaResultKind_Production;
 				%{ end	}
 		%{ end }
 		default:
 				%{ if (DfaNode.DefaultProduction) then }
-			pTransition->m_ProductionIndex = $(DfaNode.DefaultProduction);
-			return ELaDfaResult_Production;
+			pTransition->m_productionIndex = $(DfaNode.DefaultProduction);
+			return LaDfaResultKind_Production;
 				%{ else }
-			return ELaDfaResult_Fail;
+			return LaDfaResultKind_Fail;
 				%{ end	}
 		}
 		%{ end }
 	%{ end }
 	default:
-		return ELaDfaResult_Fail;
+		return LaDfaResultKind_Fail;
 	}
 }
 

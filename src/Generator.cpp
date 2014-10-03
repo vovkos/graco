@@ -31,7 +31,7 @@ Generator::generate (
 
 	io::MappedFile frameFile;
 
-	result = frameFile.open (frameFilePath, io::FileFlagKind_ReadOnly);
+	result = frameFile.open (frameFilePath, io::FileFlag_ReadOnly);
 	if (!result)
 		return false;
 
@@ -48,7 +48,7 @@ Generator::generate (
 	m_stringTemplate.m_luaState.setGlobalString ("TargetFilePath", targetFilePath);
 	m_stringTemplate.m_luaState.setGlobalString ("FrameFilePath", frameFilePath);
 	m_stringTemplate.m_luaState.setGlobalString ("FrameDir", frameDir);
-	m_stringTemplate.m_luaState.setGlobalBoolean ("NoPpLine", (m_cmdLine->m_flags & CmdLineFlagKind_NoPpLine) != 0);
+	m_stringTemplate.m_luaState.setGlobalBoolean ("NoPpLine", (m_cmdLine->m_flags & CmdLineFlag_NoPpLine) != 0);
 	
 	result = m_stringTemplate.process (&m_buffer, frameFilePath, p, size);
 	if (!result)

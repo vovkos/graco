@@ -36,10 +36,10 @@ enum NodeKind
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum NodeFlagKind
+enum NodeFlag
 {
-	NodeFlagKind_RecursionStopper = 0x0001,
-	NodeFlagKind_Reachable        = 0x0002,
+	NodeFlag_RecursionStopper = 0x0001,
+	NodeFlag_Reachable        = 0x0002,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -75,7 +75,7 @@ public:
 	bool
 	isReachable ()
 	{
-		return (m_flags & NodeFlagKind_Reachable) != 0;
+		return (m_flags & NodeFlag_Reachable) != 0;
 	}
 
 	virtual
@@ -99,10 +99,10 @@ public:
 
 //.............................................................................
 
-enum GrammarNodeFlagKind
+enum GrammarNodeFlag
 {
-	GrammarNodeFlagKind_Nullable = 0x0010,
-	GrammarNodeFlagKind_Final    = 0x0020,
+	GrammarNodeFlag_Nullable = 0x0010,
+	GrammarNodeFlag_Final    = 0x0020,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -134,13 +134,13 @@ public:
 	bool
 	isNullable ()
 	{
-		return (m_flags & GrammarNodeFlagKind_Nullable) != 0;
+		return (m_flags & GrammarNodeFlag_Nullable) != 0;
 	}
 
 	bool
 	isFinal ()
 	{
-		return (m_flags & GrammarNodeFlagKind_Final) != 0;
+		return (m_flags & GrammarNodeFlag_Final) != 0;
 	}
 
 	bool
@@ -166,16 +166,16 @@ protected:
 
 //.............................................................................
 
-enum SymbolNodeFlagKind
+enum SymbolNodeFlag
 {
-	SymbolNodeFlagKind_Named        = 0x0100,
-	SymbolNodeFlagKind_EofToken     = 0x0200,
-	SymbolNodeFlagKind_AnyToken     = 0x0400,
-	SymbolNodeFlagKind_Pragma       = 0x0800,
-	SymbolNodeFlagKind_Start        = 0x1000,
-	SymbolNodeFlagKind_NoAst        = 0x2000,
-	SymbolNodeFlagKind_ResolverUsed = 0x4000,
-	SymbolNodeFlagKind_Nullable     = 0x8000,
+	SymbolNodeFlag_Named        = 0x0100,
+	SymbolNodeFlag_EofToken     = 0x0200,
+	SymbolNodeFlag_AnyToken     = 0x0400,
+	SymbolNodeFlag_Pragma       = 0x0800,
+	SymbolNodeFlag_Start        = 0x1000,
+	SymbolNodeFlag_NoAst        = 0x2000,
+	SymbolNodeFlag_ResolverUsed = 0x4000,
+	SymbolNodeFlag_Nullable     = 0x8000,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -267,9 +267,9 @@ public:
 
 //.............................................................................
 
-enum UserNodeFlagKind
+enum UserNodeFlag
 {
-	UserNodeFlagKind_UserCodeProcessed = 0x010000, // prevent double processing in '+' quantifier
+	UserNodeFlag_UserCodeProcessed = 0x010000, // prevent double processing in '+' quantifier
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -339,10 +339,10 @@ public:
 
 //.............................................................................
 
-enum BeaconNodeFlagKind
+enum BeaconNodeFlag
 {
-	BeaconNodeFlagKind_Added   = 0x0100,
-	BeaconNodeFlagKind_Deleted = 0x0200,
+	BeaconNodeFlag_Added   = 0x0100,
+	BeaconNodeFlag_Deleted = 0x0200,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -439,10 +439,10 @@ public:
 
 //.............................................................................
 
-enum LaDfaNodeFlagKind
+enum LaDfaNodeFlag
 {
-	LaDfaNodeFlagKind_Leaf     = 0x100,
-	LaDfaNodeFlagKind_Resolved = 0x200,
+	LaDfaNodeFlag_Leaf     = 0x100,
+	LaDfaNodeFlag_Resolved = 0x200,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

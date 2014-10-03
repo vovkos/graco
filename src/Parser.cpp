@@ -14,7 +14,7 @@ Parser::parseFile (
 
 	io::MappedFile srcFile;
 
-	result = srcFile.open (filePath, io::FileFlagKind_ReadOnly);
+	result = srcFile.open (filePath, io::FileFlag_ReadOnly);
 	if (!result)
 	{
 		err::setFormatStringError (
@@ -286,12 +286,12 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 
 			nextToken ();
 
-			symbolFlags |= SymbolNodeFlagKind_NoAst;
+			symbolFlags |= SymbolNodeFlag_NoAst;
 			isClassSpecified = true;
 			break;
 
 		case TokenKind_Pragma:
-			if (symbolFlags & SymbolNodeFlagKind_Pragma)
+			if (symbolFlags & SymbolNodeFlag_Pragma)
 			{
 				err::setStringError ("multiple 'pragma' specifiers");
 				return false;
@@ -299,11 +299,11 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 
 			nextToken ();
 
-			symbolFlags |= SymbolNodeFlagKind_Pragma;
+			symbolFlags |= SymbolNodeFlag_Pragma;
 			break;
 
 		case TokenKind_Start:
-			if (symbolFlags & SymbolNodeFlagKind_Start)
+			if (symbolFlags & SymbolNodeFlag_Start)
 			{
 				err::setStringError ("multiple 'start' specifiers");
 				return false;
@@ -311,11 +311,11 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 
 			nextToken ();
 
-			symbolFlags |= SymbolNodeFlagKind_Start;
+			symbolFlags |= SymbolNodeFlag_Start;
 			break;
 
 		case TokenKind_Nullable:
-			if (symbolFlags & SymbolNodeFlagKind_Nullable)
+			if (symbolFlags & SymbolNodeFlag_Nullable)
 			{
 				err::setStringError ("multiple 'nullable' specifiers");
 				return false;
@@ -323,7 +323,7 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 
 			nextToken ();
 
-			symbolFlags |= SymbolNodeFlagKind_Nullable;
+			symbolFlags |= SymbolNodeFlag_Nullable;
 			break;
 
 		case TokenKind_Identifier:
@@ -392,7 +392,7 @@ Parser::classSpecifier ()
 		if (token->m_token != '{' && token->m_token != ':')
 			return cls;
 
-		if (cls->m_flags & ClassFlagKind_Defined)
+		if (cls->m_flags & ClassFlag_Defined)
 		{
 			err::setFormatStringError (
 				"redefinition of class '%s'",
@@ -411,7 +411,7 @@ Parser::classSpecifier ()
 			return NULL;
 
 		cls->m_baseClass = m_module->m_classMgr.getClass (token->m_data.m_string);
-		cls->m_baseClass->m_flags |= ClassFlagKind_Used;
+		cls->m_baseClass->m_flags |= ClassFlag_Used;
 
 		nextToken ();
 	}
@@ -420,7 +420,7 @@ Parser::classSpecifier ()
 	if (!result)
 		return NULL;
 
-	cls->m_flags |= ClassFlagKind_Defined;
+	cls->m_flags |= ClassFlag_Defined;
 	return cls;
 }
 
@@ -604,7 +604,7 @@ Parser::processFormalArgList (SymbolNode* node)
 	rtl::String resultString;
 
 	Lexer lexer;
-	lexer.create (getMachineState (LexerMachineKind_UserCode2ndPass), "formal-arg-list", node->m_arg);
+	lexer.create (getMachineState (LexerMachine_UserCode2ndPass), "formal-arg-list", node->m_arg);
 
 	const char* p = node->m_arg;
 
@@ -664,7 +664,7 @@ Parser::processLocalList (SymbolNode* node)
 	rtl::String resultString;
 
 	Lexer lexer;
-	lexer.create (getMachineState (LexerMachineKind_UserCode2ndPass), "local-list", node->m_local);
+	lexer.create (getMachineState (LexerMachine_UserCode2ndPass), "local-list", node->m_local);
 
 	const char* p = node->m_local;
 
@@ -710,7 +710,7 @@ Parser::processSymbolEventHandler (
 	rtl::String resultString;
 
 	Lexer lexer;
-	lexer.create (getMachineState (LexerMachineKind_UserCode2ndPass), "event-handler", *string);
+	lexer.create (getMachineState (LexerMachine_UserCode2ndPass), "event-handler", *string);
 
 	const char* p = *string;
 
@@ -786,7 +786,7 @@ Parser::processActualArgList (
 	const Token* token;
 
 	Lexer lexer;
-	lexer.create (getMachineState (LexerMachineKind_UserCode2ndPass), "actual-arg-list", string);
+	lexer.create (getMachineState (LexerMachine_UserCode2ndPass), "actual-arg-list", string);
 
 	int level = 0;
 
@@ -869,12 +869,12 @@ Parser::production (const ProductionSpecifiers* specifiers)
 	symbol->m_flags |= specifiers->m_symbolFlags;
 
 	if (symbol->m_class)
-		symbol->m_class->m_flags |= ClassFlagKind_Used;
+		symbol->m_class->m_flags |= ClassFlag_Used;
 
-	if (symbol->m_flags & SymbolNodeFlagKind_Pragma)
+	if (symbol->m_flags & SymbolNodeFlag_Pragma)
 		m_module->m_nodeMgr.m_startPragmaSymbol.m_productionArray.append (symbol);
 
-	if ((symbol->m_flags & SymbolNodeFlagKind_Start) && !m_module->m_nodeMgr.m_primaryStartSymbol)
+	if ((symbol->m_flags & SymbolNodeFlag_Start) && !m_module->m_nodeMgr.m_primaryStartSymbol)
 		m_module->m_nodeMgr.m_primaryStartSymbol = symbol;
 
 	result = customizeSymbol (symbol);
@@ -917,7 +917,7 @@ Parser::alternative ()
 			return NULL;
 
 		if (!temp)
-			if (node->m_kind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlagKind_Named))
+			if (node->m_kind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Named))
 			{
 				temp = (SymbolNode*) node;
 			}
@@ -1267,7 +1267,7 @@ Parser::userCode (
 	if (!token)
 		return false;
 
-	gotoState (getMachineState (LexerMachineKind_UserCode), token, GotoStateKind_ReparseToken);
+	gotoState (getMachineState (LexerMachine_UserCode), token, GotoStateKind_ReparseToken);
 
 	token = getToken ();
 
@@ -1347,7 +1347,7 @@ Parser::userCode (
 
 	*string = rtl::String (begin, token->m_pos.m_p - begin);
 
-	gotoState (getMachineState (LexerMachineKind_Main), token, GotoStateKind_EatToken);
+	gotoState (getMachineState (LexerMachine_Main), token, GotoStateKind_EatToken);
 
 	return true;
 }

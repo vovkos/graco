@@ -36,10 +36,10 @@ public:
 
 //.............................................................................
 
-enum LaDfaStateFlagKind
+enum LaDfaStateFlag
 {
-	LaDfaStateFlagKind_TokenMatch        = 1,
-	LaDfaStateFlagKind_EpsilonProduction = 2, 
+	LaDfaStateFlag_TokenMatch        = 1,
+	LaDfaStateFlag_EpsilonProduction = 2, 
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -66,13 +66,13 @@ public:
 	bool
 	isResolved ()
 	{
-		return (m_dfaNode->m_flags & LaDfaNodeFlagKind_Resolved) != 0;
+		return (m_dfaNode->m_flags & LaDfaNodeFlag_Resolved) != 0;
 	}
 
 	bool
 	isAnyTokenIgnored ()
 	{
-		return (m_flags & LaDfaStateFlagKind_TokenMatch) || (m_flags & LaDfaStateFlagKind_EpsilonProduction);
+		return (m_flags & LaDfaStateFlag_TokenMatch) || (m_flags & LaDfaStateFlag_EpsilonProduction);
 	}
 
 	bool

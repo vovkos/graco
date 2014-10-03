@@ -2,12 +2,12 @@
 
 //.............................................................................
 
-enum CmdLineFlagKind
+enum CmdLineFlag
 {
-	CmdLineFlagKind_Help     = 0x01,
-	CmdLineFlagKind_Version  = 0x02,
-	CmdLineFlagKind_Verbose  = 0x04,
-	CmdLineFlagKind_NoPpLine = 0x08,
+	CmdLineFlag_Help     = 0x01,
+	CmdLineFlag_Version  = 0x02,
+	CmdLineFlag_Verbose  = 0x04,
+	CmdLineFlag_NoPpLine = 0x08,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -41,7 +41,7 @@ enum CmdLineSwitchKind
 	CmdLineSwitchKind_NoPpLine,
 	CmdLineSwitchKind_Verbose,
 
-	CmdLineSwitchKind_OutputFileName = rtl::CmdLineSwitchFlagKind_HasValue,
+	CmdLineSwitchKind_OutputFileName = rtl::CmdLineSwitchFlag_HasValue,
 	CmdLineSwitchKind_FrameFileName,
 	CmdLineSwitchKind_BnfFileName,
 	CmdLineSwitchKind_TraceFileName,

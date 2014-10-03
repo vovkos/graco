@@ -49,10 +49,10 @@ getNodeKindString (NodeKind nodeKind)
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum NodeFlagKind
+enum NodeFlag
 {
-	NodeFlagKind_Locator = 0x01, // used to locate AST / token from actions (applies to token & symbol nodes)
-	NodeFlagKind_Matched = 0x02, // applies to token & symbol & argument nodes
+	NodeFlag_Locator = 0x01, // used to locate AST / token from actions (applies to token & symbol nodes)
+	NodeFlag_Matched = 0x02, // applies to token & symbol & argument nodes
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -104,14 +104,14 @@ public:
 
 //.............................................................................
 
-enum SymbolNodeFlagKind
+enum SymbolNodeFlag
 {
-	SymbolNodeFlagKind_Stacked = 0x0010,
-	SymbolNodeFlagKind_Named   = 0x0020,
-	SymbolNodeFlagKind_Pragma  = 0x0040,
-	SymbolNodeFlagKind_HasEnter  = 0x0100,
-	SymbolNodeFlagKind_HasLeave  = 0x0200,
-	SymbolNodeFlagKind_KeepAst   = 0x0400,
+	SymbolNodeFlag_Stacked = 0x0010,
+	SymbolNodeFlag_Named   = 0x0020,
+	SymbolNodeFlag_Pragma  = 0x0040,
+	SymbolNodeFlag_HasEnter  = 0x0100,
+	SymbolNodeFlag_HasLeave  = 0x0200,
+	SymbolNodeFlag_KeepAst   = 0x0400,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -138,17 +138,17 @@ public:
 	virtual
 	~SymbolNode ()
 	{
-		if (m_astNode && !(m_flags & SymbolNodeFlagKind_KeepAst))
+		if (m_astNode && !(m_flags & SymbolNodeFlag_KeepAst))
 			AXL_MEM_DELETE (m_astNode);
 	}
 };
 
 //.............................................................................
 
-enum LaDfaNodeFlagKind
+enum LaDfaNodeFlag
 {
-	LaDfaNodeFlagKind_PreResolver        = 0x0010,
-	LaDfaNodeFlagKind_HasChainedResolver = 0x0020,
+	LaDfaNodeFlag_PreResolver        = 0x0010,
+	LaDfaNodeFlag_HasChainedResolver = 0x0020,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

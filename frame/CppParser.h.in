@@ -116,13 +116,13 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 			%{ end }
 		SymbolNode_$(Symbol.Name) ()
 		{
-			m_flags = llk::SymbolNodeFlagKind_Named;
+			m_flags = llk::SymbolNodeFlag_Named;
 			m_index = SymbolKind_$(Symbol.Name);
 			%{ if Symbol.Enter then }
-			m_flags |= llk::SymbolNodeFlagKind_HasEnter;
+			m_flags |= llk::SymbolNodeFlag_HasEnter;
 			%{ end
 				if Symbol.Leave then }
-			m_flags |= llk::SymbolNodeFlagKind_HasLeave;
+			m_flags |= llk::SymbolNodeFlag_HasLeave;
 			%{ end }
 		}
 	};
@@ -178,7 +178,7 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 	bool
 	leave (size_t Index);
 
-	LaDfaResultKind
+	LaDfaResult
 	laDfa (
 		size_t Index,
 		int LookaheadToken,

@@ -168,13 +168,13 @@ Module::generateBnfString ()
 		if (symbol->m_productionArray.isEmpty ())
 			continue;
 
-		if (symbol->m_flags & SymbolNodeFlagKind_Start)
+		if (symbol->m_flags & SymbolNodeFlag_Start)
 			string.append ("start\n");
 
-		if (symbol->m_flags & SymbolNodeFlagKind_Nullable)
+		if (symbol->m_flags & SymbolNodeFlag_Nullable)
 			string.append ("nullable\n");
 
-		if (symbol->m_flags & SymbolNodeFlagKind_Pragma)
+		if (symbol->m_flags & SymbolNodeFlag_Pragma)
 			string.append ("pragma\n");
 
 		string.append (symbol->m_name);

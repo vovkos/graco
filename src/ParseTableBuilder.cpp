@@ -21,9 +21,9 @@ ParseTableBuilder::build ()
 	{
 		SymbolNode* node = m_nodeMgr->m_symbolArray [i];
 
-		if (node->m_flags & SymbolNodeFlagKind_Named)
+		if (node->m_flags & SymbolNodeFlag_Named)
 		{
-			if (node->isNullable () && !(node->m_flags & SymbolNodeFlagKind_Nullable))
+			if (node->isNullable () && !(node->m_flags & SymbolNodeFlag_Nullable))
 			{
 				err::setFormatStringError (
 					"'%s': nullable symbols must be explicitly marked as 'nullable'", 
@@ -33,7 +33,7 @@ ParseTableBuilder::build ()
 				return false;
 			}
 
-			if (!node->isNullable () && (node->m_flags & SymbolNodeFlagKind_Nullable))
+			if (!node->isNullable () && (node->m_flags & SymbolNodeFlag_Nullable))
 			{
 				err::setFormatStringError (
 					"'%s': marked as 'nullable' but is not nullable", 
@@ -44,7 +44,7 @@ ParseTableBuilder::build ()
 			}
 		}
 
-		if (node->m_flags & SymbolNodeFlagKind_Pragma)
+		if (node->m_flags & SymbolNodeFlag_Pragma)
 		{
 			if (node->isNullable ())
 			{
@@ -249,7 +249,7 @@ ParseTableBuilder::calcFirstFollow ()
 		if (node->m_resolver)
 			node->m_resolver->m_followSet.setBitResize (1); // set anytoken FOLLOW for resolver
 
-		if (node->m_flags & SymbolNodeFlagKind_Start)
+		if (node->m_flags & SymbolNodeFlag_Start)
 			node->markFinal ();
 	}
 

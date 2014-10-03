@@ -146,12 +146,12 @@ $ParserClassName::createSymbolNode (size_t Index)
 		%{ elseif Symbol.Enter or Symbol.Leave or Symbol.Class or Symbol.IsNoAst then }
 	case SymbolKind_$(Symbol.Name):
 		pNode = createStdSymbolNode (Index);
-		pNode->m_flags |= llk::SymbolNodeFlagKind_Named;
+		pNode->m_flags |= llk::SymbolNodeFlag_Named;
 			%{ if Symbol.Enter then }
-		pNode->m_flags |= llk::SymbolNodeFlagKind_HasEnter;
+		pNode->m_flags |= llk::SymbolNodeFlag_HasEnter;
 			%{ end
 				if Symbol.Leave then }
-		pNode->m_flags |= llk::SymbolNodeFlagKind_HasLeave;
+		pNode->m_flags |= llk::SymbolNodeFlag_HasLeave;
 			%{ end
 				if Symbol.Class then }
 		pNode->m_astNode = AXL_MEM_NEW ($(Symbol.Class));
@@ -304,7 +304,7 @@ $PpLinePrefix #line $(GetPpLineDefault ())
 	}
 }
 
-$ParserClassName::LaDfaResultKind
+$ParserClassName::LaDfaResult
 $ParserClassName::laDfa (
 	size_t Index,
 	int LookaheadToken,
@@ -321,9 +321,9 @@ $ParserClassName::laDfa (
 		pTransition->m_resolverIndex = $(DfaNode.Resolver);
 		pTransition->m_resolverElseIndex = $(DfaNode.ResolverElse);
 			%{ if DfaNode.HasChainedResolver then }
-		pTransition->m_flags = llk::LaDfaNodeFlagKind_HasChainedResolver;
+		pTransition->m_flags = llk::LaDfaNodeFlag_HasChainedResolver;
 			%{ end }
-		return LaDfaResultKind_Resolver;
+		return LaDfaResult_Resolver;
 		%{ else }
 		switch (LookaheadToken)
 		{
@@ -337,26 +337,26 @@ $ParserClassName::laDfa (
 			pTransition->m_resolverIndex = $(Transition.Resolver);
 			pTransition->m_resolverElseIndex = $(Transition.ResolverElse);
 					%{ if Transition.HasChainedResolver then }
-			pTransition->m_flags = llk::LaDfaNodeFlagKind_HasChainedResolver;
+			pTransition->m_flags = llk::LaDfaNodeFlag_HasChainedResolver;
 					%{ end }
-			return LaDfaResultKind_Resolver;
+			return LaDfaResult_Resolver;
 				%{ else }
 			pTransition->m_productionIndex = $(Transition.Production);
-			return LaDfaResultKind_Production;
+			return LaDfaResult_Production;
 				%{ end	}
 		%{ end }
 		default:
 				%{ if (DfaNode.DefaultProduction) then }
 			pTransition->m_productionIndex = $(DfaNode.DefaultProduction);
-			return LaDfaResultKind_Production;
+			return LaDfaResult_Production;
 				%{ else }
-			return LaDfaResultKind_Fail;
+			return LaDfaResult_Fail;
 				%{ end	}
 		}
 		%{ end }
 	%{ end }
 	default:
-		return LaDfaResultKind_Fail;
+		return LaDfaResult_Fail;
 	}
 }
 

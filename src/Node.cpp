@@ -27,10 +27,10 @@ Node::trace ()
 bool
 Node::markReachable ()
 {
-	if (m_flags & NodeFlagKind_Reachable)
+	if (m_flags & NodeFlag_Reachable)
 		return false;
 
-	m_flags |= NodeFlagKind_Reachable;
+	m_flags |= NodeFlag_Reachable;
 	return true;
 }
 
@@ -57,7 +57,7 @@ GrammarNode::markNullable ()
 	if (isNullable ())
 		return false;
 
-	m_flags |= GrammarNodeFlagKind_Nullable;
+	m_flags |= GrammarNodeFlag_Nullable;
 	return true;
 }
 
@@ -67,7 +67,7 @@ GrammarNode::markFinal ()
 	if (isFinal ())
 		return false;
 
-	m_flags |= GrammarNodeFlagKind_Final;
+	m_flags |= GrammarNodeFlag_Final;
 	return true;
 }
 
@@ -157,10 +157,10 @@ void
 SymbolNode::addProduction (GrammarNode* node)
 {
 	if (node->m_kind == NodeKind_Symbol &&
-		!(node->m_flags & SymbolNodeFlagKind_Named) &&
+		!(node->m_flags & SymbolNodeFlag_Named) &&
 		!((SymbolNode*) node)->m_resolver)
 	{
-		if (m_flags & SymbolNodeFlagKind_Named)
+		if (m_flags & SymbolNodeFlag_Named)
 		{
 			m_quantifierKind = node->m_quantifierKind;
 			m_quantifiedNode = node->m_quantifiedNode;
@@ -184,7 +184,7 @@ SymbolNode::markReachable ()
 		m_resolver->markReachable ();
 
 	if (m_class)
-		m_class->m_flags |= ClassFlagKind_Reachable;
+		m_class->m_flags |= ClassFlag_Reachable;
 
 	size_t count = m_productionArray.getCount ();
 	for (size_t i = 0; i < count; i++)
@@ -226,11 +226,11 @@ SymbolNode::luaExport (lua::LuaState* luaState)
 	{
 		luaState->createTable (1);
 
-		if (m_flags & SymbolNodeFlagKind_EofToken)
+		if (m_flags & SymbolNodeFlag_EofToken)
 			luaState->setMemberBoolean ("IsEofToken", true);
-		else if (m_flags & SymbolNodeFlagKind_AnyToken)
+		else if (m_flags & SymbolNodeFlag_AnyToken)
 			luaState->setMemberBoolean ("IsAnyToken", true);
-		else if (m_flags & SymbolNodeFlagKind_Named)
+		else if (m_flags & SymbolNodeFlag_Named)
 			luaState->setMemberString ("Name", m_name);
 		else
 			luaState->setMemberInteger ("Token", m_charToken);
@@ -246,7 +246,7 @@ SymbolNode::luaExport (lua::LuaState* luaState)
 	luaExportSrcPos (luaState, m_srcPos);
 	luaState->setMember ("SrcPos");
 
-	if (m_flags & SymbolNodeFlagKind_NoAst)
+	if (m_flags & SymbolNodeFlag_NoAst)
 		luaState->setMemberBoolean ("IsNoAst", true);
 	else if (m_class)
 		luaState->setMemberString ("Class", m_class->m_name);
@@ -298,7 +298,7 @@ SymbolNode::luaExport (lua::LuaState* luaState)
 rtl::String
 SymbolNode::getBnfString ()
 {
-	if (m_kind == NodeKind_Token || (m_flags & SymbolNodeFlagKind_Named))
+	if (m_kind == NodeKind_Token || (m_flags & SymbolNodeFlag_Named))
 		return m_name;
 
 	if (m_quantifierKind)
@@ -419,7 +419,7 @@ SequenceNode::getBnfString ()
 
 UserNode::UserNode ()
 {
-	m_flags = GrammarNodeFlagKind_Nullable;
+	m_flags = GrammarNodeFlag_Nullable;
 	m_productionSymbol = NULL;
 	m_dispatcher = NULL;
 	m_resolver = NULL;
@@ -675,8 +675,8 @@ LaDfaNode::trace ()
 	printf (
 		"%s%s\n",
 		m_name.cc (),
-		(m_flags & LaDfaNodeFlagKind_Leaf) ? "*" :
-		(m_flags & LaDfaNodeFlagKind_Resolved) ? "~" : ""
+		(m_flags & LaDfaNodeFlag_Leaf) ? "*" :
+		(m_flags & LaDfaNodeFlag_Resolved) ? "~" : ""
 		);
 
 	if (m_resolver)
@@ -717,7 +717,7 @@ LaDfaNode::trace ()
 size_t
 getTransitionIndex (Node* node)
 {
-	if (node->m_kind != NodeKind_LaDfa || !(node->m_flags & LaDfaNodeFlagKind_Leaf))
+	if (node->m_kind != NodeKind_LaDfa || !(node->m_flags & LaDfaNodeFlag_Leaf))
 		return node->m_masterIndex;
 
 	LaDfaNode* laDfaNode = (LaDfaNode*) node;
@@ -738,7 +738,7 @@ LaDfaNode::luaExportResolverMembers (lua::LuaState* luaState)
 void
 LaDfaNode::luaExport (lua::LuaState* luaState)
 {
-	ASSERT (!(m_flags & LaDfaNodeFlagKind_Leaf));
+	ASSERT (!(m_flags & LaDfaNodeFlag_Leaf));
 
 	if (m_resolver)
 	{

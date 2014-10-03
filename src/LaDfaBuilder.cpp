@@ -48,7 +48,7 @@ LaDfaState::calcResolved ()
 
 	if (m_activeThreadList.isEmpty ())
 	{
-		m_dfaNode->m_flags |= LaDfaNodeFlagKind_Resolved;
+		m_dfaNode->m_flags |= LaDfaNodeFlag_Resolved;
 		return true;
 	}
 
@@ -69,7 +69,7 @@ LaDfaState::calcResolved ()
 			return false;
 	}
 
-	m_dfaNode->m_flags |= LaDfaNodeFlagKind_Resolved;
+	m_dfaNode->m_flags |= LaDfaNodeFlag_Resolved;
 	return true;
 }
 
@@ -172,7 +172,7 @@ LaDfaBuilder::build (
 		if (production->m_kind != NodeKind_Epsilon)
 			thread->m_stack.append (production);
 		else
-			state0->m_flags |= LaDfaStateFlagKind_EpsilonProduction;
+			state0->m_flags |= LaDfaStateFlag_EpsilonProduction;
 	}
 
 	LaDfaState* state1 = transition (state0, conflict->m_token);
@@ -297,7 +297,7 @@ LaDfaBuilder::build (
 
 		if (state->isResolved ())
 		{
-			state->m_dfaNode->m_flags |= LaDfaNodeFlagKind_Leaf;
+			state->m_dfaNode->m_flags |= LaDfaNodeFlag_Leaf;
 			state->m_dfaNode->m_production = state->getResolvedProduction ();
 
 			if (state->m_dfaNode->m_resolverUplink)
@@ -313,7 +313,7 @@ LaDfaBuilder::build (
 					// 2) both resolver 'then' and 'else' branch point to the same production (this happens when resolver applies not to the original conflict)
 					// in either case we we can safely eliminate the resolver {2}
 
-					uplink->m_flags |= LaDfaNodeFlagKind_Leaf;
+					uplink->m_flags |= LaDfaNodeFlag_Leaf;
 					uplink->m_resolver = NULL;
 					uplink->m_resolverElse = NULL;
 
@@ -328,15 +328,15 @@ LaDfaBuilder::build (
 		}
 	}
 
-	if (cmdLine->m_flags & CmdLineFlagKind_Verbose)
+	if (cmdLine->m_flags & CmdLineFlag_Verbose)
 		trace ();
 
 	if (state1->m_resolverThreadList.isEmpty () &&
-		(state1->m_dfaNode->m_flags & LaDfaNodeFlagKind_Leaf))
+		(state1->m_dfaNode->m_flags & LaDfaNodeFlag_Leaf))
 	{
 		// can happen on active-vs-complete-vs-epsion conflicts
 
-		state0->m_dfaNode->m_flags |= LaDfaNodeFlagKind_Leaf; // don't index state0
+		state0->m_dfaNode->m_flags |= LaDfaNodeFlag_Leaf; // don't index state0
 		return state1->m_dfaNode->m_production;
 	}
 
@@ -442,7 +442,7 @@ LaDfaBuilder::transition (
 	LaDfaState* newState = createState ();
 	newState->m_token = token;
 	newState->m_fromState = state;
-	newState->m_flags = state->m_flags & LaDfaStateFlagKind_EpsilonProduction; // propagate epsilon
+	newState->m_flags = state->m_flags & LaDfaStateFlag_EpsilonProduction; // propagate epsilon
 
 	rtl::Iterator <LaDfaThread> threadIt = state->m_activeThreadList.getHead ();
 	for (; threadIt; threadIt++)
@@ -514,7 +514,7 @@ LaDfaBuilder::processThread (LaDfaThread* thread)
 
 			ASSERT (node->m_masterIndex);
 
-			if ((node->m_flags & SymbolNodeFlagKind_AnyToken) && token->m_masterIndex != 0) // EOF does not match ANY
+			if ((node->m_flags & SymbolNodeFlag_AnyToken) && token->m_masterIndex != 0) // EOF does not match ANY
 			{
 				thread->m_stack.pop ();
 				thread->m_match = LaDfaThreadMatchKind_AnyToken;
@@ -529,7 +529,7 @@ LaDfaBuilder::processThread (LaDfaThread* thread)
 
 			thread->m_stack.pop ();
 			thread->m_match = LaDfaThreadMatchKind_Token;
-			thread->m_state->m_flags |= LaDfaStateFlagKind_TokenMatch;
+			thread->m_state->m_flags |= LaDfaStateFlag_TokenMatch;
 			break;
 
 		case NodeKind_Symbol:
@@ -560,7 +560,7 @@ LaDfaBuilder::processThread (LaDfaThread* thread)
 			if (production->m_kind != NodeKind_Epsilon)
 				thread->m_stack.append (production);
 			else
-				thread->m_state->m_flags |= LaDfaStateFlagKind_EpsilonProduction;
+				thread->m_state->m_flags |= LaDfaStateFlag_EpsilonProduction;
 
 			break;
 

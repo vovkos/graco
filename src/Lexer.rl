@@ -140,17 +140,17 @@ Lexer::exec ()
 }
 
 int
-Lexer::getMachineState (LexerMachineKind machine)
+Lexer::getMachineState (LexerMachine machine)
 {
 	switch (machine)
 	{
-	case LexerMachineKind_Main:
+	case LexerMachine_Main:
 		return llkc_en_main;
 
-	case LexerMachineKind_UserCode:
+	case LexerMachine_UserCode:
 		return llkc_en_user_code;
 
-	case LexerMachineKind_UserCode2ndPass:
+	case LexerMachine_UserCode2ndPass:
 		return llkc_en_user_code_2nd_pass;
 
 	default:

@@ -19,19 +19,19 @@ CmdLineParser::onSwitch (
 	switch (switchKind)
 	{
 	case CmdLineSwitchKind_Help:
-		m_cmdLine->m_flags |= CmdLineFlagKind_Help;
+		m_cmdLine->m_flags |= CmdLineFlag_Help;
 		break;
 
 	case CmdLineSwitchKind_Version:
-		m_cmdLine->m_flags |= CmdLineFlagKind_Version;
+		m_cmdLine->m_flags |= CmdLineFlag_Version;
 		break;
 
 	case CmdLineSwitchKind_NoPpLine:
-		m_cmdLine->m_flags |= CmdLineFlagKind_NoPpLine;
+		m_cmdLine->m_flags |= CmdLineFlag_NoPpLine;
 		break;
 
 	case CmdLineSwitchKind_Verbose:
-		m_cmdLine->m_flags |= CmdLineFlagKind_Verbose;
+		m_cmdLine->m_flags |= CmdLineFlag_Verbose;
 		break;
 
 	case CmdLineSwitchKind_OutputFileName:

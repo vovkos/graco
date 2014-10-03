@@ -28,7 +28,7 @@ ProductionBuilder::build (
 		return production;
 
 	case NodeKind_Symbol:
-		if (production->m_flags & SymbolNodeFlagKind_Named)
+		if (production->m_flags & SymbolNodeFlag_Named)
 			return production;
 
 		// else fall through
@@ -103,14 +103,14 @@ ProductionBuilder::processAllUserCode ()
 	for (size_t i = 0; i < count; i++)
 	{
 		ActionNode* node = m_actionArray [i];
-		if (node->m_flags & UserNodeFlagKind_UserCodeProcessed)
+		if (node->m_flags & UserNodeFlag_UserCodeProcessed)
 			continue;
 
 		result = processUserCode (node->m_srcPos, &node->m_userCode, node->m_resolver);
 		if (!result)
 			return false;
 
-		node->m_flags |= UserNodeFlagKind_UserCodeProcessed;
+		node->m_flags |= UserNodeFlag_UserCodeProcessed;
 		node->m_dispatcher = m_dispatcher;
 	}
 
@@ -118,7 +118,7 @@ ProductionBuilder::processAllUserCode ()
 	for (size_t i = 0; i < count; i++)
 	{
 		ArgumentNode* node = m_argumentArray [i];
-		if (node->m_flags & UserNodeFlagKind_UserCodeProcessed)
+		if (node->m_flags & UserNodeFlag_UserCodeProcessed)
 			continue;
 
 		rtl::BoxIterator <rtl::String> it = node->m_argValueList.getHead ();
@@ -129,7 +129,7 @@ ProductionBuilder::processAllUserCode ()
 				return false;
 		}
 
-		node->m_flags |= UserNodeFlagKind_UserCodeProcessed;
+		node->m_flags |= UserNodeFlag_UserCodeProcessed;
 		node->m_dispatcher = m_dispatcher;
 	}
 
@@ -141,7 +141,7 @@ ProductionBuilder::scan (GrammarNode* node)
 {
 	bool result;
 
-	if (node->m_flags & NodeFlagKind_RecursionStopper)
+	if (node->m_flags & NodeFlag_RecursionStopper)
 		return true;
 
 	SymbolNode* symbol;
@@ -158,11 +158,11 @@ ProductionBuilder::scan (GrammarNode* node)
 		break;
 
 	case NodeKind_Symbol:
-		if (node->m_flags & SymbolNodeFlagKind_Named) 
+		if (node->m_flags & SymbolNodeFlag_Named) 
 			break;
 
 		symbol = (SymbolNode*) node;
-		symbol->m_flags |= NodeFlagKind_RecursionStopper;
+		symbol->m_flags |= NodeFlag_RecursionStopper;
 
 		if (symbol->m_resolver)
 		{
@@ -185,12 +185,12 @@ ProductionBuilder::scan (GrammarNode* node)
 				return false;
 		}
 
-		symbol->m_flags &= ~NodeFlagKind_RecursionStopper;
+		symbol->m_flags &= ~NodeFlag_RecursionStopper;
 		break;
 
 	case NodeKind_Sequence:
 		sequence = (SequenceNode*) node;
-		sequence->m_flags |= NodeFlagKind_RecursionStopper;
+		sequence->m_flags |= NodeFlag_RecursionStopper;
 
 		childrenCount = sequence->m_sequence.getCount ();
 		for (size_t i = 0; i < childrenCount; i++)
@@ -201,7 +201,7 @@ ProductionBuilder::scan (GrammarNode* node)
 				return false;
 		}
 
-		sequence->m_flags &= ~NodeFlagKind_RecursionStopper;
+		sequence->m_flags &= ~NodeFlag_RecursionStopper;
 		break;
 
 	case NodeKind_Beacon:
@@ -235,7 +235,7 @@ ProductionBuilder::scan (GrammarNode* node)
 bool
 ProductionBuilder::addBeacon (BeaconNode* beacon)
 {
-	if (beacon->m_flags & BeaconNodeFlagKind_Added)
+	if (beacon->m_flags & BeaconNodeFlag_Added)
 		return true;
 
 	if (!beacon->m_label.isEmpty ())
@@ -265,7 +265,7 @@ ProductionBuilder::addBeacon (BeaconNode* beacon)
 	}
 
 	m_beaconArray.append (beacon);
-	beacon->m_flags |= BeaconNodeFlagKind_Added;
+	beacon->m_flags |= BeaconNodeFlag_Added;
 	beacon->m_resolver = m_resolver;
 	return true;
 }
@@ -273,7 +273,7 @@ ProductionBuilder::addBeacon (BeaconNode* beacon)
 void
 ProductionBuilder::findAndReplaceUnusedBeacons (GrammarNode*& node)
 {
-	if (node->m_flags & NodeFlagKind_RecursionStopper)
+	if (node->m_flags & NodeFlag_RecursionStopper)
 		return;
 
 	SymbolNode* symbol;
@@ -295,21 +295,21 @@ ProductionBuilder::findAndReplaceUnusedBeacons (GrammarNode*& node)
 		if (beacon->m_slotIndex != -1)
 			break;
 
-		if (!(beacon->m_flags & BeaconNodeFlagKind_Deleted))
+		if (!(beacon->m_flags & BeaconNodeFlag_Deleted))
 		{
 			m_beaconDeleteArray.append (beacon);
-			beacon->m_flags |= BeaconNodeFlagKind_Deleted;
+			beacon->m_flags |= BeaconNodeFlag_Deleted;
 		}	
 
 		node = beacon->m_target; // replace
 		break;
 
 	case NodeKind_Symbol:
-		if (node->m_flags & SymbolNodeFlagKind_Named) 
+		if (node->m_flags & SymbolNodeFlag_Named) 
 			break;
 
 		symbol = (SymbolNode*) node;
-		symbol->m_flags |= NodeFlagKind_RecursionStopper;
+		symbol->m_flags |= NodeFlag_RecursionStopper;
 
 		if (symbol->m_resolver)
 			findAndReplaceUnusedBeacons (symbol->m_resolver);
@@ -318,18 +318,18 @@ ProductionBuilder::findAndReplaceUnusedBeacons (GrammarNode*& node)
 		for (size_t i = 0; i < count; i++)
 			findAndReplaceUnusedBeacons (symbol->m_productionArray [i]);
 
-		symbol->m_flags &= ~NodeFlagKind_RecursionStopper;
+		symbol->m_flags &= ~NodeFlag_RecursionStopper;
 		break;
 
 	case NodeKind_Sequence:
 		sequence = (SequenceNode*) node;
-		sequence->m_flags |= NodeFlagKind_RecursionStopper;
+		sequence->m_flags |= NodeFlag_RecursionStopper;
 
 		count = sequence->m_sequence.getCount ();
 		for (size_t i = 0; i < count; i++)
 			findAndReplaceUnusedBeacons (sequence->m_sequence [i]);
 
-		sequence->m_flags &= ~NodeFlagKind_RecursionStopper;
+		sequence->m_flags &= ~NodeFlag_RecursionStopper;
 		break;
 
 	default:
@@ -402,7 +402,7 @@ ProductionBuilder::processUserCode (
 	rtl::String resultString;
 
 	Lexer::create (
-		getMachineState (LexerMachineKind_UserCode2ndPass), 
+		getMachineState (LexerMachine_UserCode2ndPass), 
 		srcPos.m_filePath, 
 		*userCode
 		);
@@ -443,7 +443,7 @@ ProductionBuilder::processUserCode (
 		switch (variableKind)
 		{
 		case VariableKind_SymbolBeacon:
-			if (beacon->m_target->m_flags & SymbolNodeFlagKind_NoAst)
+			if (beacon->m_target->m_flags & SymbolNodeFlag_NoAst)
 			{
 				err::setFormatStringError (
 					"'%s' is declared as 'noast' and cannot be referenced from user actions", 

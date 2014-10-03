@@ -6,13 +6,13 @@
 
 //.............................................................................
 
-enum ErrorKind
+enum ErrorCode
 {
-	ErrorKind_Success = 0,
-	ErrorKind_InvalidCmdLine,
-	ErrorKind_ParseFailure,
-	ErrorKind_BuildFailure,
-	ErrorKind_GenerateFailure,
+	ErrorCode_Success = 0,
+	ErrorCode_InvalidCmdLine,
+	ErrorCode_ParseFailure,
+	ErrorCode_BuildFailure,
+	ErrorCode_GenerateFailure,
 };
 
 //.............................................................................
@@ -67,7 +67,7 @@ main (
 	if (cmdLine.m_inputFileName.isEmpty ())
 	{
 		printUsage ();
-		return ErrorKind_Success;
+		return ErrorCode_Success;
 	}
 
 	rtl::String srcFilePath = io::getFullFilePath (cmdLine.m_inputFileName);
@@ -78,7 +78,7 @@ main (
 			cmdLine.m_inputFileName.cc (), // thanks a lot gcc
 			err::getError ()->getDescription ().cc ()
 			);
-		return ErrorKind_ParseFailure;
+		return ErrorCode_ParseFailure;
 	}
 
 	//if (pTraceFileName)
@@ -91,7 +91,7 @@ main (
 	if (!result)
 	{
 		printf ("%s\n", err::getError ()->getDescription ().cc ());
-		return ErrorKind_ParseFailure;
+		return ErrorCode_ParseFailure;
 	}
 
 	if (!module.m_importList.isEmpty ())
@@ -110,7 +110,7 @@ main (
 			if (!result)
 			{
 				printf ("%s\n", err::getError ()->getDescription ().cc ());
-				return ErrorKind_ParseFailure;
+				return ErrorCode_ParseFailure;
 			}
 
 			filePathSet.visit (importFilePath);
@@ -123,7 +123,7 @@ main (
 		if (!result)
 		{
 			printf ("%s\n", err::getError ()->getDescription ().cc ());
-			return ErrorKind_BuildFailure;
+			return ErrorCode_BuildFailure;
 		}
 	}
 
@@ -131,10 +131,10 @@ main (
 	if (!result)
 	{
 		printf ("%s\n", err::getError ()->getDescription ().cc ());
-		return ErrorKind_BuildFailure;
+		return ErrorCode_BuildFailure;
 	}
 
-	if (cmdLine.m_flags & CmdLineFlagKind_Verbose)
+	if (cmdLine.m_flags & CmdLineFlag_Verbose)
 		module.trace ();
 
 	Generator generator;
@@ -151,11 +151,11 @@ main (
 		if (!result)
 		{
 			printf ("%s\n", err::getError ()->getDescription ().cc ());
-			return ErrorKind_GenerateFailure;
+			return ErrorCode_GenerateFailure;
 		}
 	}
 
-	return ErrorKind_Success;
+	return ErrorCode_Success;
 }
 
 //.............................................................................

@@ -13,23 +13,23 @@ NodeMgr::NodeMgr ()
 	// parse table entry equal 0 is epsilon production
 
 	m_eofTokenNode.m_kind = NodeKind_Token;
-	m_anyTokenNode.m_flags = SymbolNodeFlagKind_EofToken;
+	m_anyTokenNode.m_flags = SymbolNodeFlag_EofToken;
 	m_eofTokenNode.m_name = "$";
 	m_eofTokenNode.m_index = 0;
 	m_eofTokenNode.m_masterIndex = 0;
 
 	m_anyTokenNode.m_kind = NodeKind_Token;
-	m_anyTokenNode.m_flags = SymbolNodeFlagKind_AnyToken;
+	m_anyTokenNode.m_flags = SymbolNodeFlag_AnyToken;
 	m_anyTokenNode.m_name = "any";
 	m_anyTokenNode.m_index = 1;
 	m_anyTokenNode.m_masterIndex = 1;
 
 	m_epsilonNode.m_kind = NodeKind_Epsilon;
-	m_epsilonNode.m_flags |= GrammarNodeFlagKind_Nullable;
+	m_epsilonNode.m_flags |= GrammarNodeFlag_Nullable;
 	m_epsilonNode.m_name = "epsilon";
 	m_epsilonNode.m_masterIndex = 0; 
 
-	m_startPragmaSymbol.m_flags |= SymbolNodeFlagKind_Pragma;
+	m_startPragmaSymbol.m_flags |= SymbolNodeFlag_Pragma;
 	m_startPragmaSymbol.m_name = "pragma";
 }
 
@@ -108,7 +108,7 @@ NodeMgr::getSymbolNode (const rtl::String& name)
 
 	SymbolNode* node = AXL_MEM_NEW (SymbolNode);
 	node->m_kind = NodeKind_Symbol;
-	node->m_flags = SymbolNodeFlagKind_Named;
+	node->m_flags = SymbolNodeFlag_Named;
 	node->m_name = name;
 	
 	m_namedSymbolList.insertTail (node);
@@ -275,7 +275,7 @@ NodeMgr::markReachableNodes ()
 		for (; nodeIt; nodeIt++)
 		{
 			SymbolNode* node = *nodeIt;
-			if (node->m_flags & SymbolNodeFlagKind_Start)
+			if (node->m_flags & SymbolNodeFlag_Start)
 				node->markReachable ();
 		}
 	else
@@ -489,7 +489,7 @@ NodeMgr::indexLaDfaNodes ()
 	{
 		LaDfaNode* node = *nodeIt;
 
-		if (!(node->m_flags & LaDfaNodeFlagKind_Leaf) &&       // don't index leaves
+		if (!(node->m_flags & LaDfaNodeFlag_Leaf) &&       // don't index leaves
 			(!node->m_resolver || node->m_resolverUplink)) // and non-chained resolvers
 		{
 			node->m_index = i++;

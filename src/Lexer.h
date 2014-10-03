@@ -73,11 +73,11 @@ typedef lex::RagelToken <TokenKind, TokenName> Token;
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum LexerMachineKind
+enum LexerMachine
 {
-	LexerMachineKind_Main,
-	LexerMachineKind_UserCode,
-	LexerMachineKind_UserCode2ndPass,
+	LexerMachine_Main,
+	LexerMachine_UserCode,
+	LexerMachine_UserCode2ndPass,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -89,7 +89,7 @@ class Lexer: public lex::RagelLexer <Lexer, Token>
 public:
 	static
 	int
-	getMachineState (LexerMachineKind machine);
+	getMachineState (LexerMachine machine);
 
 protected:
 	Token*

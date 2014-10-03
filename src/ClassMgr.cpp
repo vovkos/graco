@@ -31,7 +31,7 @@ ClassMgr::getClass (const rtl::String& name)
 		return it->m_value;
 
 	Class* cls = AXL_MEM_NEW (Class);
-	cls->m_flags |= ClassFlagKind_Named;
+	cls->m_flags |= ClassFlag_Named;
 	cls->m_name = name;
 	m_classList.insertTail (cls);
 	it->m_value = cls;
@@ -50,7 +50,7 @@ ClassMgr::createUnnamedClass ()
 void
 ClassMgr::deleteClass (Class* cls)
 {
-	if (cls->m_flags & ClassFlagKind_Named)
+	if (cls->m_flags & ClassFlag_Named)
 		m_classMap.eraseByKey (cls->m_name);
 
 	m_classList.erase (cls);		
@@ -64,7 +64,7 @@ ClassMgr::verify ()
 	{
 		Class* cls = *it;
 
-		if ((cls->m_flags & ClassFlagKind_Used) && !(cls->m_flags & ClassFlagKind_Defined))
+		if ((cls->m_flags & ClassFlag_Used) && !(cls->m_flags & ClassFlag_Defined))
 		{
 			err::setFormatStringError (
 				"class '%s' is not defined", 
@@ -84,7 +84,7 @@ ClassMgr::deleteUnusedClasses ()
 	while (it)
 	{
 		Class* cls = *it++;
-		if (!(cls->m_flags & ClassFlagKind_Used))
+		if (!(cls->m_flags & ClassFlag_Used))
 			deleteClass (cls);
 	}
 }
@@ -96,7 +96,7 @@ ClassMgr::deleteUnreachableClasses ()
 	while (it)
 	{
 		Class* cls = *it++;
-		if (!(cls->m_flags & ClassFlagKind_Reachable))
+		if (!(cls->m_flags & ClassFlag_Reachable))
 			deleteClass (cls);
 	}
 }

@@ -28,25 +28,25 @@ public:
 	typedef llk::LaDfaNode <Token> LaDfaNode;
 
 protected:
-	enum FlagKind
+	enum Flag
 	{
-		FlagKind_BuildingAst = 1,
-		FlagKind_TokenMatch  = 2,
+		Flag_BuildingAst = 1,
+		Flag_TokenMatch  = 2,
 	};
 
-	enum MatchResultKind
+	enum MatchResult
 	{
-		MatchResultKind_Fail,
-		MatchResultKind_NextToken,
-		MatchResultKind_NextTokenNoAdvance,
-		MatchResultKind_Continue,
+		MatchResult_Fail,
+		MatchResult_NextToken,
+		MatchResult_NextTokenNoAdvance,
+		MatchResult_Continue,
 	};
 
-	enum LaDfaResultKind
+	enum LaDfaResult
 	{
-		LaDfaResultKind_Fail,
-		LaDfaResultKind_Production,
-		LaDfaResultKind_Resolver,
+		LaDfaResult_Fail,
+		LaDfaResult_Production,
+		LaDfaResult_Resolver,
 	};
 
 	struct LaDfaTransition
@@ -88,7 +88,7 @@ public:
 		clear ();
 
 		if (isBuildingAst)
-			m_flags |= FlagKind_BuildingAst;
+			m_flags |= Flag_BuildingAst;
 
 		return (SymbolNode*) pushPrediction (T::SymbolFirst + symbol);
 	}
@@ -133,11 +133,11 @@ public:
 				pushPrediction (productionIndex);
 		}
 
-		m_flags &= ~FlagKind_TokenMatch;
+		m_flags &= ~Flag_TokenMatch;
 
 		for (;;)
 		{
-			MatchResultKind matchResult;
+			MatchResult matchResult;
 
 			Node* node = getPredictionTop ();
 			if (!node)
@@ -165,9 +165,9 @@ public:
 					break;
 
 				case NodeKind_Argument:
-					ASSERT (node->m_flags & NodeFlagKind_Matched); // was handled during matching ENode_Symbol
+					ASSERT (node->m_flags & NodeFlag_Matched); // was handled during matching ENode_Symbol
 					popPrediction ();
-					matchResult = MatchResultKind_Continue;
+					matchResult = MatchResult_Continue;
 					break;
 
 				case NodeKind_LaDfa:
@@ -179,32 +179,32 @@ public:
 				}
 			}
 
-			if (matchResult == MatchResultKind_Fail)
+			if (matchResult == MatchResult_Fail)
 			{
 				if (m_resolverStack.isEmpty ())
 					return false;
 
 				matchResult = rollbackResolver ();
-				ASSERT (matchResult != MatchResultKind_Fail); // failed resolver means there is another possibility!
+				ASSERT (matchResult != MatchResult_Fail); // failed resolver means there is another possibility!
 			}
 
 			switch (matchResult)
 			{
-			case MatchResultKind_Continue:
+			case MatchResult_Continue:
 				break;
 
-			case MatchResultKind_NextToken:
+			case MatchResult_NextToken:
 				result = advanceTokenCursor ();
 				if (!result)
 					return true; // no more tokens, we are done
 
 				// fall through
 
-			case MatchResultKind_NextTokenNoAdvance:
+			case MatchResult_NextTokenNoAdvance:
 				m_currentToken = *m_tokenCursor;
 				tokenIndex = static_cast <T*> (this)->getTokenIndex (m_currentToken.m_token);
 				ASSERT (tokenIndex < T::TokenCount);
-				m_flags &= ~FlagKind_TokenMatch;
+				m_flags &= ~Flag_TokenMatch;
 				break;
 
 			default:
@@ -313,24 +313,24 @@ protected:
 
 	// match against different kinds of nodes on top of prediction stack
 
-	MatchResultKind
+	MatchResult
 	matchEmptyPredictionStack ()
 	{
-		if ((m_flags & FlagKind_TokenMatch) || m_currentToken.m_token == T::EofToken)
-			return MatchResultKind_NextToken;
+		if ((m_flags & Flag_TokenMatch) || m_currentToken.m_token == T::EofToken)
+			return MatchResult_NextToken;
 
 		axl::err::setFormatStringError ("prediction stack empty while parsing '%s'", m_currentToken.getName ());
-		return MatchResultKind_Fail;
+		return MatchResult_Fail;
 	}
 
-	MatchResultKind
+	MatchResult
 	matchTokenNode (
 		TokenNode* node,
 		size_t tokenIndex
 		)
 	{
-		if (m_flags & FlagKind_TokenMatch)
-			return MatchResultKind_NextToken;
+		if (m_flags & Flag_TokenMatch)
+			return MatchResult_NextToken;
 
 		if (node->m_index != T::AnyToken && node->m_index != tokenIndex)
 		{
@@ -340,23 +340,23 @@ protected:
 				axl::err::setExpectedTokenError (Token::getName (expectedToken), m_currentToken.getName ());
 			}
 
-			return MatchResultKind_Fail;
+			return MatchResult_Fail;
 		}
 
-		if (node->m_flags & NodeFlagKind_Locator)
+		if (node->m_flags & NodeFlag_Locator)
 		{
 			node->m_token = m_currentToken;
-			node->m_flags |= NodeFlagKind_Matched;
+			node->m_flags |= NodeFlag_Matched;
 		}
 
 		m_lastMatchedToken = m_currentToken;
-		m_flags |= FlagKind_TokenMatch;
+		m_flags |= Flag_TokenMatch;
 
 		popPrediction ();
-		return MatchResultKind_Continue; // don't advance to next token just yet (execute following actions)
+		return MatchResult_Continue; // don't advance to next token just yet (execute following actions)
 	}
 
-	MatchResultKind
+	MatchResult
 	matchSymbolNode (
 		SymbolNode* node,
 		size_t* parseTable,
@@ -365,7 +365,7 @@ protected:
 	{
 		bool result;
 
-		if (node->m_flags & SymbolNodeFlagKind_Stacked)
+		if (node->m_flags & SymbolNodeFlag_Stacked)
 		{
 			SymbolNode* top = getSymbolTop ();
 
@@ -374,24 +374,24 @@ protected:
 			if (node->m_astNode)
 				node->m_astNode->m_lastToken = m_lastMatchedToken;
 
-			node->m_flags |= NodeFlagKind_Matched;
+			node->m_flags |= NodeFlag_Matched;
 
-			if (node->m_flags & SymbolNodeFlagKind_HasLeave)
+			if (node->m_flags & SymbolNodeFlag_HasLeave)
 			{
 				result = static_cast <T*> (this)->leave (node->m_index);
 				if (!result)
-					return MatchResultKind_Fail;
+					return MatchResult_Fail;
 			}
 
 			popSymbol ();
 			popPrediction ();
-			return MatchResultKind_Continue;
+			return MatchResult_Continue;
 		}
 
-		if (m_flags & FlagKind_TokenMatch)
-			return MatchResultKind_NextToken;
+		if (m_flags & Flag_TokenMatch)
+			return MatchResult_NextToken;
 
-		if (node->m_flags & SymbolNodeFlagKind_Named)
+		if (node->m_flags & SymbolNodeFlag_Named)
 		{
 			if (node->m_astNode)
 			{
@@ -404,16 +404,16 @@ protected:
 			if (argument)
 			{
 				static_cast <T*> (this)->argument (argument->m_index, node);
-				argument->m_flags |= NodeFlagKind_Matched;
+				argument->m_flags |= NodeFlag_Matched;
 			}
 
 			pushSymbol (node);
 
-			if (node->m_flags & SymbolNodeFlagKind_HasEnter)
+			if (node->m_flags & SymbolNodeFlag_HasEnter)
 			{
 				result = static_cast <T*> (this)->enter (node->m_index);
 				if (!result)
-					return MatchResultKind_Fail;
+					return MatchResult_Fail;
 			}
 		}
 
@@ -431,23 +431,23 @@ protected:
 					);
 			}
 
-			return MatchResultKind_Fail;
+			return MatchResult_Fail;
 		}
 
 		ASSERT (productionIndex < T::TotalCount);
 
-		if (!(node->m_flags & SymbolNodeFlagKind_Named))
+		if (!(node->m_flags & SymbolNodeFlag_Named))
 			popPrediction ();
 
 		pushPrediction (productionIndex);
-		return MatchResultKind_Continue;
+		return MatchResult_Continue;
 	}
 
-	MatchResultKind
+	MatchResult
 	matchSequenceNode (Node* node)
 	{
-		if (m_flags & FlagKind_TokenMatch)
-			return MatchResultKind_NextToken;
+		if (m_flags & Flag_TokenMatch)
+			return MatchResult_NextToken;
 
 		size_t* p = static_cast <T*> (this)->getSequence (node->m_index);
 
@@ -455,24 +455,24 @@ protected:
 		for (; *p != -1; *p++)
 			pushPrediction (*p);
 
-		return MatchResultKind_Continue;
+		return MatchResult_Continue;
 	}
 
-	MatchResultKind
+	MatchResult
 	matchActionNode (Node* node)
 	{
 		bool result = static_cast <T*> (this)->action (node->m_index);
 		if (!result)
-			return MatchResultKind_Fail;
+			return MatchResult_Fail;
 
 		popPrediction ();
-		return MatchResultKind_Continue;
+		return MatchResult_Continue;
 	}
 
-	MatchResultKind
+	MatchResult
 	matchLaDfaNode (LaDfaNode* node)
 	{
-		if (node->m_flags & LaDfaNodeFlagKind_PreResolver)
+		if (node->m_flags & LaDfaNodeFlag_PreResolver)
 		{
 			ASSERT (getPreResolverTop () == node);
 
@@ -487,7 +487,7 @@ protected:
 			popPrediction ();
 			pushPrediction (productionIndex);
 
-			return MatchResultKind_NextTokenNoAdvance;
+			return MatchResult_NextTokenNoAdvance;
 		}
 
 		if (!node->m_reparseLaDfaTokenCursor)
@@ -495,7 +495,7 @@ protected:
 
 		LaDfaTransition transition = { 0 };
 
-		LaDfaResultKind laDfaResult = static_cast <T*> (this)->laDfa (
+		LaDfaResult laDfaResult = static_cast <T*> (this)->laDfa (
 			node->m_index,
 			m_currentToken.m_token,
 			&transition
@@ -503,13 +503,13 @@ protected:
 
 		switch (laDfaResult)
 		{
-		case LaDfaResultKind_Production:
+		case LaDfaResult_Production:
 			if (transition.m_productionIndex >= T::LaDfaFirst &&
 				transition.m_productionIndex < T::LaDfaEnd)
 			{
 				// stil in lookahead DFA, need more tokens...
 				node->m_index = transition.m_productionIndex - T::LaDfaFirst;
-				return MatchResultKind_NextToken;
+				return MatchResult_NextToken;
 			}
 			else
 			{
@@ -519,22 +519,22 @@ protected:
 				popPrediction ();
 				pushPrediction (transition.m_productionIndex);
 
-				return MatchResultKind_NextTokenNoAdvance;
+				return MatchResult_NextTokenNoAdvance;
 			}
 
 			break;
 
-		case LaDfaResultKind_Resolver:
+		case LaDfaResult_Resolver:
 			node->m_flags = transition.m_flags;
 			node->m_resolverThenIndex = transition.m_productionIndex;
 			node->m_resolverElseIndex = transition.m_resolverElseIndex;
 			node->m_reparseResolverTokenCursor = m_tokenCursor;
 			pushPreResolver (node);
 			pushPrediction (transition.m_resolverIndex);
-			return MatchResultKind_Continue;
+			return MatchResult_Continue;
 
 		default:
-			ASSERT (laDfaResult == LaDfaResultKind_Fail);
+			ASSERT (laDfaResult == LaDfaResult_Fail);
 
 			if (m_resolverStack.isEmpty ()) // can't rollback so set error
 			{
@@ -547,18 +547,18 @@ protected:
 					);
 			}
 
-			return MatchResultKind_Fail;
+			return MatchResult_Fail;
 		}
 	}
 
 	// rollback
 
-	MatchResultKind
+	MatchResult
 	rollbackResolver ()
 	{
 		LaDfaNode* laDfaNode = getPreResolverTop ();
 		ASSERT (laDfaNode);
-		ASSERT (laDfaNode->m_flags & LaDfaNodeFlagKind_PreResolver);
+		ASSERT (laDfaNode->m_flags & LaDfaNodeFlag_PreResolver);
 
 		// keep popping prediction stack until pre-resolver dfa node
 
@@ -566,7 +566,7 @@ protected:
 		{
 			Node* node = getPredictionTop ();
 
-			if (node->m_kind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlagKind_Stacked))
+			if (node->m_kind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Stacked))
 			{
 				ASSERT (getSymbolTop () == node);
 
@@ -596,8 +596,8 @@ protected:
 
 			laDfaNode->m_index = laDfaNode->m_resolverElseIndex - T::LaDfaFirst;
 
-			if (!(laDfaNode->m_flags & LaDfaNodeFlagKind_HasChainedResolver))
-				return MatchResultKind_NextToken; // if no chained resolver, advance to next token
+			if (!(laDfaNode->m_flags & LaDfaNodeFlag_HasChainedResolver))
+				return MatchResult_NextToken; // if no chained resolver, advance to next token
 		}
 		else
 		{
@@ -606,7 +606,7 @@ protected:
 			pushPrediction (productionIndex);
 		}
 
-		return MatchResultKind_NextTokenNoAdvance;
+		return MatchResult_NextTokenNoAdvance;
 	}
 
 	// create nodes
@@ -617,7 +617,7 @@ protected:
 	{
 		SymbolNode* node = AXL_MEM_NEW (SymbolNode);
 		node->m_kind = NodeKind_Symbol;
-		node->m_flags |= SymbolNodeFlagKind_Named;
+		node->m_flags |= SymbolNodeFlag_Named;
 		node->m_index = index;
 		return node;
 	}
@@ -638,13 +638,13 @@ protected:
 		{
 			size_t index = masterIndex - T::SymbolFirst;
 			SymbolNode* symbolNode = static_cast <T*> (this)->createSymbolNode (index);
-			if (symbolNode->m_astNode && (m_flags & FlagKind_BuildingAst))
+			if (symbolNode->m_astNode && (m_flags & Flag_BuildingAst))
 			{
 				if (!m_ast)
 					m_ast.create ();
 
 				m_ast->add (symbolNode->m_astNode);
-				symbolNode->m_flags |= SymbolNodeFlagKind_KeepAst;
+				symbolNode->m_flags |= SymbolNodeFlag_KeepAst;
 			}
 
 			node = symbolNode;
@@ -681,7 +681,7 @@ protected:
 			node = createNode (targetIndex);
 			ASSERT (node->m_kind == NodeKind_Token || node->m_kind == NodeKind_Symbol);
 
-			node->m_flags |= NodeFlagKind_Locator;
+			node->m_flags |= NodeFlag_Locator;
 
 			SymbolNode* symbolNode = getSymbolTop ();
 			ASSERT (symbolNode);
@@ -721,7 +721,7 @@ protected:
 			return NULL;
 
 		Node* node = createNode (masterIndex);
-		if (!(node->m_flags & NodeFlagKind_Locator))
+		if (!(node->m_flags & NodeFlag_Locator))
 			m_nodeList.insertTail (node);
 		m_predictionStack.append (node);
 		return node;
@@ -738,7 +738,7 @@ protected:
 		}
 
 		Node* node = m_predictionStack [count - 1];
-		if (!(node->m_flags & NodeFlagKind_Locator))
+		if (!(node->m_flags & NodeFlag_Locator))
 			m_nodeList.erase (node);
 
 		m_predictionStack.setCount (count - 1);
@@ -770,7 +770,7 @@ protected:
 	void
 	pushSymbol (SymbolNode* node)
 	{
-		if ((m_flags & FlagKind_BuildingAst) && node->m_astNode)
+		if ((m_flags & Flag_BuildingAst) && node->m_astNode)
 		{
 			AstNode* astTop = getAstTop ();
 			if (astTop)
@@ -781,7 +781,7 @@ protected:
 		}
 
 		m_symbolStack.append (node);
-		node->m_flags |= SymbolNodeFlagKind_Stacked;
+		node->m_flags |= SymbolNodeFlag_Stacked;
 	}
 
 	void
@@ -795,7 +795,7 @@ protected:
 		}
 
 		SymbolNode* node = m_symbolStack [count - 1];
-		node->m_flags |= SymbolNodeFlagKind_Stacked;
+		node->m_flags |= SymbolNodeFlag_Stacked;
 
 		m_symbolStack.setCount (count - 1);
 	}
@@ -813,7 +813,7 @@ protected:
 	pushPreResolver (LaDfaNode* node)
 	{
 		m_resolverStack.append (node);
-		node->m_flags |= LaDfaNodeFlagKind_PreResolver;
+		node->m_flags |= LaDfaNodeFlag_PreResolver;
 	}
 
 	void
@@ -827,7 +827,7 @@ protected:
 		}
 
 		LaDfaNode* node = m_resolverStack [count - 1];
-		node->m_flags &= ~LaDfaNodeFlagKind_PreResolver;
+		node->m_flags &= ~LaDfaNodeFlag_PreResolver;
 
 		m_resolverStack.setCount (count - 1);
 	}
@@ -846,7 +846,7 @@ protected:
 			return NULL;
 
 		Node* node = symbolNode->m_locatorArray [index];
-		if (!node || !(node->m_flags & NodeFlagKind_Matched))
+		if (!node || !(node->m_flags & NodeFlag_Matched))
 			return NULL;
 
 		return node;

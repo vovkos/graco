@@ -8,13 +8,13 @@
 
 //.............................................................................
 
-enum ClassFlagKind
+enum ClassFlag
 {
-	ClassFlagKind_Default   = 0x01,
-	ClassFlagKind_Named     = 0x02,
-	ClassFlagKind_Defined   = 0x04,
-	ClassFlagKind_Used      = 0x08,
-	ClassFlagKind_Reachable = 0x10,
+	ClassFlag_Default   = 0x01,
+	ClassFlag_Named     = 0x02,
+	ClassFlag_Defined   = 0x04,
+	ClassFlag_Used      = 0x08,
+	ClassFlag_Reachable = 0x10,
 };
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

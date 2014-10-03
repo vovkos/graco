@@ -7,22 +7,22 @@
 #define _LLK_AST_H
 
 namespace llk {
-	
+
 //.............................................................................
 
-template <class Token>
+template <class Token_0>
 class AstNode: public axl::rtl::ListLink
 {
 public:
-	typedef Token Token;
+	typedef Token_0 Token;
 
 public:
 	int m_kind;
 
 	Token m_firstToken;
-	Token m_lastToken;		
+	Token m_lastToken;
 
-	// later create a wrapper for ast tree 
+	// later create a wrapper for ast tree
 	// we don't really need tree fields and listlink until we plan to keep ast nodes
 
 	AstNode* m_parent;
@@ -43,11 +43,11 @@ public:
 
 //.............................................................................
 
-template <class AstNode>
+template <class AstNode_0>
 class Ast
 {
 public:
-	typedef AstNode AstNode;
+	typedef AstNode_0 AstNode;
 
 protected:
 	axl::rtl::StdList <AstNode> m_list;

@@ -14,18 +14,18 @@ namespace llk {
 
 template <
 	typename T,
-	typename Token
+	typename Token_0
 	>
 class Parser
 {
 public:
-	typedef Token Token;
+	typedef Token_0 Token;
 	typedef typename Token::TokenKind TokenKind;
-	typedef AstNode <Token> AstNode;
-	typedef Ast <AstNode> Ast;
-	typedef TokenNode <Token> TokenNode;
-	typedef SymbolNode <AstNode> SymbolNode;
-	typedef LaDfaNode <Token> LaDfaNode;
+	typedef llk::AstNode <Token> AstNode;
+	typedef llk::Ast <AstNode> Ast;
+	typedef llk::TokenNode <Token> TokenNode;
+	typedef llk::SymbolNode <AstNode> SymbolNode;
+	typedef llk::LaDfaNode <Token> LaDfaNode;
 
 protected:
 	enum FlagKind

@@ -9,7 +9,7 @@
 #include "llk_Ast.h"
 
 namespace llk {
-	
+
 //.............................................................................
 
 enum NodeKind
@@ -18,9 +18,9 @@ enum NodeKind
 	NodeKind_Token,
 	NodeKind_Symbol,
 	NodeKind_Sequence,
-	NodeKind_Action,	
-	NodeKind_Argument,	
-	NodeKind_LaDfa,	
+	NodeKind_Action,
+	NodeKind_Argument,
+	NodeKind_LaDfa,
 
 	NodeKind__Count,
 };
@@ -31,19 +31,19 @@ inline
 const char*
 getNodeKindString (NodeKind nodeKind)
 {
-	static const char* stringTable [NodeKind__Count] = 
+	static const char* stringTable [NodeKind__Count] =
 	{
 		"undefined-node-kind", // ENode_Undefined
 		"token-node",          // ENode_Token,
 		"symbol-node",         // ENode_Symbol,
 		"sequence-node",       //  ENode_Sequence,
-		"action-node",         // ENode_Action,	
-		"argument-node",       // ENode_Argument,	
-		"lookahead-dfa-node",  // ENode_LaDfa,	
+		"action-node",         // ENode_Action,
+		"argument-node",       // ENode_Argument,
+		"lookahead-dfa-node",  // ENode_LaDfa,
 	};
 
-	return nodeKind >= 0 && nodeKind < NodeKind__Count ? 
-		stringTable [nodeKind] : 
+	return nodeKind >= 0 && nodeKind < NodeKind__Count ?
+		stringTable [nodeKind] :
 		stringTable [NodeKind_Undefined];
 }
 
@@ -86,11 +86,11 @@ public:
 
 //.............................................................................
 
-template <class Token>
+template <class Token_0>
 class TokenNode: public Node
 {
 public:
-	typedef Token Token;
+	typedef Token_0 Token;
 
 public:
 	Token m_token;
@@ -116,11 +116,11 @@ enum SymbolNodeFlagKind
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-template <class AstNode>
+template <class AstNode_0>
 class SymbolNode: public Node
 {
 public:
-	typedef AstNode AstNode;
+	typedef AstNode_0 AstNode;
 
 public:
 	AstNode* m_astNode;
@@ -153,11 +153,11 @@ enum LaDfaNodeFlagKind
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-template <class Token>
+template <class Token_0>
 class LaDfaNode: public Node
 {
 public:
-	typedef Token Token;
+	typedef Token_0 Token;
 
 public:
 	size_t m_resolverThenIndex;

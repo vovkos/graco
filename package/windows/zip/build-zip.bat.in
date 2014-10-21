@@ -50,7 +50,7 @@ mkdir %CONTENTS_DIR%\samples || exit
 if not exist "%OUT_DIR%" (mkdir "%OUT_DIR%" || exit)
 
 xcopy /Y /Q %BIN_DIR%\bulldozer.exe %CONTENTS_DIR%\bin
-xcopy /Y /Q %ROOT_DIR%\package\windows\cmake\*.* %CONTENTS_DIR%\cmake
+xcopy /Y /Q %ROOT_DIR%\package\cmake\*.* %CONTENTS_DIR%\cmake
 xcopy /Y /Q %ROOT_DIR%\cmake\bulldozer-step.cmake %CONTENTS_DIR%\cmake
 xcopy /Y /Q %ROOT_DIR%\include\*.* %CONTENTS_DIR%\include
 xcopy /Y /Q %ROOT_DIR%\frame\*.* %CONTENTS_DIR%\frame

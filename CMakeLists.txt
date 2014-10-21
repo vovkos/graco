@@ -22,10 +22,11 @@ include (${AXL_CMAKE_DIR}/axl.cmake)
 #..............................................................................
 
 set (BULLDOZER_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
+set (BULLDOZER_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set (BULLDOZER_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
 
 add_subdirectory (cmake)
-	
+
 include (${CMAKE_CURRENT_BINARY_DIR}/cmake/bulldozer.cmake)
 include (version.cmake)
 

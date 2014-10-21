@@ -22,7 +22,7 @@ goto :continue
 rem ...........................................................................
 
 set ROOT_DIR="${BULLDOZER_ROOT_DIR}"
-set BIN_DIR="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/%CONFIGURATION%"
+set BIN_DIR="${BULLDOZER_BIN_BASE_DIR}/%CONFIGURATION%"
 set OUT_DIR="${BULLDOZER_PACKAGE_DIR}"
 set ZIP_DIR="${CMAKE_CURRENT_BINARY_DIR}/zip"
 set ZIP_EXE="${7Z_EXE}"
@@ -49,11 +49,11 @@ mkdir %CONTENTS_DIR%\frame || exit
 mkdir %CONTENTS_DIR%\samples || exit
 if not exist "%OUT_DIR%" (mkdir "%OUT_DIR%" || exit)
 
-xcopy /Y /Q %BIN_DIR%\bulldozer.exe %CONTENTS_DIR%\bin
-xcopy /Y /Q %ROOT_DIR%\package\cmake\*.* %CONTENTS_DIR%\cmake
-xcopy /Y /Q %ROOT_DIR%\cmake\bulldozer-step.cmake %CONTENTS_DIR%\cmake
-xcopy /Y /Q %ROOT_DIR%\include\*.* %CONTENTS_DIR%\include
-xcopy /Y /Q %ROOT_DIR%\frame\*.* %CONTENTS_DIR%\frame
+copy /Y %BIN_DIR%\bulldozer.exe %CONTENTS_DIR%\bin
+copy /Y %ROOT_DIR%\package\cmake\*.* %CONTENTS_DIR%\cmake
+copy /Y %ROOT_DIR%\cmake\bulldozer-step.cmake %CONTENTS_DIR%\cmake
+copy /Y %ROOT_DIR%\include\*.* %CONTENTS_DIR%\include
+copy /Y %ROOT_DIR%\frame\*.* %CONTENTS_DIR%\frame
 xcopy /Y /Q /E %ROOT_DIR%\samples\*.* %CONTENTS_DIR%\samples
 
 set PREV_DIR=%CD%

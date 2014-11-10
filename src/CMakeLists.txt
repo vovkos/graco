@@ -171,7 +171,6 @@ source_group (
 include_directories (
 	${LUA_INC_DIR}
 	${AXL_INC_DIR}
-	${INC_DIR}
 	${GEN_DIR}
 	)
 

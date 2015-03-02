@@ -20,7 +20,7 @@ Parser::parseFile (
 		err::setFormatStringError (
 			"cannot open '%s': %s",
 			filePath.cc (), // thanks a lot gcc
-			err::getError ()->getDescription ().cc ()
+			err::getLastError ()->getDescription ().cc ()
 			);
 		return false;
 	}
@@ -32,7 +32,7 @@ Parser::parseFile (
 		err::setFormatStringError (
 			"cannot open '%s': %s",
 			filePath.cc (),
-			err::getError ()->getDescription ().cc ()
+			err::getLastError ()->getDescription ().cc ()
 			);
 		return false;
 	}

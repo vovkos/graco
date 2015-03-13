@@ -8,7 +8,7 @@ project (bulldozer)
 
 cmake_minimum_required (VERSION 2.8)
 
-include ("${CMAKE_CURRENT_LIST_DIR}/../cmake/master.cmake")
+include ("${CMAKE_CURRENT_LIST_DIR}/../cmake/master.cmake" NO_POLICY_SCOPE)
 
 print_std_settings ()
 

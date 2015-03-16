@@ -13,4 +13,4 @@ else ()
 endif ()
 
 set (VERSION_COMPANY   "Tibbo Technology Inc")
-set (VERSION_YEARS     "2007-2014")
+set (VERSION_YEARS     "2007-2015")

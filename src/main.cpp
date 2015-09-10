@@ -76,7 +76,7 @@ main (
 		printf (
 			"Cannot get full file path of '%s': %s\n",
 			cmdLine.m_inputFileName.cc (), // thanks a lot gcc
-			err::getLastError ()->getDescription ().cc ()
+			err::getLastErrorDescription ().cc ()
 			);
 		return ErrorCode_ParseFailure;
 	}
@@ -90,7 +90,7 @@ main (
 	result = parser.parseFile (&module, &cmdLine, srcFilePath);
 	if (!result)
 	{
-		printf ("%s\n", err::getLastError ()->getDescription ().cc ());
+		printf ("%s\n", err::getLastErrorDescription ().cc ());
 		return ErrorCode_ParseFailure;
 	}
 
@@ -109,7 +109,7 @@ main (
 			result = parser.parseFile (&module, &cmdLine, importFilePath);
 			if (!result)
 			{
-				printf ("%s\n", err::getLastError ()->getDescription ().cc ());
+				printf ("%s\n", err::getLastErrorDescription ().cc ());
 				return ErrorCode_ParseFailure;
 			}
 
@@ -122,7 +122,7 @@ main (
 		result = module.writeBnfFile (cmdLine.m_bnfFileName);
 		if (!result)
 		{
-			printf ("%s\n", err::getLastError ()->getDescription ().cc ());
+			printf ("%s\n", err::getLastErrorDescription ().cc ());
 			return ErrorCode_BuildFailure;
 		}
 	}
@@ -130,7 +130,7 @@ main (
 	result = module.build (&cmdLine);
 	if (!result)
 	{
-		printf ("%s\n", err::getLastError ()->getDescription ().cc ());
+		printf ("%s\n", err::getLastErrorDescription ().cc ());
 		return ErrorCode_BuildFailure;
 	}
 
@@ -150,7 +150,7 @@ main (
 		result = generator.generate (*outputFileNameIt, *frameFileNameIt);
 		if (!result)
 		{
-			printf ("%s\n", err::getLastError ()->getDescription ().cc ());
+			printf ("%s\n", err::getLastErrorDescription ().cc ());
 			return ErrorCode_GenerateFailure;
 		}
 	}

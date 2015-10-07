@@ -16,7 +16,7 @@ class Module
 	friend class Parser;
 
 protected:
-	rtl::Array <Node*> m_parseTable;
+	sl::Array <Node*> m_parseTable;
 	size_t m_lookaheadLimit;
 	size_t m_lookahead;
 	ClassMgr m_classMgr;
@@ -24,7 +24,7 @@ protected:
 	NodeMgr m_nodeMgr;
 
 public:
-	rtl::BoxList <rtl::String> m_importList;
+	sl::BoxList <sl::String> m_importList;
 
 public:
 	Module ();
@@ -41,7 +41,7 @@ public:
 	void
 	trace ();
 	
-	rtl::String 
+	sl::String 
 	generateBnfString ();
 
 	bool

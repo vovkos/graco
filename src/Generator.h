@@ -12,7 +12,7 @@ class Generator
 {
 protected:
 	lua::StringTemplate m_stringTemplate;
-	rtl::String m_buffer;
+	sl::String m_buffer;
 
 public:
 	const CmdLine* m_cmdLine;

@@ -16,8 +16,8 @@ class NodeMgr
 	friend class ParseTableBuilder;
 
 protected:
-	rtl::HashTableMap <int, SymbolNode*, rtl::HashId <int>, rtl::Cmp <int> > m_tokenMap;
-	rtl::StringHashTableMap <SymbolNode*> m_symbolMap;
+	sl::HashTableMap <int, SymbolNode*, sl::HashId <int>, sl::Cmp <int> > m_tokenMap;
+	sl::StringHashTableMap <SymbolNode*> m_symbolMap;
 
 	GrammarNode m_epsilonNode;
 	SymbolNode m_eofTokenNode;
@@ -25,20 +25,20 @@ protected:
 	SymbolNode m_startPragmaSymbol;
 	SymbolNode* m_primaryStartSymbol;
 
-	rtl::StdList <SymbolNode> m_charTokenList;
-	rtl::StdList <SymbolNode> m_namedTokenList;
-	rtl::StdList <SymbolNode> m_namedSymbolList;
-	rtl::StdList <SymbolNode> m_tempSymbolList;
-	rtl::StdList <SequenceNode> m_sequenceList;
-	rtl::StdList <BeaconNode> m_beaconList;
-	rtl::StdList <DispatcherNode> m_dispatcherList;
-	rtl::StdList <ActionNode> m_actionList;
-	rtl::StdList <ArgumentNode> m_argumentList;
-	rtl::StdList <ConflictNode> m_conflictList;
-	rtl::StdList <LaDfaNode> m_laDfaList;
+	sl::StdList <SymbolNode> m_charTokenList;
+	sl::StdList <SymbolNode> m_namedTokenList;
+	sl::StdList <SymbolNode> m_namedSymbolList;
+	sl::StdList <SymbolNode> m_tempSymbolList;
+	sl::StdList <SequenceNode> m_sequenceList;
+	sl::StdList <BeaconNode> m_beaconList;
+	sl::StdList <DispatcherNode> m_dispatcherList;
+	sl::StdList <ActionNode> m_actionList;
+	sl::StdList <ArgumentNode> m_argumentList;
+	sl::StdList <ConflictNode> m_conflictList;
+	sl::StdList <LaDfaNode> m_laDfaList;
 
-	rtl::Array <SymbolNode*> m_tokenArray;  // char tokens + named tokens
-	rtl::Array <SymbolNode*> m_symbolArray; // named symbols + temp symbols
+	sl::Array <SymbolNode*> m_tokenArray;  // char tokens + named tokens
+	sl::Array <SymbolNode*> m_symbolArray; // named symbols + temp symbols
 
 	size_t m_masterCount;
 
@@ -61,7 +61,7 @@ public:
 	getTokenNode (int token);
 
 	SymbolNode*
-	getSymbolNode (const rtl::String& name);
+	getSymbolNode (const sl::String& name);
 
 	SymbolNode*
 	createTempSymbolNode ();
@@ -169,7 +169,7 @@ protected:
 	luaExportNodeList (
 		lua::LuaState* luaState,
 		const char* name,
-		rtl::Iterator <Node> node,
+		sl::Iterator <Node> node,
 		size_t countHint = 1
 		);
 };

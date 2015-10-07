@@ -58,15 +58,15 @@ protected:
 	};
 
 protected:
-	axl::rtl::StdList <Node> m_nodeList;
+	axl::sl::StdList <Node> m_nodeList;
 	axl::ref::Buf <Ast> m_ast;
 
-	axl::rtl::Array <Node*> m_predictionStack;
-	axl::rtl::Array <SymbolNode*> m_symbolStack;
-	axl::rtl::Array <LaDfaNode*> m_resolverStack;
+	axl::sl::Array <Node*> m_predictionStack;
+	axl::sl::Array <SymbolNode*> m_symbolStack;
+	axl::sl::Array <LaDfaNode*> m_resolverStack;
 
-	axl::rtl::BoxList <Token> m_tokenList;
-	axl::rtl::BoxIterator <Token> m_tokenCursor;
+	axl::sl::BoxList <Token> m_tokenList;
+	axl::sl::BoxIterator <Token> m_tokenCursor;
 
 	Token m_currentToken;
 	Token m_lastMatchedToken;
@@ -249,7 +249,7 @@ public:
 	void
 	traceTokenList ()
 	{
-		axl::rtl::BoxIterator <Token> token = m_tokenList.getHead ();
+		axl::sl::BoxIterator <Token> token = m_tokenList.getHead ();
 
 		axl::dbg::trace ("TOKEN LIST (%d tokens):\n", m_tokenList.getCount ());
 		for (; token; token++)

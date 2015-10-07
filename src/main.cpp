@@ -34,7 +34,7 @@ printUsage ()
 {
 	printVersion ();
 
-	rtl::String helpString = CmdLineSwitchTable::getHelpString ();
+	sl::String helpString = CmdLineSwitchTable::getHelpString ();
 	printf ("Usage: bulldozer [<options>...] <source_file>\n%s", helpString.cc ());
 }
 
@@ -70,7 +70,7 @@ main (
 		return ErrorCode_Success;
 	}
 
-	rtl::String srcFilePath = io::getFullFilePath (cmdLine.m_inputFileName);
+	sl::String srcFilePath = io::getFullFilePath (cmdLine.m_inputFileName);
 	if (srcFilePath.isEmpty ())
 	{
 		printf (
@@ -96,13 +96,13 @@ main (
 
 	if (!module.m_importList.isEmpty ())
 	{
-		rtl::StringHashTable filePathSet;
+		sl::StringHashTable filePathSet;
 		filePathSet.visit (srcFilePath);
 
-		rtl::BoxIterator <rtl::String> import = module.m_importList.getHead ();
+		sl::BoxIterator <sl::String> import = module.m_importList.getHead ();
 		for (; import; import++)
 		{
-			rtl::String importFilePath = *import;
+			sl::String importFilePath = *import;
 			if (filePathSet.find (importFilePath))
 				continue;
 
@@ -142,8 +142,8 @@ main (
 	generator.m_cmdLine = &cmdLine;
 
 	ASSERT (cmdLine.m_outputFileNameList.getCount () == cmdLine.m_frameFileNameList.getCount ());
-	rtl::BoxIterator <rtl::String> outputFileNameIt = cmdLine.m_outputFileNameList.getHead ();
-	rtl::BoxIterator <rtl::String> frameFileNameIt = cmdLine.m_frameFileNameList.getHead ();
+	sl::BoxIterator <sl::String> outputFileNameIt = cmdLine.m_outputFileNameList.getHead ();
+	sl::BoxIterator <sl::String> frameFileNameIt = cmdLine.m_frameFileNameList.getHead ();
 
 	for (; outputFileNameIt && frameFileNameIt; outputFileNameIt++, frameFileNameIt++)
 	{

@@ -11,7 +11,7 @@ namespace llk {
 //.............................................................................
 
 template <class Token_0>
-class AstNode: public axl::rtl::ListLink
+class AstNode: public axl::sl::ListLink
 {
 public:
 	typedef Token_0 Token;
@@ -26,7 +26,7 @@ public:
 	// we don't really need tree fields and listlink until we plan to keep ast nodes
 
 	AstNode* m_parent;
-	axl::rtl::Array <AstNode*> m_children;
+	axl::sl::Array <AstNode*> m_children;
 
 public:
 	AstNode ()
@@ -50,7 +50,7 @@ public:
 	typedef AstNode_0 AstNode;
 
 protected:
-	axl::rtl::StdList <AstNode> m_list;
+	axl::sl::StdList <AstNode> m_list;
 	AstNode* m_root;
 
 public:

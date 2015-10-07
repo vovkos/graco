@@ -34,11 +34,11 @@ protected:
 	DispatcherNode* m_dispatcher;
 	GrammarNode* m_resolver;
 
-	rtl::Array <ActionNode*> m_actionArray;
-	rtl::Array <ArgumentNode*> m_argumentArray;
-	rtl::Array <BeaconNode*> m_beaconArray;
-	rtl::Array <BeaconNode*> m_beaconDeleteArray;
-	rtl::StringHashTableMap <BeaconNode*> m_beaconMap;
+	sl::Array <ActionNode*> m_actionArray;
+	sl::Array <ArgumentNode*> m_argumentArray;
+	sl::Array <BeaconNode*> m_beaconArray;
+	sl::Array <BeaconNode*> m_beaconDeleteArray;
+	sl::StringHashTableMap <BeaconNode*> m_beaconMap;
 
 public:
 	ProductionBuilder (NodeMgr* nodeMgr);
@@ -65,7 +65,7 @@ protected:
 	bool
 	processUserCode (
 		lex::SrcPos& srcPos,
-		rtl::String* userCode,
+		sl::String* userCode,
 		GrammarNode* resolver
 		);
 

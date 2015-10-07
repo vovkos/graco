@@ -19,7 +19,7 @@ enum ClassFlag
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Class: public rtl::ListLink
+class Class: public sl::ListLink
 {
 public:
 	int m_flags;
@@ -28,8 +28,8 @@ public:
 
 	Class* m_baseClass;
 
-	rtl::String m_name;
-	rtl::String m_members;
+	sl::String m_name;
+	sl::String m_members;
 
 	Class ()
 	{
@@ -45,8 +45,8 @@ public:
 class ClassMgr
 {
 protected:
-	rtl::StdList <Class> m_classList;
-	rtl::StringHashTableMap <Class*> m_classMap; 
+	sl::StdList <Class> m_classList;
+	sl::StringHashTableMap <Class*> m_classMap; 
 
 public:
 	bool
@@ -61,7 +61,7 @@ public:
 		return m_classList.getCount ();
 	}
 
-	rtl::Iterator <Class>
+	sl::Iterator <Class>
 	getHead ()
 	{
 		return m_classList.getHead ();
@@ -75,7 +75,7 @@ public:
 	}
 
 	Class*
-	getClass (const rtl::String& name);
+	getClass (const sl::String& name);
 
 	Class*
 	createUnnamedClass ();
@@ -83,7 +83,7 @@ public:
 	Class*
 	findClass (const char* name)
 	{
-		rtl::StringHashTableMapIterator <Class*> it = m_classMap.find (name);
+		sl::StringHashTableMapIterator <Class*> it = m_classMap.find (name);
 		return it ? it->m_value : NULL;
 	}
 

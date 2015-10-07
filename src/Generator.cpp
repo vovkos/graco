@@ -16,7 +16,7 @@ Generator::generate (
 	const char* frameFileName
 	)
 {
-	rtl::String frameFilePath;
+	sl::String frameFilePath;
 	if (m_cmdLine)
 	{
 		frameFilePath = io::findFilePath (frameFileName, NULL, &m_cmdLine->m_frameDirList);
@@ -42,8 +42,8 @@ Generator::generate (
 
 	m_buffer.reserve (size);
 
-	rtl::String targetFilePath = io::getFullFilePath (fileName);
-	rtl::String frameDir = io::getDir (frameFilePath);
+	sl::String targetFilePath = io::getFullFilePath (fileName);
+	sl::String frameDir = io::getDir (frameFilePath);
 
 	m_stringTemplate.m_luaState.setGlobalString ("TargetFilePath", targetFilePath);
 	m_stringTemplate.m_luaState.setGlobalString ("FrameFilePath", frameFilePath);

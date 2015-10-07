@@ -24,9 +24,9 @@ Class::luaExport (lua::LuaState* luaState)
 //.............................................................................
 
 Class*
-ClassMgr::getClass (const rtl::String& name)
+ClassMgr::getClass (const sl::String& name)
 {
-	rtl::StringHashTableMapIterator <Class*> it = m_classMap.visit (name);
+	sl::StringHashTableMapIterator <Class*> it = m_classMap.visit (name);
 	if (it->m_value)
 		return it->m_value;
 
@@ -59,7 +59,7 @@ ClassMgr::deleteClass (Class* cls)
 bool
 ClassMgr::verify ()
 {
-	rtl::Iterator <Class> it = m_classList.getHead ();
+	sl::Iterator <Class> it = m_classList.getHead ();
 	for (; it; it++)
 	{
 		Class* cls = *it;
@@ -80,7 +80,7 @@ ClassMgr::verify ()
 void
 ClassMgr::deleteUnusedClasses ()
 {
-	rtl::Iterator <Class> it = m_classList.getHead ();
+	sl::Iterator <Class> it = m_classList.getHead ();
 	while (it)
 	{
 		Class* cls = *it++;
@@ -92,7 +92,7 @@ ClassMgr::deleteUnusedClasses ()
 void
 ClassMgr::deleteUnreachableClasses ()
 {
-	rtl::Iterator <Class> it = m_classList.getHead ();
+	sl::Iterator <Class> it = m_classList.getHead ();
 	while (it)
 	{
 		Class* cls = *it++;

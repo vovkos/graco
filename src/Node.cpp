@@ -114,16 +114,16 @@ isParenthesNeeded (const char* p)
 		}
 }
 
-rtl::String
+sl::String
 GrammarNode::getBnfString ()
 {
 	if (!m_quantifierKind)
 		return m_name;
 
 	ASSERT (m_quantifiedNode);
-	rtl::String string = m_quantifiedNode->getBnfString ();
+	sl::String string = m_quantifiedNode->getBnfString ();
 
-	return rtl::String::format_s (
+	return sl::String::format_s (
 		isParenthesNeeded (string) ? "(%s)%c" : "%s%c",
 		string.cc (),
 		m_quantifierKind
@@ -141,12 +141,12 @@ SymbolNode::SymbolNode ()
 	m_resolverPriority = 0;
 }
 
-rtl::String
+sl::String
 SymbolNode::getArgName (size_t index)
 {
 	ASSERT (index < m_argNameList.getCount ());
 
-	rtl::BoxIterator <rtl::String> it = m_argNameList.getHead ();
+	sl::BoxIterator <sl::String> it = m_argNameList.getHead ();
 	for (size_t i = 0; i < index; i++)
 		it++;
 
@@ -277,7 +277,7 @@ SymbolNode::luaExport (lua::LuaState* luaState)
 
 	luaState->createTable (m_argNameList.getCount ());
 
-	rtl::BoxIterator <rtl::String> it = m_argNameList.getHead ();
+	sl::BoxIterator <sl::String> it = m_argNameList.getHead ();
 	for (size_t i = 1; it; it++, i++)
 		luaState->setArrayElementString (i, *it);
 
@@ -295,7 +295,7 @@ SymbolNode::luaExport (lua::LuaState* luaState)
 	luaState->setMember ("ProductionTable");
 }
 
-rtl::String
+sl::String
 SymbolNode::getBnfString ()
 {
 	if (m_kind == NodeKind_Token || (m_flags & SymbolNodeFlag_Named))
@@ -308,7 +308,7 @@ SymbolNode::getBnfString ()
 	if (productionCount == 1)
 		return m_productionArray [0]->stripBeacon ()->getBnfString ();
 
-	rtl::String string = "(";
+	sl::String string = "(";
 	string += m_productionArray [0]->stripBeacon ()->getBnfString ();
 	for (size_t i = 1; i < productionCount; i++)
 	{
@@ -377,23 +377,23 @@ SequenceNode::luaExport (lua::LuaState* luaState)
 	luaState->setMember ("Sequence");
 }
 
-rtl::String
+sl::String
 SequenceNode::getProductionString ()
 {
-	return rtl::String::format_s (
+	return sl::String::format_s (
 		"%s: %s",
 		m_name.cc (),
 		nodeArrayToString (&m_sequence).cc ()
 		);
 }
 
-rtl::String
+sl::String
 SequenceNode::getBnfString ()
 {
 	if (m_quantifierKind)
 		return GrammarNode::getBnfString ();
 
-	rtl::String sequenceString;
+	sl::String sequenceString;
 
 	size_t sequenceLength = m_sequence.getCount ();
 	ASSERT (sequenceLength > 1);
@@ -402,7 +402,7 @@ SequenceNode::getBnfString ()
 	{
 		GrammarNode* sequenceEntry = m_sequence [i]->stripBeacon ();
 
-		rtl::String entryString = sequenceEntry->getBnfString ();
+		sl::String entryString = sequenceEntry->getBnfString ();
 		if (entryString.isEmpty ())
 			continue;
 
@@ -491,7 +491,7 @@ ArgumentNode::trace ()
 		m_targetSymbol->m_name.cc ()
 		);
 
-	rtl::BoxIterator <rtl::String> it = m_argValueList.getHead ();
+	sl::BoxIterator <sl::String> it = m_argValueList.getHead ();
 	ASSERT (it); // empty argument should have been eliminated
 
 	printf ("%s", it->cc ());
@@ -520,7 +520,7 @@ ArgumentNode::luaExport (lua::LuaState* luaState)
 
 	luaState->createTable (m_argValueList.getCount ());
 
-	rtl::BoxIterator <rtl::String> it = m_argValueList.getHead ();
+	sl::BoxIterator <sl::String> it = m_argValueList.getHead ();
 	ASSERT (it); // empty argument should have been eliminated
 
 	for (size_t i = 1; it; it++, i++)

@@ -4,9 +4,9 @@
 //.............................................................................
 	
 Define*
-DefineMgr::getDefine (const rtl::String& name)
+DefineMgr::getDefine (const sl::String& name)
 {
-	rtl::StringHashTableMapIterator <Define*> it = m_defineMap.visit (name);
+	sl::StringHashTableMapIterator <Define*> it = m_defineMap.visit (name);
 	if (it->m_value)
 		return it->m_value;
 

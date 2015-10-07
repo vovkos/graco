@@ -21,9 +21,9 @@ extern "C" {
 #include "axl_lex_RagelLexer.h"
 #include "axl_io_MappedFile.h"
 #include "axl_lua_StringTemplate.h"
-#include "axl_rtl_StringHashTable.h"
-#include "axl_rtl_BitMap.h"
-#include "axl_rtl_CmdLineParser.h"
+#include "axl_sl_StringHashTable.h"
+#include "axl_sl_BitMap.h"
+#include "axl_sl_CmdLineParser.h"
 #include "axl_io_FilePathUtils.h"
 
 using namespace axl;

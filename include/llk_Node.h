@@ -57,7 +57,7 @@ enum NodeFlag
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Node: public axl::rtl::ListLink
+class Node: public axl::sl::ListLink
 {
 public:
 	NodeKind m_kind;
@@ -125,8 +125,8 @@ public:
 public:
 	AstNode* m_astNode;
 
-	axl::rtl::StdList <Node> m_locatorList;
-	axl::rtl::Array <Node*> m_locatorArray;
+	axl::sl::StdList <Node> m_locatorList;
+	axl::sl::Array <Node*> m_locatorArray;
 
 public:
 	SymbolNode ()
@@ -163,8 +163,8 @@ public:
 	size_t m_resolverThenIndex;
 	size_t m_resolverElseIndex;
 
-	axl::rtl::BoxIterator <Token> m_reparseLaDfaTokenCursor;
-	axl::rtl::BoxIterator <Token> m_reparseResolverTokenCursor;
+	axl::sl::BoxIterator <Token> m_reparseLaDfaTokenCursor;
+	axl::sl::BoxIterator <Token> m_reparseResolverTokenCursor;
 
 public:
 	LaDfaNode ()

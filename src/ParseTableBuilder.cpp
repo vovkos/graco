@@ -206,10 +206,10 @@ propagateParentChild (
 {
 	bool hasChanged = false;
 
-	if (parent->m_firstSet.merge (child->m_firstSet, rtl::BitOpKind_Or))
+	if (parent->m_firstSet.merge (child->m_firstSet, sl::BitOpKind_Or))
 		hasChanged = true;			
 
-	if (child->m_followSet.merge (parent->m_followSet, rtl::BitOpKind_Or))
+	if (child->m_followSet.merge (parent->m_followSet, sl::BitOpKind_Or))
 		hasChanged = true;			
 
 	if (child->isNullable ())
@@ -253,14 +253,14 @@ ParseTableBuilder::calcFirstFollow ()
 			node->markFinal ();
 	}
 
-	rtl::Iterator <SequenceNode> sequence = m_nodeMgr->m_sequenceList.getHead ();
+	sl::Iterator <SequenceNode> sequence = m_nodeMgr->m_sequenceList.getHead ();
 	for (; sequence; sequence++)
 	{
 		sequence->m_firstSet.setBitCount (tokenCount);
 		sequence->m_followSet.setBitCount (tokenCount);
 	}
 
-	rtl::Iterator <BeaconNode> beacon = m_nodeMgr->m_beaconList.getHead ();
+	sl::Iterator <BeaconNode> beacon = m_nodeMgr->m_beaconList.getHead ();
 	for (; beacon; beacon++)
 	{
 		beacon->m_firstSet.setBitCount (tokenCount);
@@ -296,7 +296,7 @@ ParseTableBuilder::calcFirstFollow ()
 			for (size_t j = 0; j < childrenCount; j++)
 			{
 				GrammarNode* child = node->m_sequence [j];
-				if (node->m_firstSet.merge (child->m_firstSet, rtl::BitOpKind_Or))
+				if (node->m_firstSet.merge (child->m_firstSet, sl::BitOpKind_Or))
 					hasChanged = true;
 
 				if (!child->isNullable ())
@@ -315,7 +315,7 @@ ParseTableBuilder::calcFirstFollow ()
 			for (intptr_t j = childrenCount - 1; j >= 0; j--)
 			{
 				GrammarNode* child = node->m_sequence [j];
-				if (child->m_followSet.merge (node->m_followSet, rtl::BitOpKind_Or))
+				if (child->m_followSet.merge (node->m_followSet, sl::BitOpKind_Or))
 					hasChanged = true;
 
 				if (node->isFinal ())
@@ -335,7 +335,7 @@ ParseTableBuilder::calcFirstFollow ()
 					for (size_t k = j + 1; k < childrenCount; k++)
 					{
 						GrammarNode* next = node->m_sequence [k];
-						if (child->m_followSet.merge (next->m_firstSet, rtl::BitOpKind_Or))
+						if (child->m_followSet.merge (next->m_firstSet, sl::BitOpKind_Or))
 							hasChanged = true;
 
 						if (!next->isNullable ())

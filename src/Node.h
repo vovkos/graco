@@ -44,14 +44,14 @@ enum NodeFlag
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Node: public rtl::ListLink
+class Node: public sl::ListLink
 {
 public:
 	NodeKind m_kind;
 	size_t m_index;
 	size_t m_masterIndex;
 
-	rtl::String m_name;
+	sl::String m_name;
 	int m_flags;
 
 public:
@@ -83,14 +83,14 @@ public:
 	markReachable ();
 
 	virtual
-	rtl::String
+	sl::String
 	getProductionString ()
 	{
 		return m_name;
 	}
 
 	virtual
-	rtl::String
+	sl::String
 	getBnfString ()
 	{
 		return m_name;
@@ -115,11 +115,11 @@ public:
 	int m_quantifierKind; // '?' '*' '+'
 	GrammarNode* m_quantifiedNode;
 
-	rtl::Array <SymbolNode*> m_firstArray;
-	rtl::Array <SymbolNode*> m_followArray;
+	sl::Array <SymbolNode*> m_firstArray;
+	sl::Array <SymbolNode*> m_followArray;
 
-	rtl::BitMap m_firstSet;
-	rtl::BitMap m_followSet;
+	sl::BitMap m_firstSet;
+	sl::BitMap m_followSet;
 
 public:
 	GrammarNode ()
@@ -153,7 +153,7 @@ public:
 	stripBeacon ();
 
 	virtual
-	rtl::String
+	sl::String
 	getBnfString ();
 
 protected:
@@ -188,27 +188,27 @@ public:
 	Class* m_class;
 	GrammarNode* m_resolver;
 	size_t m_resolverPriority;
-	rtl::Array <GrammarNode*> m_productionArray;
+	sl::Array <GrammarNode*> m_productionArray;
 
-	rtl::String m_arg;
-	rtl::String m_local;
-	rtl::String m_enter;
-	rtl::String m_leave;
+	sl::String m_arg;
+	sl::String m_local;
+	sl::String m_enter;
+	sl::String m_leave;
 
 	lex::LineCol m_argLineCol;
 	lex::LineCol m_localLineCol;
 	lex::LineCol m_enterLineCol;
 	lex::LineCol m_leaveLineCol;
 
-	rtl::BoxList <rtl::String> m_argNameList;
-	rtl::BoxList <rtl::String> m_localNameList;
-	rtl::StringHashTable m_argNameSet;
-	rtl::StringHashTable m_localNameSet;
+	sl::BoxList <sl::String> m_argNameList;
+	sl::BoxList <sl::String> m_localNameList;
+	sl::StringHashTable m_argNameSet;
+	sl::StringHashTable m_localNameSet;
 
 public:
 	SymbolNode ();
 
-	rtl::String
+	sl::String
 	getArgName (size_t index);
 
 	void
@@ -227,7 +227,7 @@ public:
 	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::String
+	sl::String
 	getBnfString ();
 };
 
@@ -236,7 +236,7 @@ public:
 class SequenceNode: public GrammarNode
 {
 public:
-	rtl::Array <GrammarNode*> m_sequence;
+	sl::Array <GrammarNode*> m_sequence;
 
 public:
 	SequenceNode ();
@@ -257,11 +257,11 @@ public:
 	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::String
+	sl::String
 	getProductionString ();
 
 	virtual
-	rtl::String
+	sl::String
 	getBnfString ();
 };
 
@@ -289,7 +289,7 @@ public:
 class ActionNode: public UserNode
 {
 public:
-	rtl::String m_userCode;
+	sl::String m_userCode;
 
 public:
 	ActionNode ();
@@ -303,10 +303,10 @@ public:
 	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::String
+	sl::String
 	getBnfString ()
 	{
-		return rtl::String ();
+		return sl::String ();
 	}
 };
 
@@ -316,7 +316,7 @@ class ArgumentNode: public UserNode
 {
 public:
 	SymbolNode* m_targetSymbol;
-	rtl::BoxList <rtl::String> m_argValueList;
+	sl::BoxList <sl::String> m_argValueList;
 
 public:
 	ArgumentNode ();
@@ -330,10 +330,10 @@ public:
 	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::String
+	sl::String
 	getBnfString ()
 	{
-		return rtl::String ();
+		return sl::String ();
 	}
 };
 
@@ -350,7 +350,7 @@ enum BeaconNodeFlag
 class BeaconNode: public GrammarNode
 {
 public:
-	rtl::String m_label;
+	sl::String m_label;
 	size_t m_slotIndex;
 	SymbolNode* m_target;
 	ArgumentNode* m_argument;
@@ -372,7 +372,7 @@ public:
 	luaExport (lua::LuaState* luaState);
 
 	virtual
-	rtl::String
+	sl::String
 	getBnfString ()
 	{
 		return m_target ? m_target->getBnfString () : m_name;
@@ -385,7 +385,7 @@ class DispatcherNode: public Node
 {
 public:
 	SymbolNode* m_symbol;
-	rtl::Array <BeaconNode*> m_beaconArray;
+	sl::Array <BeaconNode*> m_beaconArray;
 
 public:
 	DispatcherNode ()
@@ -410,7 +410,7 @@ public:
 	SymbolNode* m_symbol;
 	SymbolNode* m_token;
 	Node* m_resultNode; // lookahead DFA or immediate production
-	rtl::Array <GrammarNode*> m_productionArray;
+	sl::Array <GrammarNode*> m_productionArray;
 
 public:
 	ConflictNode ();
@@ -456,7 +456,7 @@ public:
 	LaDfaNode* m_resolverUplink;
 	Node* m_production;
 
-	rtl::Array <LaDfaNode*> m_transitionArray;
+	sl::Array <LaDfaNode*> m_transitionArray;
 
 public:
 	LaDfaNode ();
@@ -480,7 +480,7 @@ template <typename T>
 void
 traceNodeList (
 	const char* name,
-	rtl::Iterator <T> nodeIt
+	sl::Iterator <T> nodeIt
 	)
 {
 	printf ("%s\n", name);
@@ -500,7 +500,7 @@ template <typename T>
 void
 traceNodeArray (
 	const char* name,
-	const rtl::Array <T*>* array
+	const sl::Array <T*>* array
 	)
 {
 	printf ("%s\n", name);
@@ -518,14 +518,14 @@ traceNodeArray (
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 template <typename T>
-rtl::String
-nodeArrayToString (const rtl::Array <T*>* array)
+sl::String
+nodeArrayToString (const sl::Array <T*>* array)
 {
 	size_t count = array->getCount ();
 	if (!count)
-		return rtl::String ();
+		return sl::String ();
 
-	rtl::String string = (*array) [0]->m_name;
+	sl::String string = (*array) [0]->m_name;
 
 	for (size_t i = 1; i < count; i++)
 	{

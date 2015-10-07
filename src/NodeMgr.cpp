@@ -80,7 +80,7 @@ NodeMgr::trace ()
 SymbolNode*
 NodeMgr::getTokenNode (int token)
 {
-	rtl::HashTableMapIterator <int, SymbolNode*> mapIt = m_tokenMap.visit (token);
+	sl::HashTableMapIterator <int, SymbolNode*> mapIt = m_tokenMap.visit (token);
 	if (mapIt->m_value)
 		return mapIt->m_value;
 
@@ -100,9 +100,9 @@ NodeMgr::getTokenNode (int token)
 }
 
 SymbolNode*
-NodeMgr::getSymbolNode (const rtl::String& name)
+NodeMgr::getSymbolNode (const sl::String& name)
 {
-	rtl::StringHashTableMapIterator <SymbolNode*> mapIt = m_symbolMap.visit (name);
+	sl::StringHashTableMapIterator <SymbolNode*> mapIt = m_symbolMap.visit (name);
 	if (mapIt->m_value)
 		return mapIt->m_value;
 
@@ -269,7 +269,7 @@ NodeMgr::createQuantifierNode (
 void
 NodeMgr::markReachableNodes ()
 {
-	rtl::Iterator <SymbolNode> nodeIt = m_namedSymbolList.getHead ();
+	sl::Iterator <SymbolNode> nodeIt = m_namedSymbolList.getHead ();
 
 	if (m_primaryStartSymbol)
 		for (; nodeIt; nodeIt++)
@@ -291,9 +291,9 @@ NodeMgr::markReachableNodes ()
 template <typename T>
 static
 void
-deleteUnreachableNodesFromList (rtl::StdList <T>* list)
+deleteUnreachableNodesFromList (sl::StdList <T>* list)
 {
-	rtl::Iterator <T> nodeIt = list->getHead ();
+	sl::Iterator <T> nodeIt = list->getHead ();
 	while (nodeIt)
 	{
 		T* node = *nodeIt++;
@@ -325,7 +325,7 @@ NodeMgr::indexTokens ()
 	m_tokenArray [i++] = &m_eofTokenNode;
 	m_tokenArray [i++] = &m_anyTokenNode;
 
-	rtl::Iterator <SymbolNode> nodeIt = m_charTokenList.getHead ();
+	sl::Iterator <SymbolNode> nodeIt = m_charTokenList.getHead ();
 	for (; nodeIt; nodeIt++, i++)
 	{
 		SymbolNode* node = *nodeIt;
@@ -343,7 +343,7 @@ NodeMgr::indexSymbols ()
 	size_t i = 0;
 	size_t j = m_masterCount;
 	
-	rtl::Iterator <SymbolNode> nodeIt = m_namedSymbolList.getHead ();
+	sl::Iterator <SymbolNode> nodeIt = m_namedSymbolList.getHead ();
 	while (nodeIt)
 	{
 		SymbolNode* node = *nodeIt++;
@@ -403,7 +403,7 @@ NodeMgr::indexSequences ()
 
 	size_t count = m_sequenceList.getCount ();
 
-	rtl::Iterator <SequenceNode> nodeIt = m_sequenceList.getHead ();
+	sl::Iterator <SequenceNode> nodeIt = m_sequenceList.getHead ();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		SequenceNode* node = *nodeIt;
@@ -420,7 +420,7 @@ NodeMgr::indexBeacons ()
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	rtl::Iterator <BeaconNode> nodeIt = m_beaconList.getHead ();
+	sl::Iterator <BeaconNode> nodeIt = m_beaconList.getHead ();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		BeaconNode* node = *nodeIt;
@@ -436,7 +436,7 @@ NodeMgr::indexDispatchers ()
 {
 	size_t i = 0;
 
-	rtl::Iterator <DispatcherNode> nodeIt = m_dispatcherList.getHead ();
+	sl::Iterator <DispatcherNode> nodeIt = m_dispatcherList.getHead ();
 	for (; nodeIt; nodeIt++, i++)
 	{
 		DispatcherNode* node = *nodeIt;
@@ -450,7 +450,7 @@ NodeMgr::indexActions ()
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	rtl::Iterator <ActionNode> nodeIt = m_actionList.getHead ();
+	sl::Iterator <ActionNode> nodeIt = m_actionList.getHead ();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		ActionNode* node = *nodeIt;
@@ -467,7 +467,7 @@ NodeMgr::indexArguments ()
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	rtl::Iterator <ArgumentNode> nodeIt = m_argumentList.getHead ();
+	sl::Iterator <ArgumentNode> nodeIt = m_argumentList.getHead ();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		ArgumentNode* node = *nodeIt;
@@ -484,7 +484,7 @@ NodeMgr::indexLaDfaNodes ()
 	size_t i = 0;
 	size_t j = m_masterCount;
 	
-	rtl::Iterator <LaDfaNode> nodeIt = m_laDfaList.getHead ();
+	sl::Iterator <LaDfaNode> nodeIt = m_laDfaList.getHead ();
 	for (; nodeIt; nodeIt++)
 	{
 		LaDfaNode* node = *nodeIt;
@@ -546,7 +546,7 @@ void
 NodeMgr::luaExportNodeList (
 	lua::LuaState* luaState,
 	const char* name,
-	rtl::Iterator <Node> nodeIt,
+	sl::Iterator <Node> nodeIt,
 	size_t countEstimate
 	)
 {
@@ -569,7 +569,7 @@ NodeMgr::luaExportLaDfaTable (lua::LuaState* luaState)
 	luaState->createTable (m_laDfaList.getCount ());
 
 	size_t i = 1;
-	rtl::Iterator <LaDfaNode> nodeIt = m_laDfaList.getHead ();
+	sl::Iterator <LaDfaNode> nodeIt = m_laDfaList.getHead ();
 
 	for (; nodeIt; nodeIt++)
 	{

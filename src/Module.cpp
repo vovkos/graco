@@ -63,7 +63,7 @@ Module::build (CmdLine* cmdLine)
 
 	ProductionBuilder productionBuilder (&m_nodeMgr);
 
-	rtl::Iterator <SymbolNode> symbolIt = m_nodeMgr.m_namedSymbolList.getHead ();
+	sl::Iterator <SymbolNode> symbolIt = m_nodeMgr.m_namedSymbolList.getHead ();
 	for (; symbolIt; symbolIt++)
 	{
 		SymbolNode* symbol = *symbolIt;
@@ -96,7 +96,7 @@ Module::build (CmdLine* cmdLine)
 
 	size_t tokenCount = m_nodeMgr.m_tokenArray.getCount ();
 
-	rtl::Iterator <ConflictNode> conflictIt = m_nodeMgr.m_conflictList.getHead ();
+	sl::Iterator <ConflictNode> conflictIt = m_nodeMgr.m_conflictList.getHead ();
 	for (; conflictIt; conflictIt++)
 	{
 		ConflictNode* conflict = *conflictIt;
@@ -138,7 +138,7 @@ Module::trace ()
 bool
 Module::writeBnfFile (const char* fileName)
 {
-	rtl::String bufferString;
+	sl::String bufferString;
 
 	io::File file;
 	bool result =
@@ -148,20 +148,20 @@ Module::writeBnfFile (const char* fileName)
 	if (!result)
 		return false;
 
-	rtl::String string = generateBnfString ();
+	sl::String string = generateBnfString ();
 	file.write (string, string.getLength ());
 	return true;
 }
 
-rtl::String
+sl::String
 Module::generateBnfString ()
 {
-	rtl::String string;
-	rtl::String sequenceString;
+	sl::String string;
+	sl::String sequenceString;
 
 	string.format ("lookahead = %d;\n\n", m_lookaheadLimit);
 
-	rtl::Iterator <SymbolNode> node = m_nodeMgr.m_namedSymbolList.getHead ();
+	sl::Iterator <SymbolNode> node = m_nodeMgr.m_namedSymbolList.getHead ();
 	for (; node; node++)
 	{
 		SymbolNode* symbol = *node;
@@ -216,7 +216,7 @@ Module::luaExport (lua::LuaState* luaState)
 void
 Module::luaExportDefines (lua::LuaState* luaState)
 {
-	rtl::Iterator <Define> defineIt = m_defineMgr.getHead ();
+	sl::Iterator <Define> defineIt = m_defineMgr.getHead ();
 	for (; defineIt; defineIt++)
 	{
 		Define* define = *defineIt;
@@ -241,7 +241,7 @@ Module::luaExportClassTable (lua::LuaState* luaState)
 
 	luaState->createTable (count);
 
-	rtl::Iterator <Class> it = m_classMgr.getHead ();
+	sl::Iterator <Class> it = m_classMgr.getHead ();
 	for (size_t i = 1; it; it++, i++)
 	{
 		Class* cls = *it;

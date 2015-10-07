@@ -20,7 +20,7 @@ enum LaDfaThreadMatchKind
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class LaDfaThread: public rtl::ListLink
+class LaDfaThread: public sl::ListLink
 {
 public:
 	LaDfaThreadMatchKind m_match;
@@ -28,7 +28,7 @@ public:
 	GrammarNode* m_resolver;
 	size_t m_resolverPriority;
 	Node* m_production;
-	rtl::Array <Node*> m_stack;
+	sl::Array <Node*> m_stack;
 
 public:
 	LaDfaThread ();
@@ -44,20 +44,20 @@ enum LaDfaStateFlag
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class LaDfaState: public rtl::ListLink
+class LaDfaState: public sl::ListLink
 {
 public:
 	size_t m_index;
 	int m_flags;
 
-	rtl::StdList <LaDfaThread> m_activeThreadList;
-	rtl::StdList <LaDfaThread> m_resolverThreadList;
-	rtl::StdList <LaDfaThread> m_completeThreadList;
-	rtl::StdList <LaDfaThread> m_epsilonThreadList;
+	sl::StdList <LaDfaThread> m_activeThreadList;
+	sl::StdList <LaDfaThread> m_resolverThreadList;
+	sl::StdList <LaDfaThread> m_completeThreadList;
+	sl::StdList <LaDfaThread> m_epsilonThreadList;
 
 	LaDfaState* m_fromState;
 	SymbolNode* m_token;
-	rtl::Array <LaDfaState*> m_transitionArray;
+	sl::Array <LaDfaState*> m_transitionArray;
 	LaDfaNode* m_dfaNode;
 
 public:
@@ -103,16 +103,16 @@ public:
 class LaDfaBuilder
 {
 protected:
-	rtl::StdList <LaDfaState> m_stateList;
+	sl::StdList <LaDfaState> m_stateList;
 	NodeMgr* m_nodeMgr;
-	rtl::Array <Node*>* m_parseTable;
+	sl::Array <Node*>* m_parseTable;
 	size_t m_lookeaheadLimit;
 	size_t m_lookeahead;
 
 public:
 	LaDfaBuilder (	
 		NodeMgr* nodeMgr,
-		rtl::Array <Node*>* parseTable,
+		sl::Array <Node*>* parseTable,
 		size_t lookeaheadLimit = 2
 		);
 

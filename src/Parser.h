@@ -33,7 +33,7 @@ protected:
 	};
 
 protected:
-	rtl::String m_dir;
+	sl::String m_dir;
 	Module* m_module;
 	const CmdLine* m_cmdLine;
 	ProductionSpecifiers m_defaultProductionSpecifiers;
@@ -49,7 +49,7 @@ public:
 	parse (
 		Module* module,
 		const CmdLine* cmdLine,
-		const rtl::String& filePath,
+		const sl::String& filePath,
 		const char* source,
 		size_t length = -1
 		);
@@ -58,7 +58,7 @@ public:
 	parseFile (
 		Module* module,
 		CmdLine* cmdLine,
-		const rtl::String& filePath
+		const sl::String& filePath
 		);
 
 protected:
@@ -115,14 +115,14 @@ protected:
 	bool
 	userCode (
 		int openBracket,
-		rtl::String* string,
+		sl::String* string,
 		lex::SrcPos* srcPos
 		);
 
 	bool
 	userCode (
 		int openBracket,
-		rtl::String* string,
+		sl::String* string,
 		lex::LineCol* lineCol
 		);
 
@@ -138,13 +138,13 @@ protected:
 	bool
 	processActualArgList (
 		ArgumentNode* node,
-		const rtl::String& string
+		const sl::String& string
 		);
 
 	bool
 	processSymbolEventHandler (
 		SymbolNode* node,
-		rtl::String* string
+		sl::String* string
 		);
 
 	void

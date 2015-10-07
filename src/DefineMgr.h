@@ -14,13 +14,13 @@ enum DefineKind
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Define: public rtl::ListLink
+class Define: public sl::ListLink
 {
 public:
 	DefineKind m_kind;
 	lex::SrcPos m_srcPos;
-	rtl::String m_name;
-	rtl::String m_stringValue;
+	sl::String m_name;
+	sl::String m_stringValue;
 	int m_integerValue;
 
 	Define ()
@@ -35,8 +35,8 @@ public:
 class DefineMgr
 {
 protected:
-	rtl::StdList <Define> m_defineList;
-	rtl::StringHashTableMap <Define*> m_defineMap;
+	sl::StdList <Define> m_defineList;
+	sl::StringHashTableMap <Define*> m_defineMap;
 
 public:
 	bool
@@ -58,19 +58,19 @@ public:
 		m_defineMap.clear ();
 	}
 
-	rtl::Iterator <Define>
+	sl::Iterator <Define>
 	getHead ()
 	{
 		return m_defineList.getHead ();
 	}
 
 	Define*
-	getDefine (const rtl::String& name);
+	getDefine (const sl::String& name);
 
 	Define*
 	findDefine (const char* name)
 	{
-		rtl::StringHashTableMapIterator <Define*> it = m_defineMap.find (name);
+		sl::StringHashTableMapIterator <Define*> it = m_defineMap.find (name);
 		return it ? it->m_value : NULL;
 	}
 };

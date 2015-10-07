@@ -44,7 +44,7 @@ LaDfaState::createThread (LaDfaThread* src)
 bool
 LaDfaState::calcResolved ()
 {
-	rtl::Iterator <LaDfaThread> thread;
+	sl::Iterator <LaDfaThread> thread;
 
 	if (m_activeThreadList.isEmpty ())
 	{
@@ -109,7 +109,7 @@ LaDfaState::getDefaultProduction ()
 
 LaDfaBuilder::LaDfaBuilder (
 	NodeMgr* nodeMgr,
-	rtl::Array <Node*>* parseTable,
+	sl::Array <Node*>* parseTable,
 	size_t lookeaheadLimit
 	)
 {
@@ -181,14 +181,14 @@ LaDfaBuilder::build (
 
 	if (!state1->isResolved ())
 	{
-		rtl::Array <LaDfaState*> stateArray;
+		sl::Array <LaDfaState*> stateArray;
 		stateArray.append (state1);
 
 		while (!stateArray.isEmpty () && lookahead < m_lookeaheadLimit)
 		{
 			lookahead++;
 
-			rtl::Array <LaDfaState*> nextStateArray;
+			sl::Array <LaDfaState*> nextStateArray;
 
 			size_t stateCount = stateArray.getCount ();
 			for (size_t j = 0; j < stateCount; j++)
@@ -212,13 +212,13 @@ LaDfaBuilder::build (
 		{
 			size_t count = stateArray.getCount ();
 			LaDfaState* state = stateArray [0];
-			rtl::BoxList <rtl::String> tokenNameList;
+			sl::BoxList <sl::String> tokenNameList;
 
 			for (; state != state0; state = state->m_fromState)
 				tokenNameList.insertHead (state->m_token->m_name);
 
-			rtl::String tokenSeqString;
-			rtl::BoxIterator <rtl::String> tokenName = tokenNameList.getHead ();
+			sl::String tokenSeqString;
+			sl::BoxIterator <sl::String> tokenName = tokenNameList.getHead ();
 			for (; tokenName; tokenName++)
 			{
 				tokenSeqString.append (*tokenName);
@@ -244,7 +244,7 @@ LaDfaBuilder::build (
 	if (lookahead_o)
 		*lookahead_o = lookahead;
 
-	rtl::Iterator <LaDfaState> it = m_stateList.getHead ();
+	sl::Iterator <LaDfaState> it = m_stateList.getHead ();
 	for (; it; it++)
 	{
 		LaDfaState* state = *it;
@@ -266,10 +266,10 @@ LaDfaBuilder::build (
 		{
 			size_t count = state->m_resolverThreadList.getCount ();
 
-			rtl::Array <LaDfaThread*> resolverThreadArray;
+			sl::Array <LaDfaThread*> resolverThreadArray;
 			resolverThreadArray.setCount (count);
 
-			rtl::Iterator <LaDfaThread> resolverThread = state->m_resolverThreadList.getHead ();
+			sl::Iterator <LaDfaThread> resolverThread = state->m_resolverThreadList.getHead ();
 			for (size_t i = 0; resolverThread; resolverThread++, i++)
 				resolverThreadArray [i] = *resolverThread;
 
@@ -346,7 +346,7 @@ LaDfaBuilder::build (
 void
 LaDfaBuilder::trace ()
 {
-	rtl::Iterator <LaDfaState> it = m_stateList.getHead ();
+	sl::Iterator <LaDfaState> it = m_stateList.getHead ();
 	for (; it; it++)
 	{
 		LaDfaState* state = *it;
@@ -361,7 +361,7 @@ LaDfaBuilder::trace ()
 			state->m_epsilonThreadList.getCount ()
 			);
 
-		rtl::Iterator <LaDfaThread> thread;
+		sl::Iterator <LaDfaThread> thread;
 
 		if (!state->m_activeThreadList.isEmpty ())
 		{
@@ -444,7 +444,7 @@ LaDfaBuilder::transition (
 	newState->m_fromState = state;
 	newState->m_flags = state->m_flags & LaDfaStateFlag_EpsilonProduction; // propagate epsilon
 
-	rtl::Iterator <LaDfaThread> threadIt = state->m_activeThreadList.getHead ();
+	sl::Iterator <LaDfaThread> threadIt = state->m_activeThreadList.getHead ();
 	for (; threadIt; threadIt++)
 	{
 		LaDfaThread* newThread = newState->createThread (*threadIt);

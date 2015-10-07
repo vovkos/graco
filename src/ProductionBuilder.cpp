@@ -121,7 +121,7 @@ ProductionBuilder::processAllUserCode ()
 		if (node->m_flags & UserNodeFlag_UserCodeProcessed)
 			continue;
 
-		rtl::BoxIterator <rtl::String> it = node->m_argValueList.getHead ();
+		sl::BoxIterator <sl::String> it = node->m_argValueList.getHead ();
 		for (; it; it++)
 		{
 			result = processUserCode (node->m_srcPos, &*it, node->m_resolver);
@@ -240,7 +240,7 @@ ProductionBuilder::addBeacon (BeaconNode* beacon)
 
 	if (!beacon->m_label.isEmpty ())
 	{
-		rtl::StringHashTableMapIterator <BeaconNode*> it = m_beaconMap.visit (beacon->m_label);
+		sl::StringHashTableMapIterator <BeaconNode*> it = m_beaconMap.visit (beacon->m_label);
 		if (!it->m_value)
 			it->m_value = beacon;
 	}
@@ -368,7 +368,7 @@ ProductionBuilder::findVariable (
 	BeaconNode** beacon_o
 	)
 {
-	rtl::StringHashTableMapIterator <BeaconNode*> it = m_beaconMap.find (name);
+	sl::StringHashTableMapIterator <BeaconNode*> it = m_beaconMap.find (name);
 	if (it)
 	{
 		BeaconNode* beacon = it->m_value;
@@ -378,7 +378,7 @@ ProductionBuilder::findVariable (
 			VariableKind_SymbolBeacon;
 	}
 
-	rtl::HashTableIterator <const char*> it2 = m_symbol->m_localNameSet.find (name);
+	sl::HashTableIterator <const char*> it2 = m_symbol->m_localNameSet.find (name);
 	if (it2)
 		return VariableKind_Local;
 
@@ -393,13 +393,13 @@ ProductionBuilder::findVariable (
 bool
 ProductionBuilder::processUserCode (
 	lex::SrcPos& srcPos,
-	rtl::String* userCode,
+	sl::String* userCode,
 	GrammarNode* resolver
 	)
 {
 	const Token* token;
 
-	rtl::String resultString;
+	sl::String resultString;
 
 	Lexer::create (
 		getMachineState (LexerMachine_UserCode2ndPass), 

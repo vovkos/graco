@@ -12,12 +12,12 @@ class ParseTableBuilder
 {
 protected:
 	NodeMgr* m_nodeMgr;
-	rtl::Array <Node*>* m_parseTable;
+	sl::Array <Node*>* m_parseTable;
 
 public:
 	ParseTableBuilder (
 		NodeMgr* nodeMgr,
-		rtl::Array <Node*>* parseTable
+		sl::Array <Node*>* parseTable
 		)
 	{
 		m_nodeMgr = nodeMgr;

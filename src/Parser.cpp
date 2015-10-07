@@ -7,7 +7,7 @@ bool
 Parser::parseFile (
 	Module* module,
 	CmdLine* cmdLine,
-	const rtl::String& filePath
+	const sl::String& filePath
 	)
 {
 	bool result;
@@ -44,7 +44,7 @@ bool
 Parser::parse (
 	Module* module,
 	const CmdLine* cmdLine,
-	const rtl::String& filePath,
+	const sl::String& filePath,
 	const char* source,
 	size_t length
 	)
@@ -180,7 +180,7 @@ Parser::importStatement ()
 	if (!token)
 		return false;
 
-	rtl::String filePath = io::findFilePath (
+	sl::String filePath = io::findFilePath (
 		token->m_data.m_string,
 		m_dir,
 		m_cmdLine ? &m_cmdLine->m_importDirList : NULL,
@@ -525,7 +525,7 @@ Parser::customizeSymbol (SymbolNode* node)
 	{
 		token = getToken ();
 
-		rtl::String* string = NULL;
+		sl::String* string = NULL;
 		lex::LineCol* lineCol = NULL;
 
 		switch (token->m_token)
@@ -601,7 +601,7 @@ Parser::processFormalArgList (SymbolNode* node)
 {
 	const Token* token;
 
-	rtl::String resultString;
+	sl::String resultString;
 
 	Lexer lexer;
 	lexer.create (getMachineState (LexerMachine_UserCode2ndPass), "formal-arg-list", node->m_arg);
@@ -627,7 +627,7 @@ Parser::processFormalArgList (SymbolNode* node)
 			continue;
 		}
 
-		rtl::String name = token->m_data.m_string;
+		sl::String name = token->m_data.m_string;
 
 		resultString.append (p, token->m_pos.m_p - p);
 		resultString.append (name);
@@ -661,7 +661,7 @@ Parser::processLocalList (SymbolNode* node)
 {
 	const Token* token;
 
-	rtl::String resultString;
+	sl::String resultString;
 
 	Lexer lexer;
 	lexer.create (getMachineState (LexerMachine_UserCode2ndPass), "local-list", node->m_local);
@@ -680,7 +680,7 @@ Parser::processLocalList (SymbolNode* node)
 			continue;
 		}
 
-		rtl::String name = token->m_data.m_string;
+		sl::String name = token->m_data.m_string;
 
 		resultString.append (p, token->m_pos.m_p - p);
 		resultString.append (name);
@@ -702,12 +702,12 @@ Parser::processLocalList (SymbolNode* node)
 bool
 Parser::processSymbolEventHandler (
 	SymbolNode* node,
-	rtl::String* string
+	sl::String* string
 	)
 {
 	const Token* token;
 
-	rtl::String resultString;
+	sl::String resultString;
 
 	Lexer lexer;
 	lexer.create (getMachineState (LexerMachine_UserCode2ndPass), "event-handler", *string);
@@ -720,7 +720,7 @@ Parser::processSymbolEventHandler (
 		if (token->m_token <= 0)
 			break;
 
-		rtl::HashTableIterator <const char*> it;
+		sl::HashTableIterator <const char*> it;
 
 		switch (token->m_token)
 		{
@@ -780,7 +780,7 @@ Parser::processSymbolEventHandler (
 bool
 Parser::processActualArgList (
 	ArgumentNode* node,
-	const rtl::String& string
+	const sl::String& string
 	)
 {
 	const Token* token;
@@ -815,7 +815,7 @@ Parser::processActualArgList (
 		case ',':
 			if (level == 0)
 			{
-				rtl::String valueString (p, token->m_pos.m_p - p);
+				sl::String valueString (p, token->m_pos.m_p - p);
 				node->m_argValueList.insertTail (valueString);
 
 				p = token->m_pos.m_p + token->m_pos.m_length;
@@ -825,7 +825,7 @@ Parser::processActualArgList (
 		lexer.nextToken ();
 	}
 
-	rtl::String valueString (p, token->m_pos.m_p - p);
+	sl::String valueString (p, token->m_pos.m_p - p);
 	node->m_argValueList.insertTail (valueString);
 
 	ASSERT (!token->m_token);
@@ -1065,7 +1065,7 @@ Parser::primary ()
 
 			setGrammarNodeSrcPos (sequence, node->m_srcPos);
 
-			rtl::String string;
+			sl::String string;
 			result = userCode ('<', &string, &argument->m_srcPos);
 			if (!result)
 				return NULL;
@@ -1244,7 +1244,7 @@ Parser::resolver ()
 bool
 Parser::userCode (
 	int openBracket,
-	rtl::String* string,
+	sl::String* string,
 	lex::SrcPos* srcPos
 	)
 {
@@ -1259,7 +1259,7 @@ Parser::userCode (
 bool
 Parser::userCode (
 	int openBracket,
-	rtl::String* string,
+	sl::String* string,
 	lex::LineCol* lineCol
 	)
 {
@@ -1345,7 +1345,7 @@ Parser::userCode (
 	token = getToken ();
 	ASSERT (token->m_token == closeBracket);
 
-	*string = rtl::String (begin, token->m_pos.m_p - begin);
+	*string = sl::String (begin, token->m_pos.m_p - begin);
 
 	gotoState (getMachineState (LexerMachine_Main), token, GotoStateKind_EatToken);
 

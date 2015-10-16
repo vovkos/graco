@@ -21,7 +21,7 @@ set (
 	Parser.h
 	ParseTableBuilder.h
 	ProductionBuilder.h
-	Version.h.in
+	version.h.in
 	)
 
 set (
@@ -52,47 +52,6 @@ source_group (
 	${APP_H_LIST}
 	${APP_CPP_LIST}
 	${APP_RL_LIST}
-	)
-
-# . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#
-# gen folder
-#
-
-set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
-file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-
-push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
-
-configure_file (
-	Version.h.in
-	${GEN_DIR}/Version.h
-	)
-
-set (
-	GEN_H_LIST
-	${GEN_DIR}/Version.h
-	)
-
-add_ragel_step (
-	Lexer.rl.cpp
-	Lexer.rl
-	)
-
-set (
-	GEN_RL_CPP_LIST
-	${GEN_DIR}/Lexer.rl.cpp
-	)
-
-pop (CMAKE_CURRENT_BINARY_DIR)
-
-exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
-
-source_group (
-	gen
-	FILES
-	${GEN_RL_CPP_LIST}
-	${GEN_H_LIST}
 	)
 
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -146,6 +105,47 @@ source_group (
 	res
 	FILES
 	${RES_RC_LIST}
+	)
+
+# . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+#
+# gen folder
+#
+
+set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+
+configure_file (
+	version.h.in
+	${GEN_DIR}/version.h
+	)
+
+set (
+	GEN_H_LIST
+	${GEN_DIR}/version.h
+	)
+
+add_ragel_step (
+	Lexer.rl.cpp
+	Lexer.rl
+	)
+
+set (
+	GEN_RL_CPP_LIST
+	${GEN_DIR}/Lexer.rl.cpp
+	)
+
+pop (CMAKE_CURRENT_BINARY_DIR)
+
+exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+
+source_group (
+	gen
+	FILES
+	${GEN_RL_CPP_LIST}
+	${GEN_H_LIST}
 	)
 
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

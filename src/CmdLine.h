@@ -35,7 +35,7 @@ struct CmdLine
 
 enum CmdLineSwitchKind
 {
-	CmdLineSwitchKind_None,
+	CmdLineSwitchKind_Undefined = 0,
 	CmdLineSwitchKind_Help,
 	CmdLineSwitchKind_Version,
 	CmdLineSwitchKind_NoPpLine,

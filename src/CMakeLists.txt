@@ -204,16 +204,22 @@ target_link_libraries (
 	axl_core
 	axl_io
 	axl_lua
-	lua
+	lua52
 	)
 
 if (UNIX)
 	target_link_libraries (
 		bulldozer
 		dl
-		rt
 		pthread
 		)
+
+	if (NOT APPLE)
+		target_link_libraries (
+			bulldozer
+			rt
+			)
+	endif ()
 endif ()
 
 #..............................................................................

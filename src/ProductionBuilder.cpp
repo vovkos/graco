@@ -511,6 +511,9 @@ ProductionBuilder::processUserCode (
 				token->m_data.m_string.cc () 
 				);
 			break;
+
+		default:
+			ASSERT (false);
 		}
 
 		p = token->m_pos.m_p + token->m_pos.m_length;

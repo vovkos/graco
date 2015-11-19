@@ -452,7 +452,7 @@ protected:
 		size_t* p = static_cast <T*> (this)->getSequence (node->m_index);
 
 		popPrediction ();
-		for (; *p != -1; *p++)
+		for (; *p != -1; p++)
 			pushPrediction (*p);
 
 		return MatchResult_Continue;
@@ -864,18 +864,6 @@ protected:
 	{
 		Node* node = getLocator (index);
 		return node && node->m_kind == NodeKind_Token ? &((TokenNode*) node)->m_token : NULL;
-	}
-
-	bool
-	isValidLocator (AstNode& ast)
-	{
-		return &ast != NULL;
-	}
-
-	bool
-	isValidLocator (const Token& token)
-	{
-		return &token != NULL;
 	}
 
 	// must be implemented in derived class:

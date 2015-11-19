@@ -61,6 +61,9 @@ CmdLineParser::onSwitch (
 	case CmdLineSwitchKind_ImportDir:
 		m_cmdLine->m_importDirList.insertTail (value);
 		break;
+
+	default:
+		ASSERT (false);
 	}
 
 	return true;

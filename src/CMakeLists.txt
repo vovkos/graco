@@ -204,12 +204,18 @@ target_link_libraries (
 	axl_core
 	axl_io
 	axl_lua
-	lua52
 	)
 
-if (UNIX)
+if (WIN32)
 	target_link_libraries (
 		bulldozer
+		lua
+		)
+
+elseif (UNIX)
+	target_link_libraries (
+		bulldozer
+		lua52
 		dl
 		pthread
 		)

@@ -34,7 +34,7 @@ set ZIP_DIR=%ZIP_DIR:/=\%
 set ZIP_EXE=%ZIP_EXE:/=\%
 
 set CONTENTS_DIR="%ZIP_DIR%\bulldozer-${VERSION_FILE_SUFFIX}"
-set OUT_FILE_NAME=bulldozer-windows-${VERSION_FILE_SUFFIX}-${TARGET_CPU}.zip
+set OUT_FILE_NAME=bulldozer-windows-${VERSION_FILE_SUFFIX}-${TARGET_CPU}.${ZIP_TYPE}
 set OUT_FILE_PATH=%OUT_DIR%\%OUT_FILE_NAME%
 
 echo Building archive %OUT_FILE_NAME%...
@@ -58,7 +58,7 @@ xcopy /Y /Q /E %ROOT_DIR%\samples\*.* %CONTENTS_DIR%\samples
 
 set PREV_DIR=%CD%
 cd %ZIP_DIR% || exit
-%ZIP_EXE% a -tzip -y %OUT_FILE_PATH% || exit
+%ZIP_EXE% a -t${ZIP_TYPE} -y %OUT_FILE_PATH% || exit
 cd %PREV_DIR% || exit
 
 rd /S /Q "%ZIP_DIR%"

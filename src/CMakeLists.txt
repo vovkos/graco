@@ -215,7 +215,7 @@ if (WIN32)
 elseif (UNIX)
 	target_link_libraries (
 		bulldozer
-		lua52
+		lua
 		dl
 		pthread
 		)

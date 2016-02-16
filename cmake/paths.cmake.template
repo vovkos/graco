@@ -1,0 +1,13 @@
+# fill variables with paths on your build machine.
+# if library/tool is not needed, leave the path empty.
+
+#..............................................................................
+
+# set (LUA_INC_DIR     "path-to-lua-include-dir")
+# set (LUA_LIB_DIR     "path-to-lua-lib-dir")
+# set (AXL_CMAKE_DIR   "path-to-axl-cmake-dir")
+# set (AXL_CMAKE_DIR_2 "path-to-axl-generated-cmake-dir")
+# set (RAGEL_EXE       "path-to-ragel-exe")
+# set (7Z_EXE          "path-to-7z-exe")
+
+#..............................................................................

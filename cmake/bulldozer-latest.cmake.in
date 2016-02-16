@@ -1,9 +1,0 @@
-# This file is part of Bulldozer project
-# Tibbo Technology Inc (C) 2004-2014. All rights reserved
-# Author: Vladimir Gladkov
-
-#..............................................................................
-
-include (@CMAKE_CURRENT_LIST_DIR@/latest/bulldozer-${TARGET_CPU}.cmake)
-
-#..............................................................................

@@ -1,4 +1,4 @@
-# This file is part of Bulldozer project
+# This file is part of Graco project
 # Tibbo Technology Inc (C) 2004-2013. All rights reserved
 # Author: Vladimir Gladkov
 
@@ -61,10 +61,10 @@ source_group (
 
 set (
 	LLK_H_LIST
-	${BULLDOZER_INC_DIR}/llk_Ast.h
-	${BULLDOZER_INC_DIR}/llk_Node.h
-	${BULLDOZER_INC_DIR}/llk_Parser.h
-	${BULLDOZER_INC_DIR}/llk_Pch.h
+	${GRACO_INC_DIR}/llk_Ast.h
+	${GRACO_INC_DIR}/llk_Node.h
+	${GRACO_INC_DIR}/llk_Parser.h
+	${GRACO_INC_DIR}/llk_Pch.h
 	)
 
 source_group (
@@ -80,9 +80,9 @@ source_group (
 
 set (
 	FRAME_LIST
-	${BULLDOZER_FRAME_DIR}/CppParser.h.in
-	${BULLDOZER_FRAME_DIR}/CppParser.cpp.in
-	${BULLDOZER_FRAME_DIR}/CppParserUtils.lua
+	${GRACO_FRAME_DIR}/CppParser.h.in
+	${GRACO_FRAME_DIR}/CppParser.cpp.in
+	${GRACO_FRAME_DIR}/CppParserUtils.lua
 	)
 
 source_group (
@@ -115,7 +115,7 @@ source_group (
 set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
 file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
-push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
 
 configure_file (
 	version.h.in
@@ -137,9 +137,9 @@ set (
 	${GEN_DIR}/Lexer.rl.cpp
 	)
 
-pop (CMAKE_CURRENT_BINARY_DIR)
+axl_pop (CMAKE_CURRENT_BINARY_DIR)
 
-exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
 
 source_group (
 	gen
@@ -165,7 +165,7 @@ source_group (
 
 #..............................................................................
 #
-# bulldozer llk grammar compiler
+# graco LL(k) grammar compiler
 #
 
 include_directories (
@@ -180,7 +180,7 @@ link_directories (
 	)
 
 add_executable (
-	bulldozer
+	graco
 	${PCH_H}
 	${PCH_CPP}
 	${APP_H_LIST}
@@ -193,14 +193,14 @@ add_executable (
 	${RES_RC_LIST}
 	)
 
-set_pch (
-	bulldozer
+axl_set_pch (
+	graco
 	${PCH_H}
 	${PCH_CPP}
 	)
 
 target_link_libraries (
-	bulldozer
+	graco
 	axl_core
 	axl_io
 	axl_lua
@@ -208,13 +208,13 @@ target_link_libraries (
 
 if (WIN32)
 	target_link_libraries (
-		bulldozer
+		graco
 		lua
 		)
 
 elseif (UNIX)
 	target_link_libraries (
-		bulldozer
+		graco
 		lua
 		dl
 		pthread
@@ -222,7 +222,7 @@ elseif (UNIX)
 
 	if (NOT APPLE)
 		target_link_libraries (
-			bulldozer
+			graco
 			rt
 			)
 	endif ()

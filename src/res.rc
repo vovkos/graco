@@ -20,12 +20,12 @@ BEGIN
 		BLOCK "040904b0"
 		BEGIN
 			VALUE "CompanyName",      VERSION_COMPANY
-			VALUE "FileDescription",  "Bulldozer Application"
+			VALUE "FileDescription",  "Graco Application"
 			VALUE "FileVersion",      VERSION_STRING
-			VALUE "InternalName",     "bullodozer"
+			VALUE "InternalName",     "graco"
 			VALUE "LegalCopyright",   "Copyright © " VERSION_YEARS " " VERSION_COMPANY
-			VALUE "OriginalFilename", "bulldozer.exe"
-			VALUE "ProductName",      "Bulldozer - LL Parser Builder"
+			VALUE "OriginalFilename", "graco.exe"
+			VALUE "ProductName",      "Graco - LL(k) Grammar Compiler"
 			VALUE "ProductVersion",   VERSION_STRING
 		END
 	END

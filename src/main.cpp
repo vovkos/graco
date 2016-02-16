@@ -21,7 +21,7 @@ void
 printVersion ()
 {
 	printf (
-		"Bulldozer (%s) v%d.%d.%d\n",
+		"Graco Grammar Compiler (%s) v%d.%d.%d\n",
 		_AXL_CPU_STRING,
 		VERSION_MAJOR,
 		VERSION_MINOR,
@@ -35,7 +35,7 @@ printUsage ()
 	printVersion ();
 
 	sl::String helpString = CmdLineSwitchTable::getHelpString ();
-	printf ("Usage: bulldozer [<options>...] <source_file>\n%s", helpString.cc ());
+	printf ("Usage: graco [<options>...] <source_file>\n%s", helpString.cc ());
 }
 
 //.............................................................................

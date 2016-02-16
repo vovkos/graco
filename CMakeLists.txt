@@ -1,34 +1,35 @@
-# This file is part of Bulldozer project
+# This file is part of Graco project
 # Tibbo Technology Inc (C) 2004-2013. All rights reserved
 # Author: Vladimir Gladkov
 
 #..............................................................................
 
-project (bulldozer)
+project (graco)
 
 cmake_minimum_required (VERSION 2.8)
 
-include ("${CMAKE_CURRENT_LIST_DIR}/../cmake/master.cmake" NO_POLICY_SCOPE)
+include (cmake/axl_cmake.cmake NO_POLICY_SCOPE)
 
-print_std_settings ()
+axl_print_std_settings ()
 
-check_and_print_libs (
-	RAGEL
-	AXL
+axl_import (
+	REQUIRED
+		ragel
+		axl
+		lua
+	OPTIONAL 
+		7z
 	)
-
-include (${AXL_CMAKE_DIR}/axl.cmake)
 
 #..............................................................................
 
-set (BULLDOZER_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
-set (BULLDOZER_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set (BULLDOZER_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
+set (GRACO_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
+set (GRACO_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set (GRACO_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
 
 add_subdirectory (cmake)
 
-include (${CMAKE_CURRENT_BINARY_DIR}/cmake/bulldozer.cmake)
-include (version.cmake)
+include (${CMAKE_CURRENT_BINARY_DIR}/cmake/graco_config.cmake)
 
 add_subdirectory (src)
 add_subdirectory (package)

@@ -31,7 +31,7 @@ mkdir -p $OUT_DIR
 
 cp -f $BIN_DIR/graco $CONTENTS_DIR/bin
 cp -f $ROOT_DIR/package/cmake/*.* $CONTENTS_DIR/cmake
-cp -f $ROOT_DIR/cmake/graco-step.cmake $CONTENTS_DIR/cmake
+cp -f $ROOT_DIR/cmake/graco_step.cmake $CONTENTS_DIR/cmake
 cp -rf $ROOT_DIR/include $CONTENTS_DIR
 cp -rf $ROOT_DIR/frame $CONTENTS_DIR
 

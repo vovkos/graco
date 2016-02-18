@@ -337,7 +337,7 @@ protected:
 			if (m_resolverStack.isEmpty ()) // can't rollback so set error
 			{
 				int expectedToken = static_cast <T*> (this)->getTokenFromIndex (node->m_index);
-				axl::err::setExpectedTokenError (Token::getName (expectedToken), m_currentToken.getName ());
+				axl::lex::setExpectedTokenError (Token::getName (expectedToken), m_currentToken.getName ());
 			}
 
 			return MatchResult_Fail;

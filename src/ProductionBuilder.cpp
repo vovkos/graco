@@ -50,7 +50,7 @@ ProductionBuilder::build (
 				beacon->m_target->m_name.cc (), // thanks a lot gcc 
 				formalArgCount
 				);
-			err::pushSrcPosError (beacon->m_srcPos);
+			lex::pushSrcPosError (beacon->m_srcPos);
 			return NULL;
 		}
 
@@ -259,7 +259,7 @@ ProductionBuilder::addBeacon (BeaconNode* beacon)
 				formalArgCount, 
 				actualArgCount
 				);
-			err::pushSrcPosError (beacon->m_srcPos);
+			lex::pushSrcPosError (beacon->m_srcPos);
 			return false;
 		}
 	}

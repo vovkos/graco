@@ -4,6 +4,6 @@
 
 #pragma once
 
-#include "axl_err_ParseError.h"
+#include "axl_lex_ParseError.h"
 #include "axl_sl_Array.h"
 #include "axl_dbg_Trace.h"

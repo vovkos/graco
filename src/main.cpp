@@ -56,7 +56,7 @@ main (
 {
 	bool result;
 
-	err::registerParseErrorProvider ();
+	lex::registerParseErrorProvider ();
 
 	CmdLine cmdLine;
 	CmdLineParser cmdLineParser (&cmdLine);

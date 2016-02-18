@@ -201,9 +201,10 @@ axl_set_pch (
 
 target_link_libraries (
 	graco
-	axl_core
-	axl_io
 	axl_lua
+	axl_lex
+	axl_io
+	axl_core
 	)
 
 if (WIN32)

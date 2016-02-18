@@ -233,7 +233,7 @@ LaDfaBuilder::build (
 				tokenSeqString.cc ()
 				);
 
-			err::pushSrcPosError (conflict->m_symbol->m_srcPos);
+			lex::pushSrcPosError (conflict->m_symbol->m_srcPos);
 			return NULL;
 		}
 	}
@@ -258,7 +258,7 @@ LaDfaBuilder::build (
 				conflict->m_token->m_name.cc (),
 				state->m_token->m_name.cc ()
 				);
-			err::pushSrcPosError (conflict->m_symbol->m_srcPos);
+			lex::pushSrcPosError (conflict->m_symbol->m_srcPos);
 			return NULL;
 		}
 

@@ -1116,7 +1116,7 @@ Parser::primary ()
 		break;
 
 	default:
-		err::setUnexpectedTokenError (token->getName (), "primary");
+		lex::setUnexpectedTokenError (token->getName (), "primary");
 		return NULL;
 	}
 
@@ -1317,7 +1317,7 @@ Parser::userCode (
 
 		if (token->m_token == TokenKind_Eof)
 		{
-			err::setUnexpectedTokenError ("eof", "user-code");
+			lex::setUnexpectedTokenError ("eof", "user-code");
 			return false;
 		}
 		else if (token->m_token == TokenKind_Error)

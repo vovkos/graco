@@ -8,6 +8,10 @@ if ParserClassName == nil then
 	ParserClassName = "Parser"
 end
 
+if TokenClassName == nil then
+	TokenClassName = "Token"
+end
+
 AstNodeVariableName = "__astNode"
 SymbolVariableName  = "__symbol"
 

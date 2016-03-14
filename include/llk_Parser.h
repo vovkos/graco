@@ -301,7 +301,7 @@ protected:
 		Node* node = getPredictionTop ();
 		if (m_resolverStack.isEmpty () && (!node || node->m_kind != NodeKind_LaDfa))
 		{
-			m_tokenList.removeHead (); // nobody gonna reparse you bitch
+			m_tokenList.removeHead (); // nobody gonna reparse you
 			ASSERT (m_tokenCursor == m_tokenList.getHead());
 		}
 
@@ -870,52 +870,52 @@ protected:
 
 	// static
 	// size_t*
-	// GetParseTable ();
+	// getParseTable ();
 
 	// static
 	// size_t
-	// GetTokenIndex (int Token);
+	// getTokenIndex (int token);
 
 	// static
 	// int
-	// GetTokenFromIndex (size_t Index);
+	// getTokenFromIndex (size_t index);
 
 	// static
 	// const char*
-	// GetSymbolName (size_t Index);
+	// getSymbolName (size_t index);
 
 	// static
-	// CNode*
-	// CreateSymbolNode (size_t Index); // allocate node & ast with AXL_MEM_NEW () !!
-
-	// static
-	// size_t*
-	// GetSequence (size_t Index);
+	// Node*
+	// createSymbolNode (size_t index); // allocate node & ast with AXL_MEM_NEW () !!
 
 	// static
 	// size_t*
-	// GetBeacon (size_t Index);
+	// getSequence (size_t index);
+
+	// static
+	// size_t*
+	// getBeacon (size_t index);
 
 	// bool
-	// Action (size_t Index);
+	// action (size_t index);
 
 	// bool
-	// Argument (
-	//		size_t Index,
-	//		CSymbolNode* pSymbol
+	// argument (
+	//		size_t index,
+	//		SymbolNode* symbol
 	//		);
 
 	// bool
-	// Enter (size_t Index)
+	// enter (size_t index)
 
 	// bool
-	// Leave (size_t Index)
+	// leave (size_t index)
 
-	// ELaDfaResult
-	// LaDfa (
-	//		size_t Index,
-	//		int LookaheadToken,
-	//		TLaDfaTransition* pTransition
+	// LaDfaResult
+	// laDfa (
+	//		size_t index,
+	//		int lookaheadToken,
+	//		LaDfaTransition* transition
 	//		);
 };
 

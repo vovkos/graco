@@ -1,0 +1,22 @@
+ParserClassName = Parser;
+
+Includes 
+{
+	#include "Lexer.h"
+}
+
+start
+compound_statment
+	: 	'{' declaration* '}' 
+	;
+
+declaration
+	:	TokenKind_Var TokenKind_Identifier initializer? ';'
+			{
+				printf ("declaration of '%s'\n", $2.m_data.m_string.cc ());
+			}
+	;
+
+initializer
+	:	'=' TokenKind_Integer
+	;

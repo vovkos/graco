@@ -24,7 +24,7 @@ enum SymbolKind
 
 //.............................................................................
 
-class $ParserClassName: public llk::Parser <$ParserClassName, Token>
+class $ParserClassName: public llk::Parser <$ParserClassName, $TokenClassName>
 {
 public:
 	enum

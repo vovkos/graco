@@ -33,13 +33,13 @@ getNodeKindString (NodeKind nodeKind)
 {
 	static const char* stringTable [NodeKind__Count] =
 	{
-		"undefined-node-kind", // ENode_Undefined
-		"token-node",          // ENode_Token,
-		"symbol-node",         // ENode_Symbol,
-		"sequence-node",       //  ENode_Sequence,
-		"action-node",         // ENode_Action,
-		"argument-node",       // ENode_Argument,
-		"lookahead-dfa-node",  // ENode_LaDfa,
+		"undefined-node-kind", // NodeKind_Undefined
+		"token-node",          // NodeKind_Token,
+		"symbol-node",         // NodeKind_Symbol,
+		"sequence-node",       // NodeKind_Sequence,
+		"action-node",         // NodeKind_Action,
+		"argument-node",       // NodeKind_Argument,
+		"lookahead-dfa-node",  // NodeKind_LaDfa,
 	};
 
 	return nodeKind >= 0 && nodeKind < NodeKind__Count ?

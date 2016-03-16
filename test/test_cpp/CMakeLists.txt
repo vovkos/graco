@@ -143,6 +143,13 @@ target_link_libraries (
 	axl_core
 	)
 
+if (UNIX)
+	target_link_libraries (
+		test_cpp
+		pthread
+		)
+endif ()
+
 axl_set_pch (
 	test_cpp
 	${PCH_H}

@@ -21,11 +21,12 @@ void
 printVersion ()
 {
 	printf (
-		"Graco Grammar Compiler (%s) v%d.%d.%d\n",
-		_AXL_CPU_STRING,
+		"Graco Grammar Compiler v%d.%d.%d (%s%s)\n",
 		VERSION_MAJOR,
 		VERSION_MINOR,
-		VERSION_REVISION
+		VERSION_REVISION,
+		_AXL_CPU_STRING,
+		_AXL_DEBUG_SUFFIX
 		);
 }
 

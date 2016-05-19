@@ -1,3 +1,5 @@
+#..............................................................................
+
 set (GRACO_VERSION_MAJOR     1)
 set (GRACO_VERSION_MINOR     2)
 set (GRACO_VERSION_REVISION  0)
@@ -12,5 +14,11 @@ else ()
 	set (GRACO_VERSION_TAG_SUFFIX)
 endif ()
 
+string (TIMESTAMP GRACO_VERSION_YEAR  "%Y")
+string (TIMESTAMP GRACO_VERSION_MONTH "%m")
+string (TIMESTAMP GRACO_VERSION_DAY   "%d")
+
 set (GRACO_VERSION_COMPANY   "Tibbo Technology Inc")
-set (GRACO_VERSION_YEARS     "2007-2015")
+set (GRACO_VERSION_YEARS     "2007-${GRACO_VERSION_YEAR}")
+
+#..............................................................................

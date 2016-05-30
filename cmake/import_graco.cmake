@@ -1,16 +1,23 @@
 #..............................................................................
 
-if ("${GRACO_CMAKE_DIR_2}" STREQUAL "")
-	set (GRACO_FOUND FALSE)
-	message (STATUS "Graco:                      <not-found>")
-else ()
-	include (${GRACO_CMAKE_DIR_2}/graco_config.cmake)
+axl_find_file (
+	_CONFIG_CMAKE
+	graco_config.cmake
+	${GRACO_CMAKE_DIR}
+	)
+
+if (_CONFIG_CMAKE)
+	include (${_CONFIG_CMAKE})
+
+	message (STATUS "Path definitions for Graco:")
+	message (STATUS "    Graco cmake files: ${GRACO_CMAKE_DIR}")
+	message (STATUS "    Graco includes:    ${GRACO_INC_DIR}")
+	message (STATUS "    Graco frames:      ${GRACO_FRAME_DIR}")
+	message (STATUS "    Graco executable:  ${GRACO_EXE}")
 
 	set (GRACO_FOUND TRUE)
-	message (STATUS "Path to Graco cmake files:  ${GRACO_CMAKE_DIR}")
-	message (STATUS "Path to Graco includes:     ${GRACO_INC_DIR}")
-	message (STATUS "Path to Graco frames:       ${GRACO_FRAME_DIR}")
-	message (STATUS "Path to Graco executable:   ${GRACO_EXE}")
+else ()
+	set (GRACO_FOUND FALSE)
 endif ()
 
 #..............................................................................

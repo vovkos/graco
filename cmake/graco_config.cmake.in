@@ -8,8 +8,12 @@ set (GRACO_INC_DIR     "@GRACO_ROOT_DIR@/include")
 set (GRACO_FRAME_DIR   "@GRACO_ROOT_DIR@/frame")
 set (GRACO_SAMPLE_DIR  "@GRACO_ROOT_DIR@/samples")
 set (GRACO_EXE         "@GRACO_BIN_BASE_DIR@/${CONFIGURATION_SUFFIX}/graco")
-set (GRACO_CMAKE_DIR   "@CMAKE_CURRENT_LIST_DIR@")
-set (GRACO_CMAKE_DIR_2 "@CMAKE_CURRENT_BINARY_DIR@")
+
+set (
+	GRACO_CMAKE_DIR   
+	"@CMAKE_CURRENT_LIST_DIR@"
+	"@CMAKE_CURRENT_BINARY_DIR@"
+	)
 
 include ("@GRACO_ROOT_DIR@/version.cmake")
 include ("@CMAKE_CURRENT_LIST_DIR@/graco_step.cmake")

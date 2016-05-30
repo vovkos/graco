@@ -113,7 +113,7 @@ source_group (
 #
 
 set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
-file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+file (MAKE_DIRECTORY ${GEN_DIR})
 
 axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
 

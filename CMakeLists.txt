@@ -10,22 +10,13 @@ cmake_minimum_required (VERSION 2.8)
 
 include (cmake/axl_cmake.cmake NO_POLICY_SCOPE)
 
-axl_print_std_settings ()
-
-axl_import (
-	REQUIRED
-		ragel
-		axl
-		lua
-	OPTIONAL 
-		7z
-	)
-
-#..............................................................................
+# . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 set (GRACO_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
 set (GRACO_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set (GRACO_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
+
+# . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 add_subdirectory (cmake)
 

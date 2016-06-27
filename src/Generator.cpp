@@ -7,6 +7,7 @@
 void
 Generator::prepare (Module* module)
 {
+	m_stringTemplate.create ();
 	module->luaExport (&m_stringTemplate.m_luaState);
 }
 

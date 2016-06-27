@@ -50,7 +50,7 @@ function GetPpLine (
 end
 
 function GetPpLineDefault ()
-	return GetPpLine (TargetFilePath, GetLine () + 1)
+	return GetPpLine (TargetFilePath, getLine () + 1)
 end
 
 function GetTokenString (Token)

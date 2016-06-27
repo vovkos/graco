@@ -19,6 +19,6 @@ string (TIMESTAMP GRACO_VERSION_MONTH "%m")
 string (TIMESTAMP GRACO_VERSION_DAY   "%d")
 
 set (GRACO_VERSION_COMPANY   "Tibbo Technology Inc")
-set (GRACO_VERSION_YEARS     "2007-${GRACO_VERSION_YEAR}")
+set (GRACO_VERSION_YEARS     "2012-${GRACO_VERSION_YEAR}")
 
 #..............................................................................

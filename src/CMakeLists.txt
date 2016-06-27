@@ -201,22 +201,17 @@ axl_set_pch (
 
 target_link_libraries (
 	graco
-	axl_lua
 	axl_lex
+	axl_lua
+	axl_st
 	axl_io
 	axl_core
+	lua
 	)
 
-if (WIN32)
+if (UNIX)
 	target_link_libraries (
 		graco
-		lua
-		)
-
-elseif (UNIX)
-	target_link_libraries (
-		graco
-		lua
 		dl
 		pthread
 		)

@@ -11,7 +11,7 @@ struct CmdLine;
 class Generator
 {
 protected:
-	lua::StringTemplate m_stringTemplate;
+	st::LuaStringTemplate m_stringTemplate;
 	sl::String m_buffer;
 
 public:

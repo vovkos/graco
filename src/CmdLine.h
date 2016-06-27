@@ -21,7 +21,7 @@ struct CmdLine
 	sl::String m_bnfFileName;
 	sl::String m_traceFileName;
 
-	sl::String  m_outputDir;
+	sl::String m_outputDir;
 	sl::BoxList <sl::String> m_frameDirList;
 	sl::BoxList <sl::String> m_importDirList;
 

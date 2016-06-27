@@ -17,7 +17,7 @@ enum SymbolKind
 	%{
 	for i = 1, NamedSymbolCount do
 		Symbol = SymbolTable [i]
-		Emit ("SymbolKind_", Symbol.Name, " = ", i - 1, ", ")
+		emit ("SymbolKind_", Symbol.Name, " = ", i - 1, ", ")
 	}
 	%{ end }
 };

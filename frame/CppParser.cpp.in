@@ -20,7 +20,7 @@ $ParserClassName::getParseTable ()
 			for i = 1, SymbolCount do
 				Row = ParseTable [i]
 				for j = 1, TokenCount do
-					Emit (Row [j], ", ")
+					emit (Row [j], ", ")
 				end }
 		%{ end }
 		-1
@@ -39,7 +39,7 @@ $ParserClassName::getSequence (size_t Index)
 			for i = 1, SequenceCount do
 				Sequence = SequenceTable [i].Sequence
 				for j = #Sequence, 1, -1 do
-					Emit (Sequence [j], ", ")
+					emit (Sequence [j], ", ")
 				end } -1, // $(i - 1)
 		%{ end }
 		-1
@@ -52,7 +52,7 @@ $ParserClassName::getSequence (size_t Index)
 			j = 0;
 			for i = 1, SequenceCount do
 				Sequence = SequenceTable [i].Sequence
-				Emit (j, ", ")
+				emit (j, ", ")
 				j = j + #Sequence + 1 -- to account left side & terminating -1
 			end
 		}
@@ -96,7 +96,7 @@ $ParserClassName::getTokenFromIndex (size_t Index)
 		for i = 3, TokenCount do
 			Token = TokenTable [i]
 			TokenString = GetTokenString (Token)
-			Emit (TokenString, ", ")
+			emit (TokenString, ", ")
 		}
 		%{end}
 		0

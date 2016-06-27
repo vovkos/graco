@@ -201,9 +201,9 @@ axl_set_pch (
 
 target_link_libraries (
 	graco
-	axl_lex
-	axl_lua
 	axl_st
+	axl_lua
+	axl_lex
 	axl_io
 	axl_core
 	lua

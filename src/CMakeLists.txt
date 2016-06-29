@@ -78,19 +78,19 @@ source_group (
 # frame folder
 #
 
-set (
-	FRAME_LIST
-	${GRACO_FRAME_DIR}/CppParser.h.in
-	${GRACO_FRAME_DIR}/CppParser.cpp.in
-	${GRACO_FRAME_DIR}/CppParserUtils.lua
+file (	
+	GLOB FRAME_LIST 
+	${GRACO_ROOT_DIR}/frame/*.*
 	)
+
+message ("FRAME_LIST = ${FRAME_LIST}")
 
 source_group (
 	frame
 	FILES
 	${FRAME_LIST}
 	)
-
+	
 # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
 # res folder

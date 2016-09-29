@@ -2,11 +2,7 @@
 #include "Node.h"
 #include "ClassMgr.h"
 
-// unfortunately, GCC loses warning suppression pragmas from precompiled header
-
-#if (_AXL_CPP == AXL_CPP_GCC)
-#	pragma GCC diagnostic ignored "-Wformat"
-#endif
+#include "axl_g_WarningSuppression.h" // gcc loses warning suppression from pch
 
 //.............................................................................
 

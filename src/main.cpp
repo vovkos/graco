@@ -25,8 +25,8 @@ printVersion ()
 		VERSION_MAJOR,
 		VERSION_MINOR,
 		VERSION_REVISION,
-		_AXL_CPU_STRING,
-		_AXL_DEBUG_SUFFIX
+		AXL_CPU_STRING,
+		AXL_DEBUG_SUFFIX
 		);
 }
 
@@ -41,7 +41,7 @@ printUsage ()
 
 //.............................................................................
 
-#if (_AXL_ENV == AXL_ENV_WIN)
+#if (_AXL_OS_WIN)
 int
 wmain (
 	int argc,

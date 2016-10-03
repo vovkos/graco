@@ -40,8 +40,7 @@ enum CmdLineSwitchKind
 	CmdLineSwitchKind_Version,
 	CmdLineSwitchKind_NoPpLine,
 	CmdLineSwitchKind_Verbose,
-
-	CmdLineSwitchKind_OutputFileName = sl::CmdLineSwitchFlag_HasValue,
+	CmdLineSwitchKind_OutputFileName,
 	CmdLineSwitchKind_FrameFileName,
 	CmdLineSwitchKind_BnfFileName,
 	CmdLineSwitchKind_TraceFileName,

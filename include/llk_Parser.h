@@ -641,7 +641,7 @@ protected:
 			if (symbolNode->m_astNode && (m_flags & Flag_BuildingAst))
 			{
 				if (!m_ast)
-					m_ast.create ();
+					m_ast.createBuffer ();
 
 				m_ast->add (symbolNode->m_astNode);
 				symbolNode->m_flags |= SymbolNodeFlag_KeepAst;

@@ -35,7 +35,7 @@ Module::build (CmdLine* cmdLine)
 
 	if (m_nodeMgr.isEmpty ())
 	{
-		err::setStringError ("grammar is empty");
+		err::setError ("grammar is empty");
 		return false;
 	}
 

@@ -51,7 +51,7 @@ void
 ClassMgr::deleteClass (Class* cls)
 {
 	if (cls->m_flags & ClassFlag_Named)
-		m_classMap.eraseByKey (cls->m_name);
+		m_classMap.eraseKey (cls->m_name);
 
 	m_classList.erase (cls);		
 }

@@ -253,7 +253,7 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 		case TokenKind_Class:
 			if (isClassSpecified)
 			{
-				err::setStringError ("multiple class specifiers");
+				err::setError ("multiple class specifiers");
 				return false;
 			}
 
@@ -267,7 +267,7 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 		case TokenKind_Default:
 			if (isClassSpecified)
 			{
-				err::setStringError ("multiple class specifiers");
+				err::setError ("multiple class specifiers");
 				return false;
 			}
 
@@ -280,7 +280,7 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 		case TokenKind_NoAst:
 			if (isClassSpecified)
 			{
-				err::setStringError ("multiple class specifiers");
+				err::setError ("multiple class specifiers");
 				return false;
 			}
 
@@ -293,7 +293,7 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 		case TokenKind_Pragma:
 			if (symbolFlags & SymbolNodeFlag_Pragma)
 			{
-				err::setStringError ("multiple 'pragma' specifiers");
+				err::setError ("multiple 'pragma' specifiers");
 				return false;
 			}
 
@@ -305,7 +305,7 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 		case TokenKind_Start:
 			if (symbolFlags & SymbolNodeFlag_Start)
 			{
-				err::setStringError ("multiple 'start' specifiers");
+				err::setError ("multiple 'start' specifiers");
 				return false;
 			}
 
@@ -317,7 +317,7 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 		case TokenKind_Nullable:
 			if (symbolFlags & SymbolNodeFlag_Nullable)
 			{
-				err::setStringError ("multiple 'nullable' specifiers");
+				err::setError ("multiple 'nullable' specifiers");
 				return false;
 			}
 
@@ -337,7 +337,7 @@ Parser::productionSpecifiers (ProductionSpecifiers* specifiers)
 			case TokenKind_Identifier:
 				if (isClassSpecified)
 				{
-					err::setStringError ("multiple class specifiers");
+					err::setError ("multiple class specifiers");
 					return false;
 				}
 

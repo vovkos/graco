@@ -24,7 +24,7 @@ Class::luaExport (lua::LuaState* luaState)
 //.............................................................................
 
 Class*
-ClassMgr::getClass (const sl::String& name)
+ClassMgr::getClass (const sl::StringRef& name)
 {
 	sl::StringHashTableMapIterator <Class*> it = m_classMap.visit (name);
 	if (it->m_value)
@@ -68,7 +68,7 @@ ClassMgr::verify ()
 		{
 			err::setFormatStringError (
 				"class '%s' is not defined", 
-				cls->m_name.cc () // thans a lot gcc
+				cls->m_name.sz ()
 				);
 			return false;
 		}

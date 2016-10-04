@@ -17,7 +17,7 @@ Node::Node ()
 void
 Node::trace ()
 {
-	printf ("%s\n", m_name.cc ()); // thanks a lot gcc
+	printf ("%s\n", m_name.sz ());
 }
 
 bool
@@ -39,10 +39,10 @@ GrammarNode::trace ()
 		"%s\n"
 		"\t  FIRST:  %s%s\n"
 		"\t  FOLLOW: %s%s\n",
-		m_name.cc (),
-		nodeArrayToString (&m_firstArray).cc (),
+		m_name.sz (),
+		nodeArrayToString (&m_firstArray).sz (),
 		isNullable () ? " <eps>" : "",
-		nodeArrayToString (&m_followArray).cc (),
+		nodeArrayToString (&m_followArray).sz (),
 		isFinal () ? " $" : ""
 		);
 }
@@ -86,16 +86,16 @@ GrammarNode::stripBeacon ()
 
 static
 bool
-isParenthesNeeded (const char* p)
+isParenthesNeeded (const sl::StringRef& string)
 {
 	int level = 0;
 
-	for (;; p++)
+	const char* p = string.cp ();
+	const char* end = string.getEnd ();
+
+	for (; p < end; p++)
 		switch (*p)
 		{
-		case 0:
-			return false;
-
 		case ' ':
 			if (!level)
 				return true;
@@ -108,6 +108,8 @@ isParenthesNeeded (const char* p)
 			level--;
 			break;
 		}
+
+	return false;
 }
 
 sl::String
@@ -121,7 +123,7 @@ GrammarNode::getBnfString ()
 
 	return sl::String::format_s (
 		isParenthesNeeded (string) ? "(%s)%c" : "%s%c",
-		string.cc (),
+		string.sz (),
 		m_quantifierKind
 		);
 }
@@ -201,17 +203,17 @@ SymbolNode::trace ()
 		return;
 
 	if (m_resolver)
-		printf ("\t  RSLVR:  %s\n", m_resolver->m_name.cc ());
+		printf ("\t  RSLVR:  %s\n", m_resolver->m_name.sz ());
 
 	if (m_class)
-		printf ("\t  CLASS:  %s\n", m_class->m_name.cc ());
+		printf ("\t  CLASS:  %s\n", m_class->m_name.sz ());
 
 	size_t childrenCount = m_productionArray.getCount ();
 
 	for (size_t i = 0; i < childrenCount; i++)
 	{
 		Node* child = m_productionArray [i];
-		printf ("\t  -> %s\n", child->getProductionString ().cc ());
+		printf ("\t  -> %s\n", child->getProductionString ().sz ());
 	}
 }
 
@@ -352,7 +354,7 @@ void
 SequenceNode::trace ()
 {
 	GrammarNode::trace ();
-	printf ("\t  %s\n", nodeArrayToString (&m_sequence).cc ());
+	printf ("\t  %s\n", nodeArrayToString (&m_sequence).sz ());
 }
 
 void
@@ -378,8 +380,8 @@ SequenceNode::getProductionString ()
 {
 	return sl::String::format_s (
 		"%s: %s",
-		m_name.cc (),
-		nodeArrayToString (&m_sequence).cc ()
+		m_name.sz (),
+		nodeArrayToString (&m_sequence).sz ()
 		);
 }
 
@@ -436,10 +438,10 @@ ActionNode::trace ()
 		"\t  SYMBOL:     %s\n"
 		"\t  DISPATCHER: %s\n"
 		"\t  { %s }\n",
-		m_name.cc (),
-		m_productionSymbol->m_name.cc (),
-		m_dispatcher ? m_dispatcher->m_name.cc () : "NONE",
-		m_userCode.cc ()
+		m_name.sz (),
+		m_productionSymbol->m_name.sz (),
+		m_dispatcher ? m_dispatcher->m_name.sz () : "NONE",
+		m_userCode.sz ()
 		);
 }
 
@@ -481,19 +483,19 @@ ArgumentNode::trace ()
 		"\t  DISPATCHER: %s\n"
 		"\t  TARGET SYMBOL: %s\n"
 		"\t  <",
-		m_name.cc (),
-		m_productionSymbol->m_name.cc (),
-		m_dispatcher ? m_dispatcher->m_name.cc () : "NONE",
-		m_targetSymbol->m_name.cc ()
+		m_name.sz (),
+		m_productionSymbol->m_name.sz (),
+		m_dispatcher ? m_dispatcher->m_name.sz () : "NONE",
+		m_targetSymbol->m_name.sz ()
 		);
 
 	sl::BoxIterator <sl::String> it = m_argValueList.getHead ();
 	ASSERT (it); // empty argument should have been eliminated
 
-	printf ("%s", it->cc ());
+	printf ("%s", it->sz ());
 
 	for (it++; it; it++)
-		printf (", %s", it->cc ());
+		printf (", %s", it->sz ());
 
 	printf (">\n");
 }
@@ -560,7 +562,7 @@ BeaconNode::trace ()
 	printf (
 		"\t  $%d => %s\n",
 		m_slotIndex,
-		m_target->m_name.cc ()
+		m_target->m_name.sz ()
 		);
 }
 
@@ -583,9 +585,9 @@ DispatcherNode::trace ()
 		"%s\n"
 		"\t  @ %s\n"
 		"\t  %s\n",
-		m_name.cc (),
-		m_symbol->m_name.cc (),
-		nodeArrayToString (&m_beaconArray).cc ()
+		m_name.sz (),
+		m_symbol->m_name.sz (),
+		nodeArrayToString (&m_beaconArray).sz ()
 		);
 }
 
@@ -639,17 +641,17 @@ ConflictNode::trace ()
 		"\t  on %s in %s\n"
 		"\t  DFA:      %s\n"
 		"\t  POSSIBLE:\n",
-		m_name.cc (),
-		m_token->m_name.cc (),
-		m_symbol->m_name.cc (),
-		m_resultNode ? m_resultNode->m_name.cc () : "<none>"
+		m_name.sz (),
+		m_token->m_name.sz (),
+		m_symbol->m_name.sz (),
+		m_resultNode ? m_resultNode->m_name.sz () : "<none>"
 		);
 
 	size_t count = m_productionArray.getCount ();
 	for (size_t i = 0; i < count; i++)
 	{
 		Node* node = m_productionArray [i];
-		printf ("\t  \t-> %s\n", node->getProductionString ().cc ());
+		printf ("\t  \t-> %s\n", node->getProductionString ().sz ());
 	}
 }
 
@@ -670,7 +672,7 @@ LaDfaNode::trace ()
 {
 	printf (
 		"%s%s\n",
-		m_name.cc (),
+		m_name.sz (),
 		(m_flags & LaDfaNodeFlag_Leaf) ? "*" :
 		(m_flags & LaDfaNodeFlag_Resolved) ? "~" : ""
 		);
@@ -680,9 +682,9 @@ LaDfaNode::trace ()
 		printf (
 			"\t  if resolver (%s) %s\n"
 			"\t  else %s\n",
-			m_resolver->m_name.cc (),
-			m_production->getProductionString ().cc (),
-			m_resolverElse->getProductionString ().cc ()
+			m_resolver->m_name.sz (),
+			m_production->getProductionString ().sz (),
+			m_resolverElse->getProductionString ().sz ()
 			);
 	}
 	else
@@ -693,8 +695,8 @@ LaDfaNode::trace ()
 			LaDfaNode* child = m_transitionArray [i];
 			printf (
 				"\t  %s -> %s\n",
-				child->m_token->m_name.cc (),
-				child->getProductionString ().cc ()
+				child->m_token->m_name.sz (),
+				child->getProductionString ().sz ()
 				);
 		}
 
@@ -702,7 +704,7 @@ LaDfaNode::trace ()
 		{
 			printf (
 				"\t  . -> %s\n",
-				m_production->getProductionString ().cc ()
+				m_production->getProductionString ().sz ()
 				);
 		}
 	}

@@ -13,8 +13,8 @@ Generator::prepare (Module* module)
 
 bool
 Generator::generate (
-	const char* fileName,
-	const char* frameFileName
+	const sl::StringRef& fileName,
+	const sl::StringRef& frameFileName
 	)
 {
 	sl::String frameFilePath;
@@ -51,7 +51,7 @@ Generator::generate (
 	m_stringTemplate.m_luaState.setGlobalString ("FrameDir", frameDir);
 	m_stringTemplate.m_luaState.setGlobalBoolean ("NoPpLine", (m_cmdLine->m_flags & CmdLineFlag_NoPpLine) != 0);
 	
-	result = m_stringTemplate.process (&m_buffer, frameFilePath, p, size);
+	result = m_stringTemplate.process (&m_buffer, frameFilePath, sl::StringRef (p, size));
 	if (!result)
 		return false;
 

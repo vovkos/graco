@@ -28,8 +28,8 @@ public:
 	
 	bool
 	generate (
-		const char* fileName,
-		const char* frameFileName
+		const sl::StringRef& fileName,
+		const sl::StringRef& frameFileName
 		);
 };
 

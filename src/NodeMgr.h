@@ -16,7 +16,7 @@ class NodeMgr
 	friend class ParseTableBuilder;
 
 protected:
-	sl::HashTableMap <int, SymbolNode*, sl::HashId <int>, sl::Cmp <int> > m_tokenMap;
+	sl::SimpleHashTableMap <int, SymbolNode*> m_tokenMap;
 	sl::StringHashTableMap <SymbolNode*> m_symbolMap;
 
 	GrammarNode m_epsilonNode;
@@ -61,7 +61,7 @@ public:
 	getTokenNode (int token);
 
 	SymbolNode*
-	getSymbolNode (const sl::String& name);
+	getSymbolNode (const sl::StringRef& name);
 
 	SymbolNode*
 	createTempSymbolNode ();
@@ -160,7 +160,7 @@ protected:
 	void
 	luaExportNodeArray (
 		lua::LuaState* luaState,
-		const char* name,
+		const sl::StringRef& name,
 		Node* const* node,
 		size_t count
 		);
@@ -168,7 +168,7 @@ protected:
 	void
 	luaExportNodeList (
 		lua::LuaState* luaState,
-		const char* name,
+		const sl::StringRef& name,
 		sl::Iterator <Node> node,
 		size_t countHint = 1
 		);

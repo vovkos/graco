@@ -13,7 +13,7 @@ compound_statment
 declaration
 	:	TokenKind_Var TokenKind_Identifier initializer? ';'
 			{
-				printf ("declaration of '%s'\n", $2.m_data.m_string.cc ());
+				printf ("declaration of '%s'\n", $2.m_data.m_string.sz ());
 			}
 	;
 

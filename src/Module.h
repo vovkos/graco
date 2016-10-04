@@ -45,7 +45,7 @@ public:
 	generateBnfString ();
 
 	bool
-	writeBnfFile (const char* fileName);
+	writeBnfFile (const sl::StringRef& fileName);
 
 protected:
 	void

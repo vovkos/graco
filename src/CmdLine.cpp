@@ -4,7 +4,7 @@
 //.............................................................................
 
 bool
-CmdLineParser::onValue (const char* value)
+CmdLineParser::onValue (const sl::StringRef& value)
 {
 	m_cmdLine->m_inputFileName = value;
 	return true;
@@ -13,7 +13,7 @@ CmdLineParser::onValue (const char* value)
 bool
 CmdLineParser::onSwitch (
 	SwitchKind switchKind,
-	const char* value
+	const sl::StringRef& value
 	)
 {
 	switch (switchKind)

@@ -227,10 +227,10 @@ LaDfaBuilder::build (
 
 			err::setFormatStringError (
 				"conflict at %s:%s could not be resolved with %d token lookahead; e.g. %s",
-				conflict->m_symbol->m_name.cc (), // thanks a lot gcc
-				conflict->m_token->m_name.cc (),
+				conflict->m_symbol->m_name.sz (),
+				conflict->m_token->m_name.sz (),
 				m_lookeaheadLimit,
-				tokenSeqString.cc ()
+				tokenSeqString.sz ()
 				);
 
 			lex::pushSrcPosError (conflict->m_symbol->m_srcPos);
@@ -254,9 +254,9 @@ LaDfaBuilder::build (
 		{
 			err::setFormatStringError (
 				"conflict at %s:%s: multiple productions complete with %s",
-				conflict->m_symbol->m_name.cc (),
-				conflict->m_token->m_name.cc (),
-				state->m_token->m_name.cc ()
+				conflict->m_symbol->m_name.sz (),
+				conflict->m_token->m_name.sz (),
+				state->m_token->m_name.sz ()
 				);
 			lex::pushSrcPosError (conflict->m_symbol->m_srcPos);
 			return NULL;
@@ -369,7 +369,7 @@ LaDfaBuilder::trace ()
 
 			thread = state->m_activeThreadList.getHead ();
 			for (; thread; thread++)
-				printf ("%s ", thread->m_production->m_name.cc ());
+				printf ("%s ", thread->m_production->m_name.sz ());
 
 			printf ("\n");
 		}
@@ -380,7 +380,7 @@ LaDfaBuilder::trace ()
 
 			thread = state->m_resolverThreadList.getHead ();
 			for (; thread; thread++)
-				printf ("%s ", thread->m_production->m_name.cc ());
+				printf ("%s ", thread->m_production->m_name.sz ());
 
 			printf ("\n");
 		}
@@ -391,7 +391,7 @@ LaDfaBuilder::trace ()
 
 			thread = state->m_completeThreadList.getHead ();
 			for (; thread; thread++)
-				printf ("%s ", thread->m_production->m_name.cc ());
+				printf ("%s ", thread->m_production->m_name.sz ());
 
 			printf ("\n");
 		}
@@ -402,7 +402,7 @@ LaDfaBuilder::trace ()
 
 			thread = state->m_epsilonThreadList.getHead ();
 			for (; thread; thread++)
-				printf ("%s ", thread->m_production->m_name.cc ());
+				printf ("%s ", thread->m_production->m_name.sz ());
 
 			printf ("\n");
 		}
@@ -415,7 +415,7 @@ LaDfaBuilder::trace ()
 				LaDfaState* moveTo = state->m_transitionArray [i];
 				printf (
 					"\t%s -> %d\n",
-					moveTo->m_token->m_name.cc (),
+					moveTo->m_token->m_name.sz (),
 					moveTo->m_index
 					);
 			}

@@ -7,7 +7,7 @@ bool
 Parser::parseFile (
 	Module* module,
 	CmdLine* cmdLine,
-	const sl::String& filePath
+	const sl::StringRef& filePath
 	)
 {
 	bool result;
@@ -19,8 +19,8 @@ Parser::parseFile (
 	{
 		err::setFormatStringError (
 			"cannot open '%s': %s",
-			filePath.cc (), // thanks a lot gcc
-			err::getLastErrorDescription ().cc ()
+			filePath.sz (),
+			err::getLastErrorDescription ().sz ()
 			);
 		return false;
 	}
@@ -31,22 +31,21 @@ Parser::parseFile (
 	{
 		err::setFormatStringError (
 			"cannot open '%s': %s",
-			filePath.cc (),
-			err::getLastErrorDescription ().cc ()
+			filePath.sz (),
+			err::getLastErrorDescription ().sz ()
 			);
 		return false;
 	}
 
-	return parse (module, cmdLine, filePath, p, size);
+	return parse (module, cmdLine, filePath, sl::StringRef (p, size));
 }
 
 bool
 Parser::parse (
 	Module* module,
 	const CmdLine* cmdLine,
-	const sl::String& filePath,
-	const char* source,
-	size_t length
+	const sl::StringRef& filePath,
+	const sl::StringRef& source
 	)
 {
 	bool result;
@@ -57,7 +56,7 @@ Parser::parse (
 
 	m_defaultProductionSpecifiers.reset ();
 
-	Lexer::create (filePath, source, length);
+	Lexer::create (filePath, source);
 
 	result = program ();
 	if (!result)
@@ -191,7 +190,7 @@ Parser::importStatement ()
 	{
 		err::setFormatStringError (
 			"cannot find import file '%s'",
-			token->m_data.m_string.cc ()
+			token->m_data.m_string.sz ()
 			);
 		return false;
 	}
@@ -396,7 +395,7 @@ Parser::classSpecifier ()
 		{
 			err::setFormatStringError (
 				"redefinition of class '%s'",
-				cls->m_name.cc ()
+				cls->m_name.sz ()
 				);
 			return NULL;
 		}
@@ -468,7 +467,7 @@ Parser::defineStatement ()
 		default:
 			err::setFormatStringError (
 				"invalid define value for '%s'",
-				define->m_name.cc ()
+				define->m_name.sz ()
 				);
 			return false;
 		}
@@ -478,7 +477,7 @@ Parser::defineStatement ()
 	default:
 		err::setFormatStringError (
 			"invalid define syntax for '%s'",
-			define->m_name.cc ()
+			define->m_name.sz ()
 			);
 		return false;
 	}
@@ -553,7 +552,7 @@ Parser::customizeSymbol (SymbolNode* node)
 		{
 			err::setFormatStringError (
 				"redefinition of '%s'::%s",
-				node->m_name.cc (),
+				node->m_name.sz (),
 				token->getName ()
 				);
 			return false;
@@ -720,7 +719,7 @@ Parser::processSymbolEventHandler (
 		if (token->m_token <= 0)
 			break;
 
-		sl::HashTableIterator <const char*> it;
+		sl::StringHashTableIterator it;
 
 		switch (token->m_token)
 		{
@@ -731,7 +730,7 @@ Parser::processSymbolEventHandler (
 				resultString.append (p, token->m_pos.m_p - p);
 				resultString.appendFormat (
 					"$local.%s",
-					token->m_data.m_string.cc ()
+					token->m_data.m_string.sz ()
 					);
 				break;
 			}
@@ -742,12 +741,12 @@ Parser::processSymbolEventHandler (
 				resultString.append (p, token->m_pos.m_p - p);
 				resultString.appendFormat (
 					"$arg.%s",
-					token->m_data.m_string.cc ()
+					token->m_data.m_string.sz ()
 					);
 				break;
 			}
 
-			err::setFormatStringError ("undeclared identifier '%s'", token->m_data.m_string.cc ());
+			err::setFormatStringError ("undeclared identifier '%s'", token->m_data.m_string.sz ());
 			return false;
 
 		case TokenKind_Integer:
@@ -780,7 +779,7 @@ Parser::processSymbolEventHandler (
 bool
 Parser::processActualArgList (
 	ArgumentNode* node,
-	const sl::String& string
+	const sl::StringRef& string
 	)
 {
 	const Token* token;
@@ -790,7 +789,7 @@ Parser::processActualArgList (
 
 	int level = 0;
 
-	const char* p = string;
+	const char* p = string.cp ();
 
 	for (;;)
 	{
@@ -856,7 +855,7 @@ Parser::production (const ProductionSpecifiers* specifiers)
 	{
 		err::setFormatStringError (
 			"redefinition of symbol '%s'",
-			symbol->m_name.cc ()
+			symbol->m_name.sz ()
 			);
 		return false;
 	}

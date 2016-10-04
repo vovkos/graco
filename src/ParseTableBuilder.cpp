@@ -27,7 +27,7 @@ ParseTableBuilder::build ()
 			{
 				err::setFormatStringError (
 					"'%s': nullable symbols must be explicitly marked as 'nullable'", 
-					node->m_name.cc () // thanks a lot gcc
+					node->m_name.sz ()
 					);
 				lex::pushSrcPosError (node->m_srcPos);
 				return false;
@@ -37,7 +37,7 @@ ParseTableBuilder::build ()
 			{
 				err::setFormatStringError (
 					"'%s': marked as 'nullable' but is not nullable", 
-					node->m_name.cc () 
+					node->m_name.sz () 
 					);
 				lex::pushSrcPosError (node->m_srcPos);
 				return false;
@@ -50,7 +50,7 @@ ParseTableBuilder::build ()
 			{
 				err::setFormatStringError (
 					"'%s': pragma cannot be nullable", 
-					node->m_name.cc () 
+					node->m_name.sz () 
 					);
 				lex::pushSrcPosError (node->m_srcPos);
 				return false;
@@ -60,7 +60,7 @@ ParseTableBuilder::build ()
 			{
 				err::setFormatStringError (
 					"'%s': pragma cannot start with 'anytoken'", 
-					node->m_name.cc () 
+					node->m_name.sz () 
 					);
 				lex::pushSrcPosError (node->m_srcPos);
 				return false;

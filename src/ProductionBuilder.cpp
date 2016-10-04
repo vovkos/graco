@@ -47,7 +47,7 @@ ProductionBuilder::build (
 		{
 			err::setFormatStringError (
 				"'%s' takes %d arguments, passed none", 
-				beacon->m_target->m_name.cc (), // thanks a lot gcc 
+				beacon->m_target->m_name.sz (),
 				formalArgCount
 				);
 			lex::pushSrcPosError (beacon->m_srcPos);
@@ -255,7 +255,7 @@ ProductionBuilder::addBeacon (BeaconNode* beacon)
 		{
 			err::setFormatStringError (
 				"'%s' takes %d arguments, passed %d", 
-				node->m_name.cc (), 
+				node->m_name.sz (), 
 				formalArgCount, 
 				actualArgCount
 				);
@@ -364,7 +364,7 @@ ProductionBuilder::findVariable (
 
 ProductionBuilder::VariableKind
 ProductionBuilder::findVariable (
-	const char* name,
+	const sl::StringRef& name,
 	BeaconNode** beacon_o
 	)
 {
@@ -378,7 +378,7 @@ ProductionBuilder::findVariable (
 			VariableKind_SymbolBeacon;
 	}
 
-	sl::HashTableIterator <const char*> it2 = m_symbol->m_localNameSet.find (name);
+	sl::StringHashTableIterator it2 = m_symbol->m_localNameSet.find (name);
 	if (it2)
 		return VariableKind_Local;
 
@@ -447,7 +447,7 @@ ProductionBuilder::processUserCode (
 			{
 				err::setFormatStringError (
 					"'%s' is declared as 'noast' and cannot be referenced from user actions", 
-					beacon->m_target->m_name.cc () 
+					beacon->m_target->m_name.sz () 
 					);
 				return false;
 			}
@@ -459,7 +459,7 @@ ProductionBuilder::processUserCode (
 			{
 				err::setFormatStringError (
 					"cross-resolver reference to locator '%s'", 
-					token->getText ().cc () 
+					token->getText ().sz () 
 					);
 				return false;
 			}
@@ -495,7 +495,7 @@ ProductionBuilder::processUserCode (
 
 			resultString.appendFormat (
 				"$arg.%s", 
-				token->m_data.m_string.cc () 
+				token->m_data.m_string.sz () 
 				);
 			break;
 
@@ -508,7 +508,7 @@ ProductionBuilder::processUserCode (
 
 			resultString.appendFormat (
 				"$local.%s", 
-				token->m_data.m_string.cc () 
+				token->m_data.m_string.sz () 
 				);
 			break;
 

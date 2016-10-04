@@ -431,8 +431,8 @@ public:
 	{
 		err::pushFormatStringError (
 			"conflict at '%s':'%s'",
-			m_symbol->m_name.cc (), // thanks a lot gcc
-			m_token->m_name.cc ()
+			m_symbol->m_name.sz (),
+			m_token->m_name.sz ()
 			);
 	}
 };
@@ -479,7 +479,7 @@ protected:
 template <typename T>
 void
 traceNodeList (
-	const char* name,
+	const sl::StringRef& name,
 	sl::Iterator <T> nodeIt
 	)
 {
@@ -499,7 +499,7 @@ traceNodeList (
 template <typename T>
 void
 traceNodeArray (
-	const char* name,
+	const sl::StringRef& name,
 	const sl::Array <T*>* array
 	)
 {

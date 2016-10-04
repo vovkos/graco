@@ -100,7 +100,7 @@ NodeMgr::getTokenNode (int token)
 }
 
 SymbolNode*
-NodeMgr::getSymbolNode (const sl::String& name)
+NodeMgr::getSymbolNode (const sl::StringRef& name)
 {
 	sl::StringHashTableMapIterator <SymbolNode*> mapIt = m_symbolMap.visit (name);
 	if (mapIt->m_value)
@@ -154,7 +154,7 @@ NodeMgr::createBeaconNode (SymbolNode* target)
 	beaconNode->m_name.format (
 		"_bcn%d(%s)", 
 		m_beaconList.getCount () + 1, 
-		target->m_name.cc () // thanks a lot gcc
+		target->m_name.sz ()
 		);
 	m_beaconList.insertTail (beaconNode);
 	return beaconNode;
@@ -524,7 +524,7 @@ NodeMgr::luaExport (lua::LuaState* luaState)
 void
 NodeMgr::luaExportNodeArray (
 	lua::LuaState* luaState,
-	const char* name,
+	const sl::StringRef& name,
 	Node* const* nodeArray,
 	size_t count
 	)
@@ -545,7 +545,7 @@ NodeMgr::luaExportNodeArray (
 void
 NodeMgr::luaExportNodeList (
 	lua::LuaState* luaState,
-	const char* name,
+	const sl::StringRef& name,
 	sl::Iterator <Node> nodeIt,
 	size_t countEstimate
 	)

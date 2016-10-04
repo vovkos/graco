@@ -75,13 +75,13 @@ public:
 	}
 
 	Class*
-	getClass (const sl::String& name);
+	getClass (const sl::StringRef& name);
 
 	Class*
 	createUnnamedClass ();
 	
 	Class*
-	findClass (const char* name)
+	findClass (const sl::StringRef& name)
 	{
 		sl::StringHashTableMapIterator <Class*> it = m_classMap.find (name);
 		return it ? it->m_value : NULL;

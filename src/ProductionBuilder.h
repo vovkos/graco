@@ -77,7 +77,7 @@ protected:
 
 	VariableKind
 	findVariable (
-		const char* name,
+		const sl::StringRef& name,
 		BeaconNode** beacon
 		);
 };

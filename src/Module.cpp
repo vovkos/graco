@@ -136,7 +136,7 @@ Module::trace ()
 }
 
 bool
-Module::writeBnfFile (const char* fileName)
+Module::writeBnfFile (const sl::StringRef& fileName)
 {
 	sl::String bufferString;
 

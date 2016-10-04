@@ -49,16 +49,15 @@ public:
 	parse (
 		Module* module,
 		const CmdLine* cmdLine,
-		const sl::String& filePath,
-		const char* source,
-		size_t length = -1
+		const sl::StringRef& filePath,
+		const sl::StringRef& source
 		);
 
 	bool
 	parseFile (
 		Module* module,
 		CmdLine* cmdLine,
-		const sl::String& filePath
+		const sl::StringRef& filePath
 		);
 
 protected:
@@ -138,7 +137,7 @@ protected:
 	bool
 	processActualArgList (
 		ArgumentNode* node,
-		const sl::String& string
+		const sl::StringRef& string
 		);
 
 	bool

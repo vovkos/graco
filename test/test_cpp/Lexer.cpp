@@ -15,7 +15,7 @@ Lexer::createStringToken (
 	ASSERT (token->m_pos.m_length >= left + right);
 
 	size_t length = token->m_pos.m_length - (left + right);
-	token->m_data.m_string.copy (ts + left, length);
+	token->m_data.m_string = sl::StringRef (ts + left, length);
 	return token;
 }
 

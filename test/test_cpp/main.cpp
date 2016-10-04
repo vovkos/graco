@@ -6,7 +6,7 @@
 //.............................................................................
 
 bool
-parse (const char* p)
+parse (const sl::StringRef& p)
 {
 	bool result;
 
@@ -57,7 +57,7 @@ main (
 	bool result = parse ("{ var i = 0; }");
 	if (!result)
 	{
-		printf ("error: %s\n", err::getLastErrorDescription ().cc ());
+		printf ("error: %s\n", err::getLastErrorDescription ().sz ());
 		return -1;
 	}
 

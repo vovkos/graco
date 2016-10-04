@@ -65,10 +65,10 @@ public:
 	}
 
 	Define*
-	getDefine (const sl::String& name);
+	getDefine (const sl::StringRef& name);
 
 	Define*
-	findDefine (const char* name)
+	findDefine (const sl::StringRef& name)
 	{
 		sl::StringHashTableMapIterator <Define*> it = m_defineMap.find (name);
 		return it ? it->m_value : NULL;

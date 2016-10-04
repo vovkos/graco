@@ -100,7 +100,7 @@ protected:
 		)
 	{
 		Token* token = createToken (tokenKind);
-		token->m_data.m_string.copy (ts + left, token->m_pos.m_length - (left + right));
+		token->m_data.m_string = sl::StringRef (ts + left, token->m_pos.m_length - (left + right));
 		return token;
 	}
 

@@ -121,7 +121,7 @@ GrammarNode::getBnfString ()
 	ASSERT (m_quantifiedNode);
 	sl::String string = m_quantifiedNode->getBnfString ();
 
-	return sl::String::format_s (
+	return sl::formatString (
 		isParenthesNeeded (string) ? "(%s)%c" : "%s%c",
 		string.sz (),
 		m_quantifierKind
@@ -378,7 +378,7 @@ SequenceNode::luaExport (lua::LuaState* luaState)
 sl::String
 SequenceNode::getProductionString ()
 {
-	return sl::String::format_s (
+	return sl::formatString (
 		"%s: %s",
 		m_name.sz (),
 		nodeArrayToString (&m_sequence).sz ()

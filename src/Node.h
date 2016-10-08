@@ -483,7 +483,7 @@ traceNodeList (
 	sl::Iterator <T> nodeIt
 	)
 {
-	printf ("%s\n", name);
+	printf ("%s\n", name.sz ());
 
 	for (; nodeIt; nodeIt++)
 	{
@@ -503,7 +503,7 @@ traceNodeArray (
 	const sl::Array <T*>* array
 	)
 {
-	printf ("%s\n", name);
+	printf ("%s\n", name.sz ());
 
 	size_t count = array->getCount ();
 	for (size_t i = 0; i < count; i++)

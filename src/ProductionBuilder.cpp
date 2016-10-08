@@ -386,7 +386,7 @@ ProductionBuilder::findVariable (
 	if (it2)
 		return VariableKind_Arg;
 
-	err::setFormatStringError ("locator '$%s' not found", name);
+	err::setFormatStringError ("locator '$%s' not found", name.sz ());
 	return VariableKind_Undefined;
 }
 

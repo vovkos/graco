@@ -2,9 +2,11 @@
 
 $CppIncludes
 
-// warning C4065: switch statement contains 'default' but no 'case' labels
+#include "axl_g_WarningSuppression.h"
 
-#pragma warning (disable: 4065)
+#if (_AXL_CPP_MSC)
+#	pragma warning (disable: 4065) // warning C4065: switch statement contains 'default' but no 'case' labels
+#endif
 
 $OpenNamespace
 

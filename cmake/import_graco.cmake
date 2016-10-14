@@ -9,11 +9,11 @@ axl_find_file (
 if (_CONFIG_CMAKE)
 	include (${_CONFIG_CMAKE})
 
-	message (STATUS "Graco paths:")
-	message (STATUS "    Graco cmake files: ${GRACO_CMAKE_DIR}")
-	message (STATUS "    Graco includes:    ${GRACO_INC_DIR}")
-	message (STATUS "    Graco frames:      ${GRACO_FRAME_DIR}")
-	message (STATUS "    Graco executable:  ${GRACO_EXE}")
+	message (STATUS "Path definitions for Graco:")
+	axl_message ("    CMake files:" "${GRACO_CMAKE_DIR}")
+	axl_message ("    Includes:"    "${GRACO_INC_DIR}")
+	axl_message ("    Frames:"      "${GRACO_FRAME_DIR}")
+	axl_message ("    Executable:"  "${GRACO_EXE}")
 
 	set (GRACO_FOUND TRUE)
 else ()

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ProductionBuilder.h"
 
-//.............................................................................
+//..............................................................................
 
 ProductionBuilder::ProductionBuilder (NodeMgr* nodeMgr)
 {
@@ -39,14 +39,14 @@ ProductionBuilder::build (
 
 	case NodeKind_Beacon:
 		BeaconNode* beacon;
-		
+
 		beacon = (BeaconNode*) production;
 
-		formalArgCount = beacon->m_target->m_argNameList.getCount ();		 
+		formalArgCount = beacon->m_target->m_argNameList.getCount ();
 		if (formalArgCount)
 		{
 			err::setFormatStringError (
-				"'%s' takes %d arguments, passed none", 
+				"'%s' takes %d arguments, passed none",
 				beacon->m_target->m_name.sz (),
 				formalArgCount
 				);
@@ -77,7 +77,7 @@ ProductionBuilder::build (
 	result = scan (production);
 	if (!result)
 		return NULL;
-	
+
 	result = processAllUserCode ();
 	if (!result)
 	{
@@ -86,7 +86,7 @@ ProductionBuilder::build (
 	}
 
 	findAndReplaceUnusedBeacons (production);
-	
+
 	size_t count = m_beaconDeleteArray.getCount ();
 	for (size_t i = 0; i < count; i++)
 		m_nodeMgr->deleteBeaconNode (m_beaconDeleteArray [i]);
@@ -158,7 +158,7 @@ ProductionBuilder::scan (GrammarNode* node)
 		break;
 
 	case NodeKind_Symbol:
-		if (node->m_flags & SymbolNodeFlag_Named) 
+		if (node->m_flags & SymbolNodeFlag_Named)
 			break;
 
 		symbol = (SymbolNode*) node;
@@ -250,13 +250,13 @@ ProductionBuilder::addBeacon (BeaconNode* beacon)
 		SymbolNode* node = (SymbolNode*) beacon->m_target;
 		size_t formalArgCount = node->m_argNameList.getCount ();
 		size_t actualArgCount = beacon->m_argument ? beacon->m_argument->m_argValueList.getCount () : 0;
-		
+
 		if (formalArgCount != actualArgCount)
 		{
 			err::setFormatStringError (
-				"'%s' takes %d arguments, passed %d", 
-				node->m_name.sz (), 
-				formalArgCount, 
+				"'%s' takes %d arguments, passed %d",
+				node->m_name.sz (),
+				formalArgCount,
 				actualArgCount
 				);
 			lex::pushSrcPosError (beacon->m_srcPos);
@@ -299,13 +299,13 @@ ProductionBuilder::findAndReplaceUnusedBeacons (GrammarNode*& node)
 		{
 			m_beaconDeleteArray.append (beacon);
 			beacon->m_flags |= BeaconNodeFlag_Deleted;
-		}	
+		}
 
 		node = beacon->m_target; // replace
 		break;
 
 	case NodeKind_Symbol:
-		if (node->m_flags & SymbolNodeFlag_Named) 
+		if (node->m_flags & SymbolNodeFlag_Named)
 			break;
 
 		symbol = (SymbolNode*) node;
@@ -348,7 +348,7 @@ ProductionBuilder::findVariable (
 
 	size_t beaconIndex = index - 1;
 	size_t beaconCount = m_beaconArray.getCount ();
-	
+
 	if (beaconIndex >= beaconCount)
 	{
 		err::setFormatStringError ("locator '$%d' is out of range ($1..$%d)", beaconIndex + 1, beaconCount);
@@ -357,7 +357,7 @@ ProductionBuilder::findVariable (
 
 	BeaconNode* beacon = m_beaconArray [beaconIndex];
 	*beacon_o = beacon;
-	return beacon->m_target->m_kind == NodeKind_Token ? 
+	return beacon->m_target->m_kind == NodeKind_Token ?
 		VariableKind_TokenBeacon :
 		VariableKind_SymbolBeacon;
 }
@@ -373,7 +373,7 @@ ProductionBuilder::findVariable (
 	{
 		BeaconNode* beacon = it->m_value;
 		*beacon_o = beacon;
-		return beacon->m_target->m_kind == NodeKind_Token ? 
+		return beacon->m_target->m_kind == NodeKind_Token ?
 			VariableKind_TokenBeacon :
 			VariableKind_SymbolBeacon;
 	}
@@ -402,8 +402,8 @@ ProductionBuilder::processUserCode (
 	sl::String resultString;
 
 	Lexer::create (
-		getMachineState (LexerMachine_UserCode2ndPass), 
-		srcPos.m_filePath, 
+		getMachineState (LexerMachine_UserCode2ndPass),
+		srcPos.m_filePath,
 		*userCode
 		);
 
@@ -446,8 +446,8 @@ ProductionBuilder::processUserCode (
 			if (beacon->m_target->m_flags & SymbolNodeFlag_NoAst)
 			{
 				err::setFormatStringError (
-					"'%s' is declared as 'noast' and cannot be referenced from user actions", 
-					beacon->m_target->m_name.sz () 
+					"'%s' is declared as 'noast' and cannot be referenced from user actions",
+					beacon->m_target->m_name.sz ()
 					);
 				return false;
 			}
@@ -458,8 +458,8 @@ ProductionBuilder::processUserCode (
 			if (beacon->m_resolver != resolver)
 			{
 				err::setFormatStringError (
-					"cross-resolver reference to locator '%s'", 
-					token->getText ().sz () 
+					"cross-resolver reference to locator '%s'",
+					token->getText ().sz ()
 					);
 				return false;
 			}
@@ -494,8 +494,8 @@ ProductionBuilder::processUserCode (
 			}
 
 			resultString.appendFormat (
-				"$arg.%s", 
-				token->m_data.m_string.sz () 
+				"$arg.%s",
+				token->m_data.m_string.sz ()
 				);
 			break;
 
@@ -507,8 +507,8 @@ ProductionBuilder::processUserCode (
 			}
 
 			resultString.appendFormat (
-				"$local.%s", 
-				token->m_data.m_string.sz () 
+				"$local.%s",
+				token->m_data.m_string.sz ()
 				);
 			break;
 
@@ -528,4 +528,4 @@ ProductionBuilder::processUserCode (
 	return true;
 }
 
-//.............................................................................
+//..............................................................................

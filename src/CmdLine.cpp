@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CmdLine.h"
 
-//.............................................................................
+//..............................................................................
 
 bool
 CmdLineParser::onValue (const sl::StringRef& value)
@@ -72,7 +72,7 @@ CmdLineParser::onSwitch (
 bool
 CmdLineParser::finalize ()
 {
-	if (m_cmdLine->m_outputFileNameList.getCount () != 
+	if (m_cmdLine->m_outputFileNameList.getCount () !=
 		m_cmdLine->m_frameFileNameList.getCount ())
 	{
 		err::setError ("output-file-count vs frame-file-count mismatch\n");
@@ -82,4 +82,4 @@ CmdLineParser::finalize ()
 	return true;
 }
 
-//.............................................................................
+//..............................................................................

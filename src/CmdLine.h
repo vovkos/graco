@@ -1,6 +1,6 @@
 #pragma once
 
-//.............................................................................
+//..............................................................................
 
 enum CmdLineFlag
 {
@@ -10,7 +10,7 @@ enum CmdLineFlag
 	CmdLineFlag_NoPpLine = 0x08,
 };
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 struct CmdLine
 {
@@ -31,7 +31,7 @@ struct CmdLine
 	}
 };
 
-//.............................................................................
+//..............................................................................
 
 enum CmdLineSwitchKind
 {
@@ -49,7 +49,7 @@ enum CmdLineSwitchKind
 	CmdLineSwitchKind_ImportDir,
 };
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE (CmdLineSwitchTable, CmdLineSwitchKind)
 	AXL_SL_CMD_LINE_SWITCH_GROUP ("General options")
@@ -77,7 +77,7 @@ AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE (CmdLineSwitchTable, CmdLineSwitchKind)
 		)
 
 	AXL_SL_CMD_LINE_SWITCH_GROUP ("Files")
-	
+
 	AXL_SL_CMD_LINE_SWITCH_2 (
 		CmdLineSwitchKind_OutputFileName,
 		"o", "output", "<file>",
@@ -123,7 +123,7 @@ AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE (CmdLineSwitchTable, CmdLineSwitchKind)
 		)
 AXL_SL_END_CMD_LINE_SWITCH_TABLE ()
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 class CmdLineParser: public sl::CmdLineParser <CmdLineParser, CmdLineSwitchTable>
 {
@@ -154,4 +154,4 @@ protected:
 	finalize ();
 };
 
-//.............................................................................
+//..............................................................................

@@ -9,7 +9,7 @@
 
 class LaDfaState;
 
-//.............................................................................
+//..............................................................................
 
 enum LaDfaThreadMatchKind
 {
@@ -18,7 +18,7 @@ enum LaDfaThreadMatchKind
 	LaDfaThreadMatchKind_AnyToken,
 };
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 class LaDfaThread: public sl::ListLink
 {
@@ -34,15 +34,15 @@ public:
 	LaDfaThread ();
 };
 
-//.............................................................................
+//..............................................................................
 
 enum LaDfaStateFlag
 {
 	LaDfaStateFlag_TokenMatch        = 1,
-	LaDfaStateFlag_EpsilonProduction = 2, 
+	LaDfaStateFlag_EpsilonProduction = 2,
 };
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 class LaDfaState: public sl::ListLink
 {
@@ -78,7 +78,7 @@ public:
 	bool
 	isEmpty ()
 	{
-		return 
+		return
 			m_activeThreadList.isEmpty () &&
 			m_resolverThreadList.isEmpty () &&
 			m_completeThreadList.isEmpty () &&
@@ -91,14 +91,14 @@ public:
 	LaDfaThread*
 	createThread (LaDfaThread* src = NULL);
 
-	Node* 
+	Node*
 	getResolvedProduction ();
 
-	Node* 
+	Node*
 	getDefaultProduction ();
 };
 
-//.............................................................................
+//..............................................................................
 
 class LaDfaBuilder
 {
@@ -110,7 +110,7 @@ protected:
 	size_t m_lookeahead;
 
 public:
-	LaDfaBuilder (	
+	LaDfaBuilder (
 		NodeMgr* nodeMgr,
 		sl::Array <Node*>* parseTable,
 		size_t lookeaheadLimit = 2
@@ -133,7 +133,7 @@ public:
 	}
 
 protected:
-	LaDfaState* 
+	LaDfaState*
 	createState ();
 
 	LaDfaState*
@@ -146,4 +146,4 @@ protected:
 	processThread (LaDfaThread* thread);
 };
 
-//.............................................................................
+//..............................................................................

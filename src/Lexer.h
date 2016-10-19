@@ -4,7 +4,7 @@
 
 #pragma once
 
-//.............................................................................
+//..............................................................................
 
 enum TokenKind
 {
@@ -36,7 +36,7 @@ enum TokenKind
 	TokenKind_CloseChevron,
 };
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 AXL_LEX_BEGIN_TOKEN_NAME_MAP (TokenName)
 	AXL_LEX_TOKEN_NAME (TokenKind_Eof,          "eof")
@@ -67,11 +67,11 @@ AXL_LEX_BEGIN_TOKEN_NAME_MAP (TokenName)
 	AXL_LEX_TOKEN_NAME (TokenKind_CloseChevron, ".>")
 AXL_LEX_END_TOKEN_NAME_MAP ()
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 typedef lex::RagelToken <TokenKind, TokenName> Token;
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 enum LexerMachine
 {
@@ -80,7 +80,7 @@ enum LexerMachine
 	LexerMachine_UserCode2ndPass,
 };
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 class Lexer: public lex::RagelLexer <Lexer, Token>
 {
@@ -133,11 +133,11 @@ protected:
 
 	// implemented in *.rl
 
-	void 
+	void
 	init ();
 
 	void
 	exec ();
 };
 
-//.............................................................................
+//..............................................................................

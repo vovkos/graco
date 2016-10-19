@@ -6,7 +6,7 @@
 
 #include "NodeMgr.h"
 
-//.............................................................................
+//..............................................................................
 
 class ParseTableBuilder
 {
@@ -46,7 +46,7 @@ protected:
 		GrammarNode* production
 		);
 
-	size_t 
+	size_t
 	addParseTableEntry (
 		SymbolNode* symbol,
 		SymbolNode* token,
@@ -54,4 +54,4 @@ protected:
 		); // returns number of conflicting productions
 };
 
-//.............................................................................
+//..............................................................................

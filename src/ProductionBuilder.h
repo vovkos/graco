@@ -7,11 +7,11 @@
 #include "NodeMgr.h"
 #include "Lexer.h"
 
-//.............................................................................
+//..............................................................................
 
 // processes user code within actions & arguments
 // removes unnecessary locators,
-// assigns slot indexes 
+// assigns slot indexes
 
 class ProductionBuilder: public Lexer
 {
@@ -28,7 +28,7 @@ protected:
 
 protected:
 	NodeMgr* m_nodeMgr;
-	
+
 	SymbolNode* m_symbol;
 	GrammarNode* m_production;
 	DispatcherNode* m_dispatcher;
@@ -82,4 +82,4 @@ protected:
 		);
 };
 
-//.............................................................................
+//..............................................................................

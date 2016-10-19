@@ -6,7 +6,7 @@
 
 #include "DefineMgr.h"
 
-//.............................................................................
+//..............................................................................
 
 enum ClassFlag
 {
@@ -17,7 +17,7 @@ enum ClassFlag
 	ClassFlag_Reachable = 0x10,
 };
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 class Class: public sl::ListLink
 {
@@ -40,13 +40,13 @@ public:
 	void luaExport (lua::LuaState* luaState);
 };
 
-//.............................................................................
+//..............................................................................
 
 class ClassMgr
 {
 protected:
 	sl::StdList <Class> m_classList;
-	sl::StringHashTableMap <Class*> m_classMap; 
+	sl::StringHashTableMap <Class*> m_classMap;
 
 public:
 	bool
@@ -54,7 +54,7 @@ public:
 	{
 		return m_classList.isEmpty ();
 	}
-	
+
 	size_t
 	getCount ()
 	{
@@ -79,7 +79,7 @@ public:
 
 	Class*
 	createUnnamedClass ();
-	
+
 	Class*
 	findClass (const sl::StringRef& name)
 	{
@@ -100,4 +100,4 @@ public:
 	deleteUnreachableClasses ();
 };
 
-//.............................................................................
+//..............................................................................

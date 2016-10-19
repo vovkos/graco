@@ -6,7 +6,7 @@
 
 #include "Node.h"
 
-//.............................................................................
+//..............................................................................
 
 class NodeMgr
 {
@@ -120,28 +120,28 @@ public:
 	void
 	deleteUnreachableNodes ();
 
-	void 
+	void
 	indexTokens ();
 
-	void 
+	void
 	indexSymbols ();
 
-	void 
+	void
 	indexSequences ();
 
-	void 
+	void
 	indexBeacons ();
 
-	void 
+	void
 	indexDispatchers ();
 
-	void 
+	void
 	indexActions ();
 
-	void 
+	void
 	indexArguments ();
 
-	void 
+	void
 	indexLaDfaNodes ();
 
 protected:
@@ -175,4 +175,4 @@ protected:
 };
 
 
-//.............................................................................
+//..............................................................................

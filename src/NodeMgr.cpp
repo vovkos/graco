@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "NodeMgr.h"
 
-//.............................................................................
+//..............................................................................
 
 NodeMgr::NodeMgr ()
 {
@@ -27,7 +27,7 @@ NodeMgr::NodeMgr ()
 	m_epsilonNode.m_kind = NodeKind_Epsilon;
 	m_epsilonNode.m_flags |= GrammarNodeFlag_Nullable;
 	m_epsilonNode.m_name = "epsilon";
-	m_epsilonNode.m_masterIndex = 0; 
+	m_epsilonNode.m_masterIndex = 0;
 
 	m_startPragmaSymbol.m_flags |= SymbolNodeFlag_Pragma;
 	m_startPragmaSymbol.m_name = "pragma";
@@ -52,7 +52,7 @@ NodeMgr::clear ()
 	m_symbolMap.clear ();
 	m_anyTokenNode.m_firstArray.clear ();
 	m_anyTokenNode.m_firstSet.clear ();
-	
+
 	m_startPragmaSymbol.m_index = -1;
 	m_startPragmaSymbol.m_masterIndex = -1;
 	m_startPragmaSymbol.m_productionArray.clear ();
@@ -75,7 +75,7 @@ NodeMgr::trace ()
 	traceNodeList ("LOOKAHEAD DFA", m_laDfaList.getHead ());
 }
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 SymbolNode*
 NodeMgr::getTokenNode (int token)
@@ -87,10 +87,10 @@ NodeMgr::getTokenNode (int token)
 	SymbolNode* node = AXL_MEM_NEW (SymbolNode);
 	node->m_kind = NodeKind_Token;
 	node->m_charToken = token;
-	
+
 	if (isprint (token))
 		node->m_name.format ("\'%c\'", (char) token);
-	else 
+	else
 		node->m_name.format ("\\0%d", token);
 
 	m_charTokenList.insertTail (node);
@@ -110,10 +110,10 @@ NodeMgr::getSymbolNode (const sl::StringRef& name)
 	node->m_kind = NodeKind_Symbol;
 	node->m_flags = SymbolNodeFlag_Named;
 	node->m_name = name;
-	
+
 	m_namedSymbolList.insertTail (node);
 	mapIt->m_value = node;
-	
+
 	return node;
 }
 
@@ -152,8 +152,8 @@ NodeMgr::createBeaconNode (SymbolNode* target)
 	if (target->m_kind == NodeKind_Symbol)
 		beaconNode->m_label = target->m_name;
 	beaconNode->m_name.format (
-		"_bcn%d(%s)", 
-		m_beaconList.getCount () + 1, 
+		"_bcn%d(%s)",
+		m_beaconList.getCount () + 1,
 		target->m_name.sz ()
 		);
 	m_beaconList.insertTail (beaconNode);
@@ -229,7 +229,7 @@ NodeMgr::createQuantifierNode (
 		tempAlt = createTempSymbolNode ();
 		tempAlt->addProduction (node);
 		tempAlt->addProduction (&m_epsilonNode);
-		
+
 		resultNode = tempAlt;
 		break;
 
@@ -242,11 +242,11 @@ NodeMgr::createQuantifierNode (
 
 		tempAlt->addProduction (tempSeq);
 		tempAlt->addProduction (&m_epsilonNode);
-		
+
 		resultNode = tempAlt;
 		break;
-		
-	case '+': 
+
+	case '+':
 		tempSeq = createSequenceNode ();
 		tempSeq->append (node);
 		tempSeq->append (createQuantifierNode (node, '*'));
@@ -264,7 +264,7 @@ NodeMgr::createQuantifierNode (
 	return resultNode;
 }
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
 NodeMgr::markReachableNodes ()
@@ -285,7 +285,7 @@ NodeMgr::markReachableNodes ()
 			node->markReachable ();
 		}
 
-	m_startPragmaSymbol.markReachable (); 
+	m_startPragmaSymbol.markReachable ();
 }
 
 template <typename T>
@@ -298,7 +298,7 @@ deleteUnreachableNodesFromList (sl::StdList <T>* list)
 	{
 		T* node = *nodeIt++;
 		if (!node->isReachable ())
-			list->erase (node);	
+			list->erase (node);
 	}
 }
 
@@ -314,7 +314,7 @@ NodeMgr::deleteUnreachableNodes ()
 	deleteUnreachableNodesFromList (&m_argumentList);
 }
 
-void 
+void
 NodeMgr::indexTokens ()
 {
 	size_t i = 0;
@@ -337,17 +337,17 @@ NodeMgr::indexTokens ()
 	m_masterCount = i;
 }
 
-void 
+void
 NodeMgr::indexSymbols ()
 {
 	size_t i = 0;
 	size_t j = m_masterCount;
-	
+
 	sl::Iterator <SymbolNode> nodeIt = m_namedSymbolList.getHead ();
 	while (nodeIt)
 	{
 		SymbolNode* node = *nodeIt++;
-		if (!node->m_productionArray.isEmpty ())	
+		if (!node->m_productionArray.isEmpty ())
 			continue;
 
 		node->m_kind = NodeKind_Token;
@@ -395,7 +395,7 @@ NodeMgr::indexSymbols ()
 	m_masterCount = j;
 }
 
-void 
+void
 NodeMgr::indexSequences ()
 {
 	size_t i = 0;
@@ -414,7 +414,7 @@ NodeMgr::indexSequences ()
 	m_masterCount = j;
 }
 
-void 
+void
 NodeMgr::indexBeacons ()
 {
 	size_t i = 0;
@@ -431,7 +431,7 @@ NodeMgr::indexBeacons ()
 	m_masterCount = j;
 }
 
-void 
+void
 NodeMgr::indexDispatchers ()
 {
 	size_t i = 0;
@@ -444,7 +444,7 @@ NodeMgr::indexDispatchers ()
 	}
 }
 
-void 
+void
 NodeMgr::indexActions ()
 {
 	size_t i = 0;
@@ -461,7 +461,7 @@ NodeMgr::indexActions ()
 	m_masterCount = j;
 }
 
-void 
+void
 NodeMgr::indexArguments ()
 {
 	size_t i = 0;
@@ -478,12 +478,12 @@ NodeMgr::indexArguments ()
 	m_masterCount = j;
 }
 
-void 
+void
 NodeMgr::indexLaDfaNodes ()
 {
 	size_t i = 0;
 	size_t j = m_masterCount;
-	
+
 	sl::Iterator <LaDfaNode> nodeIt = m_laDfaList.getHead ();
 	for (; nodeIt; nodeIt++)
 	{
@@ -500,7 +500,7 @@ NodeMgr::indexLaDfaNodes ()
 	m_masterCount = j;
 }
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
 NodeMgr::luaExport (lua::LuaState* luaState)
@@ -511,13 +511,13 @@ NodeMgr::luaExport (lua::LuaState* luaState)
 	luaState->setGlobalInteger ("NamedSymbolCount", m_namedSymbolList.getCount ());
 
 	luaExportNodeArray (luaState, "TokenTable", (Node**) (SymbolNode**) m_tokenArray, m_tokenArray.getCount ());
-	luaExportNodeArray (luaState, "SymbolTable", (Node**) (SymbolNode**) m_symbolArray, m_symbolArray.getCount ());	
-	luaExportNodeList (luaState, "SequenceTable", m_sequenceList.getHead (), m_sequenceList.getCount ());	
+	luaExportNodeArray (luaState, "SymbolTable", (Node**) (SymbolNode**) m_symbolArray, m_symbolArray.getCount ());
+	luaExportNodeList (luaState, "SequenceTable", m_sequenceList.getHead (), m_sequenceList.getCount ());
 	luaExportNodeList (luaState, "BeaconTable", m_beaconList.getHead (), m_beaconList.getCount ());
 	luaExportNodeList (luaState, "DispatcherTable", m_dispatcherList.getHead (), m_dispatcherList.getCount ());
 	luaExportNodeList (luaState, "ActionTable", m_actionList.getHead (), m_actionList.getCount ());
 	luaExportNodeList (luaState, "ArgumentTable", m_argumentList.getHead (), m_argumentList.getCount ());
-	
+
 	luaExportLaDfaTable (luaState);
 }
 
@@ -585,4 +585,4 @@ NodeMgr::luaExportLaDfaTable (lua::LuaState* luaState)
 	luaState->setGlobal ("LaDfaTable");
 }
 
-//.............................................................................
+//..............................................................................

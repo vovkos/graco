@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "ClassMgr.h"
 
-//.............................................................................
+//..............................................................................
 
-void 
+void
 Class::luaExport (lua::LuaState* luaState)
 {
 	luaState->createTable (0, 2);
@@ -21,7 +21,7 @@ Class::luaExport (lua::LuaState* luaState)
 
 }
 
-//.............................................................................
+//..............................................................................
 
 Class*
 ClassMgr::getClass (const sl::StringRef& name)
@@ -53,7 +53,7 @@ ClassMgr::deleteClass (Class* cls)
 	if (cls->m_flags & ClassFlag_Named)
 		m_classMap.eraseKey (cls->m_name);
 
-	m_classList.erase (cls);		
+	m_classList.erase (cls);
 }
 
 bool
@@ -67,7 +67,7 @@ ClassMgr::verify ()
 		if ((cls->m_flags & ClassFlag_Used) && !(cls->m_flags & ClassFlag_Defined))
 		{
 			err::setFormatStringError (
-				"class '%s' is not defined", 
+				"class '%s' is not defined",
 				cls->m_name.sz ()
 				);
 			return false;
@@ -101,4 +101,4 @@ ClassMgr::deleteUnreachableClasses ()
 	}
 }
 
-//.............................................................................
+//..............................................................................

@@ -6,7 +6,7 @@
 
 #include "axl_g_WarningSuppression.h" // gcc loses warning suppression from pch
 
-//.............................................................................
+//..............................................................................
 
 Module::Module ()
 {
@@ -126,7 +126,7 @@ Module::build (CmdLine* cmdLine)
 	return true;
 }
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
 Module::trace ()
@@ -201,7 +201,7 @@ Module::generateBnfString ()
 	return string;
 }
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
 Module::luaExport (lua::LuaState* luaState)
@@ -276,4 +276,4 @@ Module::luaExportParseTable (lua::LuaState* luaState)
 	luaState->setGlobal ("ParseTable");
 }
 
-//.............................................................................
+//..............................................................................

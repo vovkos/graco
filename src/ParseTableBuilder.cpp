@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ParseTableBuilder.h"
 
-//.............................................................................
+//..............................................................................
 
 bool
 ParseTableBuilder::build ()
@@ -26,7 +26,7 @@ ParseTableBuilder::build ()
 			if (node->isNullable () && !(node->m_flags & SymbolNodeFlag_Nullable))
 			{
 				err::setFormatStringError (
-					"'%s': nullable symbols must be explicitly marked as 'nullable'", 
+					"'%s': nullable symbols must be explicitly marked as 'nullable'",
 					node->m_name.sz ()
 					);
 				lex::pushSrcPosError (node->m_srcPos);
@@ -36,8 +36,8 @@ ParseTableBuilder::build ()
 			if (!node->isNullable () && (node->m_flags & SymbolNodeFlag_Nullable))
 			{
 				err::setFormatStringError (
-					"'%s': marked as 'nullable' but is not nullable", 
-					node->m_name.sz () 
+					"'%s': marked as 'nullable' but is not nullable",
+					node->m_name.sz ()
 					);
 				lex::pushSrcPosError (node->m_srcPos);
 				return false;
@@ -49,8 +49,8 @@ ParseTableBuilder::build ()
 			if (node->isNullable ())
 			{
 				err::setFormatStringError (
-					"'%s': pragma cannot be nullable", 
-					node->m_name.sz () 
+					"'%s': pragma cannot be nullable",
+					node->m_name.sz ()
 					);
 				lex::pushSrcPosError (node->m_srcPos);
 				return false;
@@ -59,8 +59,8 @@ ParseTableBuilder::build ()
 			if (node->m_firstSet.getBit (1))
 			{
 				err::setFormatStringError (
-					"'%s': pragma cannot start with 'anytoken'", 
-					node->m_name.sz () 
+					"'%s': pragma cannot start with 'anytoken'",
+					node->m_name.sz ()
 					);
 				lex::pushSrcPosError (node->m_srcPos);
 				return false;
@@ -71,17 +71,17 @@ ParseTableBuilder::build ()
 		for (size_t j = 0; j < childrenCount; j++)
 		{
 			GrammarNode* production = node->m_productionArray [j];
-			addProductionToParseTable (node, production); 
+			addProductionToParseTable (node, production);
 		}
 	}
 
 	// anytoken productions
 
-	// if 
-	//	production' FIRST contains anytoken 
-	// or 
-	//	production is nullable and symbol' FOLLOW contains anytoken 
-	// then 
+	// if
+	//	production' FIRST contains anytoken
+	// or
+	//	production is nullable and symbol' FOLLOW contains anytoken
+	// then
 	//	set all parse table entries to this production
 
 	for (size_t i = 0; i < symbolCount; i++)
@@ -92,9 +92,9 @@ ParseTableBuilder::build ()
 		for (size_t j = 0; j < childrenCount; j++)
 		{
 			GrammarNode* production = node->m_productionArray [j];
-			
+
 			if (production->m_firstSet.getBit (1) || (production->isNullable () && node->m_followSet.getBit (1)))
-				addAnyTokenProductionToParseTable (node, production); 
+				addAnyTokenProductionToParseTable (node, production);
 		}
 	}
 
@@ -108,7 +108,7 @@ ParseTableBuilder::addProductionToParseTable (
 	)
 {
 	size_t count;
-	
+
 	count = production->m_firstArray.getCount ();
 	for (size_t i = 0; i < count; i++)
 	{
@@ -155,7 +155,7 @@ ParseTableBuilder::addParseTableEntry (
 	)
 {
 	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount ();
-		
+
 	Node** productionSlot = *m_parseTable + symbol->m_index * tokenCount + token->m_index;
 	Node* oldProduction = *productionSlot;
 
@@ -164,7 +164,7 @@ ParseTableBuilder::addParseTableEntry (
 		*productionSlot = production;
 		return 0;
 	}
-	
+
 	if (oldProduction == production)
 		return 0;
 
@@ -176,16 +176,16 @@ ParseTableBuilder::addParseTableEntry (
 		conflict->m_token = token;
 
 		conflict->m_productionArray.setCount (2);
-		conflict->m_productionArray [0] = (GrammarNode*) oldProduction; 
+		conflict->m_productionArray [0] = (GrammarNode*) oldProduction;
 		conflict->m_productionArray [1] = production;
-	
+
 		*productionSlot = conflict; // later will be replaced with lookahead DFA
 	}
 	else
 	{
 		conflict = (ConflictNode*) oldProduction;
 		size_t count = conflict->m_productionArray.getCount ();
-		
+
 		size_t i = 0;
 		for (; i < count; i++)
 			if (conflict->m_productionArray [i] == production)
@@ -207,10 +207,10 @@ propagateParentChild (
 	bool hasChanged = false;
 
 	if (parent->m_firstSet.merge (child->m_firstSet, sl::BitOpKind_Or))
-		hasChanged = true;			
+		hasChanged = true;
 
 	if (child->m_followSet.merge (parent->m_followSet, sl::BitOpKind_Or))
-		hasChanged = true;			
+		hasChanged = true;
 
 	if (child->isNullable ())
 		if (parent->markNullable ())
@@ -230,11 +230,11 @@ ParseTableBuilder::calcFirstFollow ()
 
 	GrammarNode* startSymbol = m_nodeMgr->m_symbolArray [0];
 	startSymbol->markFinal ();
-	
+
 	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount ();
 	size_t symbolCount = m_nodeMgr->m_symbolArray.getCount ();
 
-	for (size_t i = 1; i < tokenCount; i++) 
+	for (size_t i = 1; i < tokenCount; i++)
 	{
 		SymbolNode* node = m_nodeMgr->m_tokenArray [i];
 		node->m_firstSet.setBitResize (node->m_masterIndex, true);
@@ -267,7 +267,7 @@ ParseTableBuilder::calcFirstFollow ()
 		beacon->m_followSet.setBitCount (tokenCount);
 	}
 
-	do 
+	do
 	{
 		hasChanged = false;
 
@@ -403,4 +403,4 @@ ParseTableBuilder::buildFirstFollowArrays (GrammarNode* node)
 	}
 }
 
-//.............................................................................
+//..............................................................................

@@ -1,4 +1,14 @@
 #!/bin/bash
+#...............................................................................
+#
+#  This file is part of the Graco toolkit.
+#
+#  Graco is distributed under the MIT license.
+#  For details see accompanying license.txt file,
+#  the public copy of which is also available at:
+#  http://tibbo.com/downloads/archive/graco/license.txt
+#
+#...............................................................................
 
 set -e
 
@@ -39,6 +49,6 @@ if [ -d $ROOT_DIR/samples ]; then
 	cp -rf $ROOT_DIR/samples $CONTENTS_DIR
 fi
 
-chown -R root:$(id -gn root) $TAR_DIR 
+chown -R root:$(id -gn root) $TAR_DIR
 tar -cJf $OUT_FILE_PATH -C $TAR_DIR $TAR_SUB_DIR
 rm -rf $TAR_DIR

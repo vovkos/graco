@@ -1,3 +1,14 @@
+@rem ...........................................................................
+@rem
+@rem  This file is part of the Graco toolkit.
+@rem
+@rem  Graco is distributed under the MIT license.
+@rem  For details see accompanying license.txt file,
+@rem  the public copy of which is also available at:
+@rem  http://tibbo.com/downloads/archive/graco/license.txt
+@rem
+@rem ...........................................................................
+
 @echo off
 
 rem ...........................................................................

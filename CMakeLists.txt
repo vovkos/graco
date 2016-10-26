@@ -22,6 +22,8 @@ set (GRACO_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set (GRACO_DOC_DIR      ${CMAKE_CURRENT_BINARY_DIR}/doc)
 set (GRACO_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
 
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${GRACO_BIN_BASE_DIR}/${CONFIGURATION_SUFFIX_0})
+
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 add_subdirectory (cmake)

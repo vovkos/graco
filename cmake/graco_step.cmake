@@ -22,6 +22,10 @@ add_graco_step
 	set (_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/${_OUTPUT_FILE_NAME}")
 	set (_DEPENDENCY_LIST ${ARGN})
 
+	if (TARGET graco)
+		list (APPEND _DEPENDENCY_LIST graco)
+	endif ()
+
 	add_custom_command (
 		OUTPUT ${_OUTPUT_PATH}
 		MAIN_DEPENDENCY ${_INPUT_PATH}
@@ -50,6 +54,10 @@ add_graco_double_step
 	set (_OUTPUT_PATH_1 "${CMAKE_CURRENT_BINARY_DIR}/${_OUTPUT_FILE_NAME_1}")
 	set (_OUTPUT_PATH_2 "${CMAKE_CURRENT_BINARY_DIR}/${_OUTPUT_FILE_NAME_2}")
 	set (_DEPENDENCY_LIST ${ARGN})
+
+	if (TARGET graco)
+		list (APPEND _DEPENDENCY_LIST graco)
+	endif ()
 
 	add_custom_command (
 		OUTPUT ${_OUTPUT_PATH_1}

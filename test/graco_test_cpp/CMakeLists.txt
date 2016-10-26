@@ -106,7 +106,7 @@ source_group (
 
 #...............................................................................
 #
-# test_cpp app
+# graco_test_cpp app
 #
 
 include_directories (
@@ -119,7 +119,7 @@ include_directories (
 link_directories (${AXL_LIB_DIR})
 
 add_executable (
-	test_cpp
+	graco_test_cpp
 	${PCH_H}
 	${PCH_CPP}
 	${APP_H_LIST}
@@ -132,18 +132,18 @@ add_executable (
 	)
 
 add_dependencies (
-	test_cpp
+	graco_test_cpp
 	graco
 	)
 
 set_target_properties (
-	test_cpp
+	graco_test_cpp
 	PROPERTIES
 	FOLDER test
 	)
 
 target_link_libraries (
-	test_cpp
+	graco_test_cpp
 	axl_fsm
 	axl_io
 	axl_core
@@ -151,13 +151,13 @@ target_link_libraries (
 
 if (UNIX)
 	target_link_libraries (
-		test_cpp
+		graco_test_cpp
 		pthread
 		)
 endif ()
 
 axl_set_pch (
-	test_cpp
+	graco_test_cpp
 	${PCH_H}
 	${PCH_CPP}
 	)

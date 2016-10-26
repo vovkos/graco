@@ -10,13 +10,13 @@
 #...............................................................................
 
 option (
-	BUILD_TEST_CPP
-	"Build test_cpp - test for C++ back-end"
+	BUILD_GRACO_TEST_CPP
+	"Build graco_test_cpp - test for C++ back-end"
 	ON
 	)
 
-if (BUILD_TEST_CPP)
-	add_subdirectory (test_cpp)
+if (BUILD_GRACO_TEST_CPP)
+	add_subdirectory (graco_test_cpp)
 endif ()
 
 #...............................................................................

@@ -227,16 +227,16 @@ public:
 	{
 		intptr_t count = m_symbolStack.getCount ();
 
-		axl::dbg::trace ("SYMBOL STACK (%d symbols):\n", count);
+		TRACE ("SYMBOL STACK (%d symbols):\n", count);
 		for (intptr_t i = 0; i < count; i++)
 		{
 			SymbolNode* node = m_symbolStack [i];
-			axl::dbg::trace ("%s", static_cast <T*> (this)->getSymbolName (node->m_index));
+			TRACE ("%s", static_cast <T*> (this)->getSymbolName (node->m_index));
 
 			if (node->m_astNode)
-				axl::dbg::trace (" (%d:%d)", node->m_astNode->m_firstToken.m_pos.m_line + 1, node->m_astNode->m_firstToken.m_pos.m_col + 1);
+				TRACE (" (%d:%d)", node->m_astNode->m_firstToken.m_pos.m_line + 1, node->m_astNode->m_firstToken.m_pos.m_col + 1);
 
-			axl::dbg::trace ("\n");
+			TRACE ("\n");
 		}
 	}
 
@@ -245,11 +245,11 @@ public:
 	{
 		intptr_t count = m_predictionStack.getCount ();
 
-		axl::dbg::trace ("PREDICTION STACK (%d nodes):\n", count);
+		TRACE ("PREDICTION STACK (%d nodes):\n", count);
 		for (intptr_t i = 0; i < count; i++)
 		{
 			Node* node = m_predictionStack [i];
-			axl::dbg::trace ("%s (%d)\n", getNodeKindString (node->m_kind), node->m_index);
+			TRACE ("%s (%d)\n", getNodeKindString (node->m_kind), node->m_index);
 		}
 	}
 
@@ -258,10 +258,10 @@ public:
 	{
 		axl::sl::BoxIterator <Token> token = m_tokenList.getHead ();
 
-		axl::dbg::trace ("TOKEN LIST (%d tokens):\n", m_tokenList.getCount ());
+		TRACE ("TOKEN LIST (%d tokens):\n", m_tokenList.getCount ());
 		for (; token; token++)
 		{
-			axl::dbg::trace ("%s '%s' %s\n", token->getName (), token->getText (), token == m_tokenCursor ? "<--" : "");
+			TRACE ("%s '%s' %s\n", token->getName (), token->getText (), token == m_tokenCursor ? "<--" : "");
 		}
 	}
 

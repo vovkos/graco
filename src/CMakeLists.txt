@@ -210,7 +210,7 @@ target_link_libraries (
 	axl_lex
 	axl_io
 	axl_core
-	lua
+	${LUA_LIB_NAME}
 	)
 
 if (UNIX)

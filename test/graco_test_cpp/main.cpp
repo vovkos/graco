@@ -65,6 +65,8 @@ main (
 	)
 #endif
 {
+	g::getModule ()->setTag ("graco_test_cpp");
+
 	bool result = parse ("{ var i = 0; }");
 	if (!result)
 	{

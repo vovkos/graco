@@ -12,8 +12,13 @@
 set (ZIP_TYPE 7z)
 
 configure_file (
-	build-zip.bat.in
-	build-zip.bat
+	build-zip-src.bat.in
+	build-zip-src.bat
+	)
+
+configure_file (
+	build-zip-bin.bat.in
+	build-zip-bin.bat
 	)
 
 #...............................................................................

@@ -10,8 +10,16 @@
 #...............................................................................
 
 axl_configure_file_w_permissions (
-	build-tar.sh.in
-	build-tar.sh
+	build-tar-src.sh.in
+	build-tar-src.sh
+	OWNER_READ OWNER_WRITE OWNER_EXECUTE
+	GROUP_READ GROUP_WRITE GROUP_EXECUTE
+	WORLD_READ WORLD_WRITE WORLD_EXECUTE
+	)
+
+axl_configure_file_w_permissions (
+	build-tar-bin.sh.in
+	build-tar-bin.sh
 	OWNER_READ OWNER_WRITE OWNER_EXECUTE
 	GROUP_READ GROUP_WRITE GROUP_EXECUTE
 	WORLD_READ WORLD_WRITE WORLD_EXECUTE

@@ -33,6 +33,7 @@ if exist %OUT_FILE_PATH% (del %OUT_FILE_PATH%  || exit)
 mkdir %CONTENTS_DIR%\cmake || exit
 mkdir %CONTENTS_DIR%\frame || exit
 mkdir %CONTENTS_DIR%\license || exit
+mkdir %CONTENTS_DIR%\include || exit
 mkdir %CONTENTS_DIR%\src || exit
 mkdir %CONTENTS_DIR%\test || exit
 mkdir %CONTENTS_DIR%\package || exit
@@ -41,6 +42,7 @@ if not exist "%OUT_DIR%" (mkdir "%OUT_DIR%" || exit)
 copy /Y %ROOT_DIR%\cmake\*.* %CONTENTS_DIR%\cmake || exit
 copy /Y %ROOT_DIR%\frame\*.* %CONTENTS_DIR%\frame || exit
 xcopy /Y /E /Q %ROOT_DIR%\license\*.* %CONTENTS_DIR%\license || exit
+copy /Y %ROOT_DIR%\include\*.* %CONTENTS_DIR%\include || exit
 xcopy /Y /E /Q %ROOT_DIR%\src\*.* %CONTENTS_DIR%\src || exit
 xcopy /Y /E /Q %ROOT_DIR%\test\*.* %CONTENTS_DIR%\test || exit
 xcopy /Y /E /Q %ROOT_DIR%\package\*.* %CONTENTS_DIR%\package || exit

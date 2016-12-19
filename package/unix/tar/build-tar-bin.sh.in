@@ -65,6 +65,6 @@ cp -rf $ROOT_DIR/include $CONTENTS_DIR
 cp -rf $ROOT_DIR/frame $CONTENTS_DIR
 cp -rf $ROOT_DIR/license $CONTENTS_DIR
 
-# chown -R root:$(id -gn root) $TAR_DIR
+chown -R root:$(id -gn root) $TAR_DIR
 tar -cJf $OUT_FILE_PATH -C $TAR_DIR $TAR_SUB_DIR
-# rm -rf $TAR_DIR
+rm -rf $TAR_DIR

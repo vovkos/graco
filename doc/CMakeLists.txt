@@ -9,30 +9,9 @@
 #
 #...............................................................................
 
-set (
-	AXL_PATH_LIST
-
-	LUA_INC_DIR
-	LUA_LIB_DIR
-	LUA_LIB_NAME
-	AXL_CMAKE_DIR
-	RAGEL_EXE
-	7Z_EXE
-	SPHINX_BUILD_EXE
-	PDFLATEX_EXE
-	)
-
-set (
-	AXL_IMPORT_LIST
-
-	REQUIRED
-		ragel
-		axl
-		lua
-	OPTIONAL
-		7z
-		sphinx
-		latex
-	)
+if (SPHINX_FOUND)
+	add_subdirectory (index)
+	add_subdirectory (build-guide)
+endif ()
 
 #...............................................................................

@@ -9,17 +9,9 @@
 ..
 .. .............................................................................
 
-Graco
-=====
+Graco Documentation Index
+==========================
 
-Abstract
---------
+Follow the links below for additional information.
 
-Graco is a EBNF-based generator of table-driven top-down parsers of LL(k) grammars featuring:
-
-- predictable & configurable conflict resolution mechanism;
-- retargetable back-end (via Lua string templates);
-- ANYTOKEN support;
-- external tokenization loop;
-- convenient syntax for passing and returning rule arguments;
-- and more...
+* `Graco Build Guide <http://docs.tibbo.com/graco/build-guide>`_

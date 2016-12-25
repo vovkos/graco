@@ -9,17 +9,17 @@
 ..
 .. .............................................................................
 
-Graco
-=====
+Prerequisites
+=============
 
-Abstract
---------
+Before attempting to build Graco, make sure you installed everything you might need.
 
-Graco is a EBNF-based generator of table-driven top-down parsers of LL(k) grammars featuring:
+The list of Graco prerequisites is split into the following categories for your convenience:
 
-- predictable & configurable conflict resolution mechanism;
-- retargetable back-end (via Lua string templates);
-- ANYTOKEN support;
-- external tokenization loop;
-- convenient syntax for passing and returning rule arguments;
-- and more...
+.. toctree::
+	:titlesonly:
+
+	prerequisites-cpp.rst
+	prerequisites-tools.rst
+	prerequisites-libs.rst
+

@@ -9,17 +9,14 @@
 ..
 .. .............................................................................
 
-Graco
-=====
+Graco Build Guide
+====================
 
-Abstract
---------
+This is a step-by-step guide for those who decide to build Graco from sources.
 
-Graco is a EBNF-based generator of table-driven top-down parsers of LL(k) grammars featuring:
+.. toctree::
+	:titlesonly:
 
-- predictable & configurable conflict resolution mechanism;
-- retargetable back-end (via Lua string templates);
-- ANYTOKEN support;
-- external tokenization loop;
-- convenient syntax for passing and returning rule arguments;
-- and more...
+	prerequisites.rst
+	configure.rst
+	build.rst

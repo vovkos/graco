@@ -9,17 +9,13 @@
 ..
 .. .............................................................................
 
-Graco
-=====
+Configuring
+===========
 
-Abstract
---------
+.. expand-macro:: configure-intro Graco
 
-Graco is a EBNF-based generator of table-driven top-down parsers of LL(k) grammars featuring:
+.. toctree::
+	:titlesonly:
 
-- predictable & configurable conflict resolution mechanism;
-- retargetable back-end (via Lua string templates);
-- ANYTOKEN support;
-- external tokenization loop;
-- convenient syntax for passing and returning rule arguments;
-- and more...
+	configure-paths.rst
+	configure-cmake.rst

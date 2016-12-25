@@ -9,17 +9,19 @@
 ..
 .. .............................................................................
 
-Graco
-=====
+Libraries
+=========
 
-Abstract
---------
+These libraries are **required** for building the Graco.
 
-Graco is a EBNF-based generator of table-driven top-down parsers of LL(k) grammars featuring:
+* Lua
 
-- predictable & configurable conflict resolution mechanism;
-- retargetable back-end (via Lua string templates);
-- ANYTOKEN support;
-- external tokenization loop;
-- convenient syntax for passing and returning rule arguments;
-- and more...
+	Graco uses Lua string templates for generating C++ code from the ``.llk`` grammar files. Therefore, Lua headers and libraries are required for building Graco.
+
+	.. expand-macro:: lua-common-info
+
+* AXL
+
+	Graco uses AXL as a general purpose C++ support library.
+
+	.. expand-macro:: axl-bundle-info Graco graco graco_b

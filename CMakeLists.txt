@@ -31,6 +31,7 @@ add_subdirectory (cmake)
 include (${CMAKE_CURRENT_BINARY_DIR}/cmake/graco_config.cmake)
 
 add_subdirectory (src)
+add_subdirectory (doc)
 add_subdirectory (test)
 
 if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/package/CMakeLists.txt")

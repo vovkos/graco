@@ -11,7 +11,7 @@
 
 Graco
 =====
-.. image:: https://travis-ci.org/vovkos/doxyrest.svg?branch=master
+.. image:: https://travis-ci.org/vovkos/graco.svg?branch=master
 
 Abstract
 --------

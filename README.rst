@@ -12,6 +12,7 @@
 Graco
 =====
 .. image:: https://travis-ci.org/vovkos/graco.svg?branch=master
+	:target: https://travis-ci.org/vovkos/graco
 
 Abstract
 --------

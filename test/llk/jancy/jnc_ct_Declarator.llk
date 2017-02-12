@@ -1,0 +1,417 @@
+//..............................................................................
+//
+//  This file is part of the Jancy toolkit.
+//
+//  Jancy is distributed under the MIT license.
+//  For details see accompanying license.txt file,
+//  the public copy of which is also available at:
+//  http://tibbo.com/downloads/archive/jancy/license.txt
+//
+//..............................................................................
+
+declarator_list <TypeSpecifier* $typeSpecifier>
+	:	full_declarator <$typeSpecifier> (',' full_declarator <$typeSpecifier>)*
+	;
+
+full_declarator <TypeSpecifier* $typeSpecifier>
+	:	declarator $d <$typeSpecifier>
+		(TokenKind_Construct? arg_list_pass1 $c
+			{
+				$d.m_declarator.m_constructor.takeOver (&$c.m_tokenList);
+			}
+		)?
+		('=' expression_pass1 $e
+			{
+				$d.m_declarator.m_initializer.takeOver (&$e.m_tokenList);
+			}
+		)?
+			{
+				return declare (&$d.m_declarator);
+			}
+	;
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+class
+{
+	Declarator m_declarator;
+}
+declarator <TypeSpecifier* $typeSpecifier>
+	enter
+	{
+		$.m_declarator.setTypeSpecifier ($typeSpecifier, m_module);
+	}
+	:	declarator_prefix <&$.m_declarator>*
+		declarator_name <&$.m_declarator>
+		declarator_suffix <&$.m_declarator>*
+	;
+
+//..............................................................................
+
+declarator_name <Declarator* $declarator>
+	:	declarator_qualifier <$declarator>
+			{
+				$declarator->m_pos = $1.m_firstToken.m_pos;
+				$declarator->m_attributeBlock = popAttributeBlock ();
+				$declarator->m_doxyBlock = m_doxyParser.popBlock ();
+			}
+		('.' declarator_qualifier <$declarator>)*
+	;
+
+declarator_qualifier <Declarator* $declarator>
+	:	TokenKind_Identifier
+			{
+				return $declarator->addName ($1.m_data.m_string);
+			}
+	|	TokenKind_Get
+			{
+				return $declarator->addUnnamedMethod (FunctionKind_Getter);
+			}
+	|	TokenKind_Set
+			{
+				return $declarator->addUnnamedMethod (FunctionKind_Setter);
+			}
+	|	TokenKind_PreConstruct
+			{
+				return $declarator->addUnnamedMethod (FunctionKind_PreConstructor);
+			}
+	|	TokenKind_Construct
+			{
+				return $declarator->addUnnamedMethod (FunctionKind_Constructor);
+			}
+	|	TokenKind_Destruct
+			{
+				return $declarator->addUnnamedMethod (FunctionKind_Destructor);
+			}
+	|	TokenKind_Static TokenKind_Construct
+			{
+				return $declarator->addUnnamedMethod (FunctionKind_StaticConstructor);
+			}
+	|	TokenKind_Static TokenKind_Destruct
+			{
+				return $declarator->addUnnamedMethod (FunctionKind_StaticDestructor);
+			}
+	|	TokenKind_Operator declarator_operator_qualifier <$declarator>
+	;
+
+declarator_operator_qualifier <Declarator* $declarator>
+	:	'(' ')'
+			{
+				return $declarator->addUnnamedMethod (FunctionKind_CallOperator);
+			}
+	|	type_name
+			{
+				return $declarator->addCastOperator ($1.m_type);
+			}
+	|	operator_name
+			{
+				return $declarator->addUnaryBinaryOperator ($1.m_unOpKind, $1.m_binOpKind);
+			}
+	|	TokenKind_Ellipsis
+			{
+				return $declarator->addOperatorVararg ();
+			}
+	|	TokenKind_Cdecl TokenKind_Ellipsis
+			{
+				return $declarator->addOperatorCdeclVararg ();
+			}
+	;
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+class
+{
+	UnOpKind m_unOpKind;
+	BinOpKind m_binOpKind;
+}
+operator_name
+	enter
+	{
+		$.m_unOpKind = UnOpKind_Undefined;
+		$.m_binOpKind = BinOpKind_Undefined;
+	}
+	:	'~'
+			{
+				$.m_unOpKind = UnOpKind_BwNot;
+			}
+	|	'!'
+			{
+				$.m_unOpKind = UnOpKind_LogNot;
+			}
+	|	TokenKind_Inc
+			{
+				$.m_unOpKind = UnOpKind_PreInc;
+			}
+	|	TokenKind_Dec
+			{
+				$.m_unOpKind = UnOpKind_PreDec;
+			}
+	|	TokenKind_Postfix TokenKind_Inc
+			{
+				$.m_unOpKind = UnOpKind_PostInc;
+			}
+	|	TokenKind_Postfix TokenKind_Dec
+			{
+				$.m_unOpKind = UnOpKind_PostDec;
+			}
+	|	TokenKind_Postfix? TokenKind_Ptr
+			{
+				$.m_unOpKind = UnOpKind_Ptr;
+			}
+	|	'+'
+			{
+				$.m_unOpKind = UnOpKind_Plus;
+				$.m_binOpKind = BinOpKind_Add;
+			}
+	|	'-'
+			{
+				$.m_unOpKind = UnOpKind_Minus;
+				$.m_binOpKind = BinOpKind_Sub;
+			}
+	|	'*'
+			{
+				$.m_unOpKind = UnOpKind_Indir;
+				$.m_binOpKind = BinOpKind_Mul;
+			}
+	|	'/'
+			{
+				$.m_binOpKind = BinOpKind_Div;
+			}
+	|	'%'
+			{
+				$.m_binOpKind = BinOpKind_Mod;
+			}
+	|	TokenKind_Shl
+			{
+				$.m_binOpKind = BinOpKind_Shl;
+			}
+	|	TokenKind_Shr
+			{
+				$.m_binOpKind = BinOpKind_Shr;
+			}
+	|	'&'
+			{
+				$.m_unOpKind = UnOpKind_Addr;
+				$.m_binOpKind = BinOpKind_BwAnd;
+			}
+	|	'^'
+			{
+				$.m_binOpKind = BinOpKind_BwXor;
+			}
+	|	'|'
+			{
+				$.m_binOpKind = BinOpKind_BwOr;
+			}
+	|	TokenKind_Eq
+			{
+				$.m_binOpKind = BinOpKind_Eq;
+			}
+	|	TokenKind_Ne
+			{
+				$.m_binOpKind = BinOpKind_Ne;
+			}
+	|	'<'
+			{
+				$.m_binOpKind = BinOpKind_Lt;
+			}
+	|	TokenKind_Le
+			{
+				$.m_binOpKind = BinOpKind_Le;
+			}
+	|	'>'
+			{
+				$.m_binOpKind = BinOpKind_Gt;
+			}
+	|	TokenKind_Ge
+			{
+				$.m_binOpKind = BinOpKind_Ge;
+			}
+	|	'='
+			{
+				$.m_binOpKind = BinOpKind_Assign;
+			}
+	|	TokenKind_RefAssign
+			{
+				$.m_binOpKind = BinOpKind_RefAssign;
+			}
+	|	TokenKind_AddAssign
+			{
+				$.m_binOpKind = BinOpKind_AddAssign;
+			}
+	|	TokenKind_SubAssign
+			{
+				$.m_binOpKind = BinOpKind_SubAssign;
+			}
+	|	TokenKind_MulAssign
+			{
+				$.m_binOpKind = BinOpKind_MulAssign;
+			}
+	|	TokenKind_DivAssign
+			{
+				$.m_binOpKind = BinOpKind_DivAssign;
+			}
+	|	TokenKind_ModAssign
+			{
+				$.m_binOpKind = BinOpKind_ModAssign;
+			}
+	|	TokenKind_ShlAssign
+			{
+				$.m_binOpKind = BinOpKind_ShlAssign;
+			}
+	|	TokenKind_ShrAssign
+			{
+				$.m_binOpKind = BinOpKind_ShrAssign;
+			}
+	|	TokenKind_AndAssign
+			{
+				$.m_binOpKind = BinOpKind_AndAssign;
+			}
+	|	TokenKind_XorAssign
+			{
+				$.m_binOpKind = BinOpKind_XorAssign;
+			}
+	|	TokenKind_OrAssign
+			{
+				$.m_binOpKind = BinOpKind_OrAssign;
+			}
+	|	TokenKind_AtAssign
+			{
+				$.m_binOpKind = BinOpKind_AtAssign;
+			}
+	|	TokenKind_LogAnd
+			{
+				$.m_binOpKind = BinOpKind_LogAnd;
+			}
+	|	TokenKind_LogOr
+			{
+				$.m_binOpKind = BinOpKind_LogOr;
+			}
+	|	'[' ']'
+			{
+				$.m_binOpKind = BinOpKind_Idx;
+			}
+	|	'@'
+			{
+				$.m_binOpKind = BinOpKind_At;
+			}
+	;
+
+//..............................................................................
+
+// prefix & suffix
+
+noast
+declarator_prefix <Declarator* $declarator>
+	:	'*'
+			{
+				$declarator->addPointerPrefix ();
+			}
+		(type_modifier $m
+			{
+				return $declarator->setTypeModifier ($m.m_typeModifier);
+			}
+		)*
+	;
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+noast
+declarator_suffix <Declarator* $declarator>
+	:	array_suffix <$declarator>
+	|	resolver (function_suffix_rslv)
+		function_suffix <$declarator>
+	|	resolver ({ return false; }) // prefer conditional-expr over type-name
+		bitfield_suffix <$declarator>
+	;
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+array_suffix <Declarator* $declarator>
+	:	'[' ']'
+			{
+				$declarator->addArraySuffix (-1);
+			}
+	|	'[' expression_pass1 ']'
+			{
+				$declarator->addArraySuffix (&$2.m_tokenList);
+			}
+	;
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+function_suffix_rslv
+	:	'(' ')'
+	|	'(' TokenKind_Ellipsis ')'
+	|	'(' (type_specifier | type_modifier)
+	;
+
+function_suffix <Declarator* $declarator>
+	local
+	{
+		DeclFunctionSuffix* $functionSuffix;
+		StorageKind $prevStorageKind;
+	}
+	enter
+	{
+		$functionSuffix = $declarator->addFunctionSuffix ();
+		$prevStorageKind = m_storageKind;
+	}
+	leave
+	{
+		m_storageKind = $prevStorageKind;
+	}
+	:	'(' function_formal_argument_list <$functionSuffix>? ')' function_modifier <$functionSuffix>*
+	;
+
+function_formal_argument_list <DeclFunctionSuffix* $functionSuffix>
+	:	function_formal_argument <$functionSuffix>
+		(',' function_formal_argument <$functionSuffix>)*
+	;
+
+function_formal_argument <DeclFunctionSuffix* $functionSuffix>
+	local
+	{
+		Declarator $declarator;
+	}
+	enter
+	{
+		m_storageKind = StorageKind_Undefined;
+	}
+	:	declaration_specifier_list $s
+			{
+				$declarator.setTypeSpecifier (&$s.m_typeSpecifier, m_module);
+			}
+		declarator_prefix <&$declarator>*
+		declarator_name <&$declarator>?
+		declarator_suffix <&$declarator>*
+		('=' expression_pass1 $i
+			{
+				$declarator.m_initializer.takeOver (&$i.m_tokenList);
+			}
+		)?
+			{
+				return createFormalArg ($functionSuffix, &$declarator) != NULL;
+			}
+	|	TokenKind_Ellipsis
+			{
+				return $functionSuffix->addFunctionTypeFlag (FunctionTypeFlag_VarArg);
+			}
+	;
+
+function_modifier <DeclFunctionSuffix* $functionSuffix>
+	:	TokenKind_Const
+			{
+				return $functionSuffix->getDeclarator ()->setPostDeclaratorModifier (PostDeclaratorModifier_Const);
+			}
+	;
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+bitfield_suffix <Declarator* $declarator>
+	:	':' TokenKind_Integer
+			{
+				return $declarator->addBitFieldSuffix ($2.m_data.m_integer);
+			}
+	;
+
+//..............................................................................

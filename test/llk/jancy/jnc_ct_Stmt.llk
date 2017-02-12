@@ -1,0 +1,400 @@
+//..............................................................................
+//
+//  This file is part of the Jancy toolkit.
+//
+//  Jancy is distributed under the MIT license.
+//  For details see accompanying license.txt file,
+//  the public copy of which is also available at:
+//  http://tibbo.com/downloads/archive/jancy/license.txt
+//
+//..............................................................................
+
+start
+compound_stmt
+	:	'{'
+			{
+				m_module->m_namespaceMgr.openScope ($1.m_pos, $1.m_data.m_integer);
+			}
+		local_declaration*
+		'}'
+			{
+				m_module->m_namespaceMgr.closeScope ();
+			}
+	;
+
+start
+automaton_compound_stmt
+	:	'{'
+			{
+				return beginAutomatonFunction ();
+			}
+		automaton_declaration*
+		'}'
+			{
+				return finalizeAutomatonFunction ();
+			}
+	;
+
+automaton_declaration
+	:	TokenKind_RegExpLiteral
+			{
+				return automatonRegExp ($1.m_data.m_string, $1.m_pos);
+			}
+	|		{
+				if (m_automatonState != AutomatonState_RegExpCase)
+				{
+					err::setError ("missing regexp condition");
+					return false;
+				}
+			}
+		local_declaration+
+	;
+
+start
+constructor_compound_stmt
+	:	'{'
+			{
+				m_module->m_namespaceMgr.openScope ($1.m_pos, $1.m_data.m_integer);
+			}
+		btm_construct_stmt*
+			{
+				return finalizeBaseTypeMemberConstructBlock ();
+			}
+		local_declaration*
+		'}'
+			{
+				m_module->m_namespaceMgr.closeScope ();
+			}
+	;
+
+// conflict at qualified_name : '.' is a continue-vs-fold conflict, in which fold loses immediatly
+// this problem could be solved with double resolvers, but it looks really ugly
+// actually, LADFA should be modified to allow LL (k) lookup also in case of continue-vs-fold conflict
+
+btm_construct_stmt
+	:	resolver (btm_construct_stmt_rslv)
+		btm_construct_name $n '(' expression_or_empty_list $a ')'
+			{
+				return callBaseTypeMemberConstructor ($n.m_name, &$a.m_valueList);
+			}
+	|	TokenKind_BaseType $b '.' TokenKind_Construct '(' expression_or_empty_list $a ')'
+			{
+				return callBaseTypeConstructor ($b.m_data.m_integer - 1, &$a.m_valueList);
+			}
+	|	';'
+	;
+
+btm_construct_stmt_rslv
+	: TokenKind_Identifier '.' (TokenKind_Identifier '.')* TokenKind_Construct
+	;
+
+class
+{
+	QualifiedName m_name;
+}
+btm_construct_name
+	:	TokenKind_Identifier '.'
+			{
+				$.m_name.addName ($1.m_data.m_string);
+			}
+		(TokenKind_Identifier $n2 '.'
+			{
+				$.m_name.addName ($n2.m_data.m_string);
+			}
+		)*
+		TokenKind_Construct
+	;
+
+statement
+	enter
+	{
+		m_module->m_namespaceMgr.setSourcePos (m_currentToken.m_pos);
+	}
+	:	compound_stmt
+	|	expression_stmt
+	|	if_stmt
+	|	switch_stmt
+	|	while_stmt
+	|	do_stmt
+	|	for_stmt
+	|	break_stmt
+	|	continue_stmt
+	|	return_stmt
+	|	once_stmt
+	|	try_stmt
+	|	throw_stmt
+	|	unsafe_stmt
+	|	assert_stmt
+	|	';'
+	;
+
+start
+expression_stmt
+	:	expression ';'
+	;
+
+if_stmt
+	local
+	{
+		IfStmt $stmt;
+	}
+	enter
+	{
+		m_module->m_controlFlowMgr.ifStmt_Create (&$stmt);
+	}
+	:	TokenKind_If '(' expression $e ')' $a
+			{
+				return m_module->m_controlFlowMgr.ifStmt_Condition (&$stmt, $e.m_value, $a.m_pos);
+			}
+		statement $t
+		(
+			TokenKind_Else $a2
+				{
+					m_module->m_controlFlowMgr.ifStmt_Else (&$stmt, $a2.m_pos);
+				}
+			statement $f
+		)?
+			{
+				m_module->m_controlFlowMgr.ifStmt_Follow (&$stmt);
+			}
+	;
+
+switch_stmt
+	local
+	{
+		SwitchStmt $stmt;
+	}
+	enter
+	{
+		m_module->m_controlFlowMgr.switchStmt_Create (&$stmt);
+	}
+	:	TokenKind_Switch '(' expression $e ')' '{' $l
+			{
+				return m_module->m_controlFlowMgr.switchStmt_Condition (&$stmt, $e.m_value, $l.m_pos);
+			}
+		switch_block_stmt <&$stmt>* '}'
+			{
+				m_module->m_controlFlowMgr.switchStmt_Follow (&$stmt);
+			}
+	;
+
+switch_block_stmt <SwitchStmt* $stmt>
+	:	TokenKind_Case constant_integer_expr $e ':'
+			{
+				return m_module->m_controlFlowMgr.switchStmt_Case ($stmt, $e.m_value, $1.m_pos, $1.m_data.m_integer);
+			}
+	|	TokenKind_Default ':'
+			{
+				return m_module->m_controlFlowMgr.switchStmt_Default ($stmt, $1.m_pos, $1.m_data.m_integer);
+			}
+	|	local_declaration
+	;
+
+while_stmt
+	local
+	{
+		WhileStmt $stmt;
+	}
+	enter
+	{
+		m_module->m_controlFlowMgr.whileStmt_Create (&$stmt);
+	}
+	:	TokenKind_While '(' expression $e ')' $a
+			{
+				m_module->m_controlFlowMgr.whileStmt_Condition (&$stmt, $e.m_value, $a.m_pos);
+			}
+		statement
+			{
+				m_module->m_controlFlowMgr.whileStmt_Follow (&$stmt);
+			}
+	;
+
+do_stmt
+	local
+	{
+		DoStmt $stmt;
+	}
+	enter
+	{
+		m_module->m_controlFlowMgr.doStmt_Create (&$stmt);
+	}
+	:	TokenKind_Do
+			{
+				m_module->m_controlFlowMgr.doStmt_PreBody (&$stmt, $1.m_pos);
+			}
+		statement
+			{
+				m_module->m_controlFlowMgr.doStmt_PostBody (&$stmt);
+			}
+		TokenKind_While '(' expression $e ')'
+			{
+				return m_module->m_controlFlowMgr.doStmt_Condition (&$stmt, $e.m_value);
+			}
+	;
+
+for_stmt
+	local
+	{
+		ForStmt $stmt;
+	}
+	enter
+	{
+		m_module->m_controlFlowMgr.forStmt_Create (&$stmt);
+	}
+	:	TokenKind_For '('
+			{
+				m_module->m_controlFlowMgr.forStmt_PreInit (&$stmt, $1.m_pos);
+			}
+		(local_item_declaration | expression_or_empty_list ';')
+		for_stmt_condition <&$stmt> ';'
+		(
+				{
+					m_module->m_controlFlowMgr.forStmt_PreLoop (&$stmt);
+				}
+			expression_list
+				{
+					m_module->m_controlFlowMgr.forStmt_PostLoop (&$stmt);
+				}
+		)? ')'
+			{
+				m_module->m_controlFlowMgr.forStmt_PreBody (&$stmt);
+			}
+		statement
+			{
+				m_module->m_controlFlowMgr.forStmt_PostBody (&$stmt);
+			}
+	;
+
+nullable
+for_stmt_condition <ForStmt* $stmt>
+	:		{
+				m_module->m_controlFlowMgr.forStmt_PreCondition ($stmt);
+			}
+		expression $e
+			{
+				return m_module->m_controlFlowMgr.forStmt_PostCondition ($stmt, $e.m_value);
+			}
+	|	epsilon
+			{
+				m_module->m_controlFlowMgr.forStmt_NoCondition ($stmt);
+			}
+	;
+
+
+break_stmt
+	:	TokenKind_Break ';'
+			{
+				return m_module->m_controlFlowMgr.breakJump ($1.m_data.m_integer);
+			}
+	;
+
+continue_stmt
+	:	TokenKind_Continue ';'
+			{
+				return m_module->m_controlFlowMgr.continueJump ($1.m_data.m_integer);
+			}
+	;
+
+return_stmt
+	:	TokenKind_Return expression $e? ';'
+			{
+				return m_module->m_controlFlowMgr.ret (&$e ? $e.m_value : Value ());
+			}
+	;
+
+once_stmt
+	local
+	{
+		OnceStmt $stmt;
+	}
+	:	storage_specifier? TokenKind_Once
+			{
+				StorageKind storageKind = &$1 ? $1.m_storageKind : StorageKind_Static;
+				return
+					m_module->m_controlFlowMgr.onceStmt_Create (&$stmt, $2.m_pos, storageKind) &&
+					m_module->m_controlFlowMgr.onceStmt_PreBody (&$stmt, $2.m_pos);
+			}
+		statement $s
+			{
+				m_module->m_controlFlowMgr.onceStmt_PostBody (&$stmt, $s.m_lastToken.m_pos);
+			}
+	;
+
+try_stmt
+	:	TokenKind_Try
+		'{'
+			{
+				m_module->m_namespaceMgr.openScope ($1.m_pos, ScopeFlag_Try | ScopeFlag_HasCatch | $2.m_data.m_integer);
+			}
+		local_declaration*
+		'}'
+			{
+				m_module->m_namespaceMgr.closeScope ();
+			}
+	;
+
+throw_stmt
+	:	TokenKind_Throw ';'
+			{
+				m_module->m_controlFlowMgr.throwException ();
+			}
+	;
+
+unsafe_stmt
+	:	resolver (TokenKind_Unsafe '{')
+		TokenKind_Unsafe
+		'{' $l
+			{
+				m_module->m_operatorMgr.enterUnsafeRgn ();
+				m_module->m_namespaceMgr.openScope ($l.m_pos, $l.m_data.m_integer | ScopeFlag_Unsafe);
+			}
+		local_declaration*
+		'}'
+			{
+				m_module->m_namespaceMgr.closeScope ();
+				m_module->m_operatorMgr.leaveUnsafeRgn ();
+			}
+	;
+
+assert_stmt
+	local
+	{
+		BasicBlock* $continueBlock;
+	}
+	:	TokenKind_Assert '(' expression_pass1 $c
+			{
+				$continueBlock = assertCondition ($c.m_tokenList);
+				return $continueBlock != NULL;
+			}
+		(',' expression $m)? ')'
+			{
+				return finalizeAssertStmt (
+					$c.m_tokenList,
+					&$m ? $m.m_value : Value (),
+					$continueBlock
+					);
+			}
+	;
+
+catch_label
+	:	TokenKind_Catch ':'
+			{
+				return m_module->m_controlFlowMgr.catchLabel ($1.m_pos);
+			}
+	;
+
+finally_label
+	:	TokenKind_Finally ':'
+			{
+				return m_module->m_controlFlowMgr.finallyLabel ($1.m_pos);
+			}
+	;
+
+nested_scope_label
+	:	TokenKind_NestedScope ':'
+			{
+				return m_module->m_namespaceMgr.openScope ($1.m_pos, $1.m_data.m_integer | ScopeFlag_Nested) != NULL;
+			}
+	;
+
+//..............................................................................

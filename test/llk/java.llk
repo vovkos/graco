@@ -1,0 +1,648 @@
+lookahead = 3;
+
+start
+GrammarStart
+    : Expression
+    ;
+
+Identifier
+    : IDENTIFIER
+    ;
+
+QualifiedIdentifier
+    : Identifier ('.' Identifier)*
+    ;
+
+QualifiedIdentifierList
+    : QualifiedIdentifier (',' QualifiedIdentifier)*
+    ;
+
+nullable
+CompilationUnit
+    : (Annotations? Keyword_package QualifiedIdentifier ';')?
+      ImportDeclaration*
+      TypeDeclaration*
+    ;
+
+ImportDeclaration
+    : Keyword_import Keyword_static? Identifier ('.' Identifier)* ('.' '*')? ';'
+    ;
+
+TypeDeclaration
+    : ClassOrInterfaceDeclaration
+    | ';'
+    ;
+
+ClassOrInterfaceDeclaration
+    : Modifier* (ClassDeclaration | InterfaceDeclaration)
+    ;
+
+ClassDeclaration
+    : NormalClassDeclaration
+    | EnumDeclaration
+    ;
+
+InterfaceDeclaration
+    : NormalInterfaceDeclaration
+    | AnnotationTypeDeclaration
+    ;
+
+NormalClassDeclaration
+    : Keyword_class Identifier TypeParameters? (Keyword_extends Type)? (Keyword_implements TypeList)?
+      ClassBody
+    ;
+
+EnumDeclaration
+    : Keyword_enum Identifier (Keyword_implements TypeList)?
+      EnumBody
+    ;
+
+NormalInterfaceDeclaration
+    : Keyword_interface Identifier TypeParameters? (Keyword_extends TypeList)?
+      InterfaceBody
+    ;
+
+AnnotationTypeDeclaration:
+    '@' Keyword_interface Identifier AnnotationTypeBody
+    ;
+
+Type
+    : BasicType ('[' ']')*
+    | ReferenceType  ('[' ']')*
+    ;
+
+BasicType
+    : Keyword_byte
+    | Keyword_short
+    | Keyword_char
+    | Keyword_int
+    | Keyword_long
+    | Keyword_float
+    | Keyword_double
+    | Keyword_boolean
+    ;
+
+ReferenceType
+    : resolver ({ semantic-check-for-identifier-kind })
+        Identifier TypeArguments? ('.' Identifier TypeArguments?)*
+    ;
+
+TypeArguments
+    : '<' TypeArgument (',' TypeArgument)* '>'
+    ;
+
+TypeArgument
+    : ReferenceType
+    | '?' ((Keyword_extends | Keyword_super) ReferenceType)?
+    ;
+
+NonWildcardTypeArguments
+    : '<' TypeList '>'
+    ;
+
+TypeList
+    : ReferenceType (',' ReferenceType)*
+    ;
+
+TypeArgumentsOrDiamond
+    : '<' '>'
+    | TypeArguments
+    ;
+
+NonWildcardTypeArgumentsOrDiamond
+    : '<' '>'
+    | NonWildcardTypeArguments
+    ;
+
+TypeParameters
+    : '<' TypeParameter (',' TypeParameter)* '>'
+    ;
+
+TypeParameter
+    : Identifier (Keyword_extends Bound)?
+    ;
+
+Bound
+    : ReferenceType ('&' ReferenceType)*
+    ;
+
+Modifier
+    : Annotation
+    | Keyword_public
+    | Keyword_protected
+    | Keyword_private
+    | Keyword_static
+    | Keyword_abstract
+    | Keyword_final
+    | Keyword_native
+    | Keyword_synchronized
+    | Keyword_transient
+    | Keyword_volatile
+    | Keyword_strictfp
+    ;
+
+Annotations
+    : Annotation+
+    ;
+
+Annotation
+    : '@' QualifiedIdentifier ('(' AnnotationElement? ')')?
+    ;
+
+AnnotationElement
+    : ElementValuePairs
+    | ElementValue
+    ;
+
+ElementValuePairs
+    : ElementValuePair (',' ElementValuePair)*
+    ;
+
+ElementValuePair
+    : Identifier '=' ElementValue
+    ;
+
+ElementValue
+    : Annotation
+    | Expression1
+    | ElementValueArrayInitializer
+    ;
+
+ElementValueArrayInitializer
+    : '{' ElementValues? ','? '}'
+    ;
+
+ElementValues
+    : ElementValue (',' ElementValue)*
+    ;
+
+ClassBody
+    : '{' ClassBodyDeclaration* '}'
+    ;
+
+ClassBodyDeclaration
+    : ';'
+    | Modifier* MemberDecl
+    | Keyword_static? Block
+    ;
+
+MemberDecl
+    : MethodOrFieldDecl
+    | Keyword_void Identifier VoidMethodDeclaratorRest
+    | Identifier ConstructorDeclaratorRest
+    | GenericMethodOrConstructorDecl
+    | ClassDeclaration
+    | InterfaceDeclaration
+    ;
+
+MethodOrFieldDecl
+    : Type Identifier MethodOrFieldRest
+    ;
+
+MethodOrFieldRest
+    : FieldDeclaratorsRest ';'
+    | MethodDeclaratorRest
+    ;
+
+nullable
+FieldDeclaratorsRest
+    : VariableDeclaratorRest (',' VariableDeclarator)*
+    ;
+
+MethodDeclaratorRest
+    : FormalParameters ('[' ']')* (Keyword_throws QualifiedIdentifierList)? (Block | ';')
+    ;
+
+VoidMethodDeclaratorRest
+    : FormalParameters (Keyword_throws QualifiedIdentifierList)? (Block | ';')
+    ;
+
+ConstructorDeclaratorRest
+    : FormalParameters (Keyword_throws QualifiedIdentifierList)? Block
+    ;
+
+GenericMethodOrConstructorDecl
+    : TypeParameters GenericMethodOrConstructorRest
+    ;
+
+GenericMethodOrConstructorRest
+    : (Type | Keyword_void) Identifier MethodDeclaratorRest
+    | Identifier ConstructorDeclaratorRest
+    ;
+
+InterfaceBody
+    : '{' InterfaceBodyDeclaration* '}'
+    ;
+
+InterfaceBodyDeclaration
+    : ';'
+    | Modifier* InterfaceMemberDecl
+    ;
+
+InterfaceMemberDecl
+    : InterfaceMethodOrFieldDecl
+    | Keyword_void Identifier VoidInterfaceMethodDeclaratorRest
+    | InterfaceGenericMethodDecl
+    | ClassDeclaration
+    | InterfaceDeclaration
+    ;
+
+InterfaceMethodOrFieldDecl
+    : Type Identifier InterfaceMethodOrFieldRest
+    ;
+
+InterfaceMethodOrFieldRest
+    : ConstantDeclaratorsRest ';'
+    | InterfaceMethodDeclaratorRest
+    ;
+
+ConstantDeclaratorsRest
+    : ConstantDeclaratorRest (',' ConstantDeclarator)*
+    ;
+
+ConstantDeclaratorRest
+    : ('[' ']')* '=' VariableInitializer
+    ;
+
+ConstantDeclarator
+    : Identifier ConstantDeclaratorRest
+    ;
+
+InterfaceMethodDeclaratorRest
+    : FormalParameters ('[' ']')* (Keyword_throws QualifiedIdentifierList)? ';'
+    ;
+
+VoidInterfaceMethodDeclaratorRest
+    : FormalParameters (Keyword_throws QualifiedIdentifierList)? ';'
+    ;
+
+InterfaceGenericMethodDecl
+    : TypeParameters (Type | Keyword_void) Identifier InterfaceMethodDeclaratorRest
+    ;
+
+FormalParameters
+    : '(' FormalParameterDecls? ')'
+    ;
+
+FormalParameterDecls
+    : VariableModifier? Type FormalParameterDeclsRest
+    ;
+
+VariableModifier
+    : Keyword_final
+    | Annotation
+    ;
+
+FormalParameterDeclsRest
+    : VariableDeclaratorId (',' FormalParameterDecls)?
+    | Ellipsis VariableDeclaratorId
+    ;
+
+VariableDeclaratorId
+    : Identifier ('[' ']')*
+    ;
+
+VariableDeclarators
+    : VariableDeclarator (',' VariableDeclarator)*
+    ;
+
+VariableDeclarator
+    : Identifier VariableDeclaratorRest
+    ;
+
+nullable
+VariableDeclaratorRest
+    : ('[' ']')* ('=' VariableInitializer)?
+    ;
+
+VariableInitializer
+    : ArrayInitializer
+    | Expression
+    ;
+
+ArrayInitializer
+    : '{' (VariableInitializer (',' VariableInitializer)* ','?)? '}'
+    ;
+
+Block
+    : '{' BlockStatements '}'
+    ;
+
+nullable
+BlockStatements
+    : BlockStatement*
+    ;
+
+BlockStatement
+    : LocalVariableDeclarationStatement
+    | resolver (Modifier* (Keyword_class | Keyword_interface | Keyword_enum))
+        ClassOrInterfaceDeclaration
+    | (Identifier ':')? Statement
+    ;
+
+LocalVariableDeclarationStatement
+    : VariableModifier* Type VariableDeclarators ';'
+    ;
+
+Statement
+    : Block
+    | ';'
+    | Identifier ':' Statement
+    | StatementExpression ';'
+    | Keyword_if ParExpression Statement (Keyword_else Statement)?
+    | Keyword_assert Expression (':' Expression)? ';'
+    | Keyword_switch ParExpression '{' SwitchBlockStatementGroups '}'
+    | Keyword_while ParExpression Statement
+    | Keyword_do Statement Keyword_while ParExpression ';'
+    | Keyword_for '(' ForControl ')' Statement
+    | Keyword_break Identifier? ';'
+    | Keyword_continue Identifier? ';'
+    | Keyword_return Expression? ';'
+    | Keyword_throw Expression ';'
+    | Keyword_synchronized ParExpression Block
+    | Keyword_try Block Catches Finally?
+    | Keyword_try ResourceSpecification Block Catches? Finally?
+    ;
+
+StatementExpression
+    : Expression
+    ;
+
+Catches
+    : CatchClause+
+    ;
+
+CatchClause
+    : Keyword_catch '(' VariableModifier* CatchType Identifier ')' Block
+    ;
+
+CatchType
+    : QualifiedIdentifier ('|' QualifiedIdentifier)*
+    ;
+
+Finally
+    : Keyword_finally Block
+    ;
+
+ResourceSpecification
+    : '(' Resources ';'? ')'
+    ;
+
+Resources
+    : Resource (';' Resource)*
+    ;
+
+Resource
+    : VariableModifier* ReferenceType VariableDeclaratorId '=' Expression
+    ;
+
+nullable
+SwitchBlockStatementGroups
+    : SwitchBlockStatementGroup*
+    ;
+
+SwitchBlockStatementGroup
+    : SwitchLabels BlockStatements
+    ;
+
+SwitchLabels
+    : SwitchLabel+
+    ;
+
+// originally SwitchLabel incuded EnumConstantName which was defined as Identifier
+// this is wrong, cause Identifier is already included in Expression
+
+SwitchLabel
+    : Keyword_case Expression ':'
+    | Keyword_default ':'
+    ;
+
+ForControl
+    : ForVarControl
+    | ForInitUpdate ';' Expression? ';' ForInitUpdate?
+    ;
+
+ForVarControl
+    : VariableModifier* Type VariableDeclaratorId ForVarControlRest
+    ;
+
+ForVarControlRest
+    : ForVariableDeclaratorsRest ';' Expression? ';' ForInitUpdate?
+    | ':' Expression
+    ;
+
+nullable
+ForVariableDeclaratorsRest
+    : ('=' VariableInitializer)? (',' VariableDeclarator)*
+    ;
+
+ForInitUpdate
+    : StatementExpression (',' StatementExpression)*
+    ;
+
+Expression
+    : Expression1 (AssignmentOperator Expression1)?
+    ;
+
+AssignmentOperator
+    : '='
+    | AddAssign
+    | SubAssign
+    | MulAssign
+    | DivAssign
+    | AndAssign
+    | OrAssign
+    | XorAssign
+    | ModAssign
+    | ShlAssign
+    | ShrAssign
+    | ShrlAssign
+    ;
+
+Expression1
+    : Expression2 Expression1Rest?
+    ;
+
+Expression1Rest
+    : '?' Expression ':' Expression1
+    ;
+
+Expression2
+    : Expression3 Expression2Rest?
+    ;
+
+Expression2Rest
+    : (InfixOp Expression3)+
+    | Keyword_instanceof Type
+    ;
+
+InfixOp
+    : LogOrOp
+    | LogAndOp
+    | '|'
+    | '^'
+    | '&'
+    | EqOp
+    | NeOp
+    | '<'
+    | '>'
+    | LeOp
+    | GeOp
+    | ShlOp
+    | ShrOp
+    | ShrlOp
+    | '+'
+    | '-'
+    | '*'
+    | '/'
+    | '%'
+    ;
+
+Expression3
+    : PrefixOp Expression3
+    | '(' Type ')' Expression3
+    | Primary Selector* PostfixOp*
+    ;
+
+PrefixOp
+    : IncOp
+    | DecOp
+    | '!'
+    | '~'
+    | '+'
+    | '-'
+    ;
+
+PostfixOp
+    : IncOp
+    | DecOp
+    ;
+
+Primary
+    : Literal
+    | ParExpression
+    | Keyword_this Arguments?
+    | Keyword_super SuperSuffix
+    | Keyword_new Creator
+    | NonWildcardTypeArguments (ExplicitGenericInvocationSuffix | Keyword_this Arguments)
+    | Identifier ('.' Identifier)* IdentifierSuffix?
+    | resolver (BasicType ('[' ']')* '.' Keyword_class)
+        BasicType ('[' ']')* '.' Keyword_class
+    | resolver (Keyword_void '.' Keyword_class)
+        Keyword_void '.' Keyword_class
+    ;
+
+Literal
+    : IntegerLiteral
+    | FloatingPointLiteral
+    | CharacterLiteral
+    | StringLiteral
+    | BooleanLiteral
+    | NullLiteral
+    ;
+
+ParExpression
+    : '(' Expression ')'
+    ;
+
+Arguments
+    : '(' (Expression (',' Expression)*)? ')'
+    ;
+
+SuperSuffix
+    : Arguments
+    | '.' Identifier Arguments?
+    ;
+
+ExplicitGenericInvocationSuffix
+    : Keyword_super SuperSuffix
+    | Identifier Arguments
+    ;
+
+Creator
+    : NonWildcardTypeArguments CreatedName ClassCreatorRest
+    | CreatedName (ClassCreatorRest | ArrayCreatorRest)
+    ;
+
+CreatedName
+    : Identifier TypeArgumentsOrDiamond? ('.' Identifier TypeArgumentsOrDiamond?)*
+    ;
+
+ClassCreatorRest
+    : Arguments ClassBody?
+    ;
+
+ArrayCreatorRest:
+    '[' (']' ('[' ']')* ArrayInitializer | ('[' Expression ']')+ ('[' ']')*)
+    ;
+
+IdentifierSuffix
+    : '[' (('[' ']')* '.' Keyword_class | Expression) ']'
+    | Arguments
+    | '.' (Keyword_class | ExplicitGenericInvocation | Keyword_this | Keyword_super Arguments |
+                                Keyword_new NonWildcardTypeArguments? InnerCreator)
+    ;
+
+ExplicitGenericInvocation
+    : NonWildcardTypeArguments ExplicitGenericInvocationSuffix
+    ;
+
+InnerCreator
+    : Identifier NonWildcardTypeArgumentsOrDiamond? ClassCreatorRest
+    ;
+
+Selector
+    : '.' Identifier Arguments?
+    | '.' ExplicitGenericInvocation
+    | '.' Keyword_this
+    | '.' Keyword_super SuperSuffix
+    | '.' Keyword_new NonWildcardTypeArguments? InnerCreator
+    | '[' Expression ']'
+    ;
+
+EnumBody
+    : '{' EnumConstants ','? EnumBodyDeclarations? '}'
+    ;
+
+EnumConstants
+    : EnumConstant (',' EnumConstant)*
+    ;
+
+EnumConstant
+    : Annotations? Identifier Arguments? ClassBody?
+    ;
+
+EnumBodyDeclarations
+    : ';' ClassBodyDeclaration*
+    ;
+
+AnnotationTypeBody
+    : '{' AnnotationTypeElementDeclarations? '}'
+    ;
+
+AnnotationTypeElementDeclarations
+    : AnnotationTypeElementDeclaration+
+    ;
+
+AnnotationTypeElementDeclaration
+    : Modifier? AnnotationTypeElementRest
+    ;
+
+// originally, AnnotationTypeElementRest also included EnumDeclaration and AnnotationTypeDeclaration
+// this is wrong, cause ClassDeclaration already includes EnumDeclaration
+// and InterfaceDeclaration already includes AnnotationTypeDeclaration
+
+AnnotationTypeElementRest
+    : Type Identifier AnnotationMethodOrConstantRest ';'
+    | ClassDeclaration
+    | InterfaceDeclaration
+    ;
+
+AnnotationMethodOrConstantRest
+    : AnnotationMethodRest
+    | ConstantDeclaratorsRest
+    ;
+
+AnnotationMethodRest
+    : '(' ')' ('[' ']')? (Keyword_default ElementValue)?
+    ;

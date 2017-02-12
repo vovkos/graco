@@ -9,6 +9,8 @@
 #
 #...............................................................................
 
+add_subdirectory (llk)
+
 option (
 	BUILD_GRACO_TEST_CPP
 	"Build graco_test_cpp - test for C++ back-end"

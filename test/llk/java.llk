@@ -1,9 +1,4 @@
-lookahead = 3;
-
-start
-GrammarStart
-    : Expression
-    ;
+lookahead = 2;
 
 Identifier
     : IDENTIFIER
@@ -17,6 +12,7 @@ QualifiedIdentifierList
     : QualifiedIdentifier (',' QualifiedIdentifier)*
     ;
 
+start
 nullable
 CompilationUnit
     : (Annotations? Keyword_package QualifiedIdentifier ';')?

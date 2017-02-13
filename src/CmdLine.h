@@ -26,6 +26,8 @@ enum CmdLineFlag
 struct CmdLine
 {
 	uint_t m_flags;
+	size_t m_lookaheadLimit;
+	size_t m_conflictDepthLimit;
 	sl::String m_inputFileName;
 	sl::BoxList <sl::String> m_outputFileNameList;
 	sl::BoxList <sl::String> m_frameFileNameList;
@@ -36,10 +38,7 @@ struct CmdLine
 	sl::BoxList <sl::String> m_frameDirList;
 	sl::BoxList <sl::String> m_importDirList;
 
-	CmdLine ()
-	{
-		m_flags = 0;
-	}
+	CmdLine ();
 };
 
 //..............................................................................
@@ -50,6 +49,8 @@ enum CmdLineSwitchKind
 	CmdLineSwitchKind_Help,
 	CmdLineSwitchKind_Version,
 	CmdLineSwitchKind_NoPpLine,
+	CmdLineSwitchKind_LookaheadLimit,
+	CmdLineSwitchKind_ConflictDepthLimit,
 	CmdLineSwitchKind_Verbose,
 	CmdLineSwitchKind_OutputFileName,
 	CmdLineSwitchKind_FrameFileName,
@@ -79,6 +80,18 @@ AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE (CmdLineSwitchTable, CmdLineSwitchKind)
 		CmdLineSwitchKind_NoPpLine,
 		"l", "no-line", NULL,
 		"Suppress #line preprocessor directives"
+		)
+
+	AXL_SL_CMD_LINE_SWITCH (
+		CmdLineSwitchKind_LookaheadLimit,
+		"lookahead-limit", "<limit>",
+		"Specify number of tokens used for conflict resolution (defaults to 2)"
+		)
+
+	AXL_SL_CMD_LINE_SWITCH (
+		CmdLineSwitchKind_ConflictDepthLimit,
+		"conflict-depth-limit", "<limit>",
+		"Limit the depth of nested conflicts (defaults to 2)"
 		)
 
 	AXL_SL_CMD_LINE_SWITCH_2 (

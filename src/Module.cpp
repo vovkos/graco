@@ -103,7 +103,12 @@ Module::build (CmdLine* cmdLine)
 
 	// resolve conflicts
 
-	LaDfaBuilder builder (&m_nodeMgr, &m_parseTable, m_lookaheadLimit ? m_lookaheadLimit : 2);
+	LaDfaBuilder builder (
+		&m_nodeMgr,
+		&m_parseTable,
+		m_lookaheadLimit ? m_lookaheadLimit : cmdLine->m_lookaheadLimit,
+		cmdLine->m_conflictDepthLimit
+		);
 
 	size_t tokenCount = m_nodeMgr.m_tokenArray.getCount ();
 

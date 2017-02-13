@@ -115,12 +115,14 @@ protected:
 	sl::Array <Node*>* m_parseTable;
 	size_t m_lookeaheadLimit;
 	size_t m_lookeahead;
+	size_t m_conflictDepthLimit;
 
 public:
 	LaDfaBuilder (
 		NodeMgr* nodeMgr,
 		sl::Array <Node*>* parseTable,
-		size_t lookeaheadLimit = 2
+		size_t lookeaheadLimit,
+		size_t conflictDepthLimit
 		);
 
 	Node*
@@ -143,14 +145,18 @@ protected:
 	LaDfaState*
 	createState ();
 
-	LaDfaState*
+	bool
 	transition (
+		LaDfaState** resultState,
 		LaDfaState* state,
 		SymbolNode* token
 		);
 
-	void
-	processThread (LaDfaThread* thread);
+	bool
+	processThread (
+		LaDfaThread* thread,
+		size_t depth
+		);
 };
 
 //..............................................................................

@@ -14,6 +14,15 @@
 
 //..............................................................................
 
+CmdLine::CmdLine ()
+{
+	m_flags = 0;
+	m_lookaheadLimit = 2;
+	m_conflictDepthLimit = 4;
+}
+
+//..............................................................................
+
 bool
 CmdLineParser::onValue (const sl::StringRef& value)
 {
@@ -43,6 +52,14 @@ CmdLineParser::onSwitch (
 
 	case CmdLineSwitchKind_Verbose:
 		m_cmdLine->m_flags |= CmdLineFlag_Verbose;
+		break;
+
+	case CmdLineSwitchKind_LookaheadLimit:
+		m_cmdLine->m_lookaheadLimit = atoi (value.sz ());
+		break;
+
+	case CmdLineSwitchKind_ConflictDepthLimit:
+		m_cmdLine->m_conflictDepthLimit = atoi (value.sz ());
 		break;
 
 	case CmdLineSwitchKind_OutputFileName:

@@ -69,8 +69,8 @@ NormalInterfaceDeclaration
       InterfaceBody
     ;
 
-AnnotationTypeDeclaration:
-    '@' Keyword_interface Identifier AnnotationTypeBody
+AnnotationTypeDeclaration
+	: '@' Keyword_interface Identifier AnnotationTypeBody
     ;
 
 Type
@@ -579,8 +579,8 @@ ClassCreatorRest
     : Arguments ClassBody?
     ;
 
-ArrayCreatorRest:
-    '[' (']' ('[' ']')* ArrayInitializer | ('[' Expression ']')+ ('[' ']')*)
+ArrayCreatorRest
+	: '[' (']' ('[' ']')* ArrayInitializer | ('[' Expression ']')+ ('[' ']')*)
     ;
 
 IdentifierSuffix

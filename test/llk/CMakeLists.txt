@@ -21,4 +21,22 @@ add_test (
 	COMMAND $<TARGET_FILE:graco> java.llk
 	)
 
+add_test (
+	NAME c
+	WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+	COMMAND $<TARGET_FILE:graco> c.llk
+	)
+
+add_test (
+	NAME left-recursion
+	WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+	COMMAND $<TARGET_FILE:graco> left-recursion.llk
+	)
+
+set_tests_properties (
+	left-recursion
+	PROPERTIES
+		WILL_FAIL TRUE
+	)
+
 #...............................................................................

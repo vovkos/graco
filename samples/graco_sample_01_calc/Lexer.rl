@@ -59,20 +59,49 @@ lit_sq = "'" ([^'\n\\] | esc)* (['\\] | nl);
 
 main := |*
 
-'var'            { createToken (TokenKind_Var); };
-'func'           { createToken (TokenKind_Func); };
+'var'    { createToken (TokenKind_Var); };
+'const'  { createToken (TokenKind_Const); };
+'null'   { createToken (TokenKind_Const); };
+'assert' { createToken (TokenKind_Assert); };
+
+'++'     { createToken (TokenKind_Inc); };
+'--'     { createToken (TokenKind_Dec); };
+'*='     { createToken (TokenKind_MulAssign); };
+'/='     { createToken (TokenKind_DivAssign); };
+'%='     { createToken (TokenKind_ModAssign); };
+'+='     { createToken (TokenKind_AddAssign); };
+'-='     { createToken (TokenKind_SubAssign); };
+'<<='    { createToken (TokenKind_ShlAssign); };
+'>>='    { createToken (TokenKind_ShrAssign); };
+'&='     { createToken (TokenKind_AndAssign); };
+'^='     { createToken (TokenKind_XorAssign); };
+'|='     { createToken (TokenKind_OrAssign); };
+'<<'     { createToken (TokenKind_Shl); };
+'>>'     { createToken (TokenKind_Shr); };
+'<='     { createToken (TokenKind_Le); };
+'>='     { createToken (TokenKind_Ge); };
+'=='     { createToken (TokenKind_Eq); };
+'!='     { createToken (TokenKind_Ne); };
+'&&'     { createToken (TokenKind_LogicalAnd); };
+'||'     { createToken (TokenKind_LogicalOr); };
 
 id               { createStringToken (TokenKind_Identifier); };
 lit_sq           { createCharToken (TokenKind_Integer); };
-lit_dq           { createStringToken (TokenKind_Literal, 1, 1); };
 dec+             { createIntegerToken (10); };
+'0' oct+         { createIntegerToken (8); };
 '0' [xX] hex+    { createIntegerToken (16, 2); };
-dec+ ('.' dec+) | ([eE] [+\-]? dec+)
+'0' [oO] oct+    { createIntegerToken (8, 2); };
+'0' [bB] bin+    { createIntegerToken (2, 2); };
+dec+ ('.' dec*) | ([eE] [+\-]? dec+)
 				 { createFpToken (); };
 
-ws | nl          ;
-print            { createToken (ts [0]); };
-any              { createErrorToken (ts [0]); };
+'//' [^\n]*      ;
+'/*' (any | nl)* :>> '*/'
+				 ;
+
+ws | nl ;
+print    { createToken (ts [0]); };
+any      { createErrorToken (ts [0]); };
 
 *|;
 

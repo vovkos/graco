@@ -13,7 +13,10 @@
 
 //..............................................................................
 
+#include "axl_sl_Operator.h"
+#include "axl_enc_EscapeEncoding.h"
 #include "axl_lex_RagelLexer.h"
+#include "axl_sl_StringHashTable.h"
 #include "llk_Parser.h"
 
 using namespace axl;

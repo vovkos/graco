@@ -12,7 +12,6 @@
 #include "pch.h"
 #include "Lexer.h"
 #include "Parser.llk.h"
-#include "Parser.llk.cpp"
 
 //..............................................................................
 
@@ -67,7 +66,10 @@ main (
 {
 	g::getModule ()->setTag ("graco_test_cpp");
 
-	bool result = parse ("{ var i = 0; }");
+	bool result = parse (
+		"const pi = 3.14159265358979323846; var r = 100; 2 * pi * r;"
+		"var x, y, z; x = y = z = 10; assert (x == 11);"
+		);
 	if (!result)
 	{
 		printf ("error: %s\n", err::getLastErrorDescription ().sz ());

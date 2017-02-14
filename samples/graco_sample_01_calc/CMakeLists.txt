@@ -16,12 +16,15 @@
 set (
 	APP_H_LIST
 	Lexer.h
+	Value.h
 	)
 
 set (
 	APP_CPP_LIST
 	main.cpp
 	Lexer.cpp
+	Parser.cpp
+	Value.cpp
 	)
 
 set (
@@ -106,7 +109,7 @@ source_group (
 
 #...............................................................................
 #
-# graco_test_cpp app
+# graco_sample_01_calc app
 #
 
 include_directories (
@@ -119,7 +122,7 @@ include_directories (
 link_directories (${AXL_LIB_DIR})
 
 add_executable (
-	graco_test_cpp
+	graco_sample_01_calc
 	${PCH_H}
 	${PCH_CPP}
 	${APP_H_LIST}
@@ -132,18 +135,18 @@ add_executable (
 	)
 
 add_dependencies (
-	graco_test_cpp
+	graco_sample_01_calc
 	graco
 	)
 
 set_target_properties (
-	graco_test_cpp
+	graco_sample_01_calc
 	PROPERTIES
-	FOLDER test
+	FOLDER samples
 	)
 
 target_link_libraries (
-	graco_test_cpp
+	graco_sample_01_calc
 	axl_fsm
 	axl_io
 	axl_core
@@ -151,13 +154,13 @@ target_link_libraries (
 
 if (UNIX)
 	target_link_libraries (
-		graco_test_cpp
+		graco_sample_01_calc
 		pthread
 		)
 endif ()
 
 axl_set_pch (
-	graco_test_cpp
+	graco_sample_01_calc
 	${PCH_H}
 	${PCH_CPP}
 	)

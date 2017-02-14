@@ -1,0 +1,546 @@
+//..............................................................................
+//
+//  This file is part of the Graco toolkit.
+//
+//  Graco is distributed under the MIT license.
+//  For details see accompanying license.txt file,
+//  the public copy of which is also available at:
+//  http://tibbo.com/downloads/archive/graco/license.txt
+//
+//..............................................................................
+
+ParserClassName = Parser;
+
+Includes
+{
+	#include "Lexer.h"
+	#include "Value.h"
+}
+
+Members
+{
+	sl::StdList <Variable> m_variableList;
+	sl::StringHashTableMap <Variable*> m_variableMap;
+
+	Variable*
+	createVariable (
+		const sl::String& name,
+		const Value& initializer,
+		bool isConst = false
+		);
+
+	bool
+	lookupIdentifier (
+		const sl::StringRef& name,
+		Value* value
+		);
+
+	bool
+	assertionCheck (
+		const Value& value,
+		const Token::Pos& openPos,
+		const Token::Pos& closePos
+		);
+}
+
+//..............................................................................
+
+start
+nullable
+program
+	:	declaration*
+	;
+
+declaration
+	:	TokenKind_Var variable_declarator (',' variable_declarator)* ';'
+	|	TokenKind_Const const_declarator (',' const_declarator)* ';'
+	|	expression ';'
+			{
+				printf ("%s\n", $1.m_value.getString ().sz ());
+			}
+	|	TokenKind_Assert '(' expression ')' ';'
+			{
+				return assertionCheck ($3.m_value, $2.m_pos, $4.m_pos);
+			}
+	|	';'
+	;
+
+variable_declarator
+	:	TokenKind_Identifier ('=' expression)?
+			{
+				return createVariable ($1.m_data.m_string, &$3 ? $3.m_value : Value ()) != NULL;
+			}
+	;
+
+const_declarator
+	:	TokenKind_Identifier '=' expression
+			{
+				return createVariable ($1.m_data.m_string, $3.m_value, true) != NULL;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+primary_expression
+	:	TokenKind_Identifier
+			{
+				return lookupIdentifier ($1.m_data.m_string, &$.m_value);
+			}
+	|	TokenKind_Integer
+			{
+				$.m_value = $1.m_data.m_integer;
+			}
+	|	TokenKind_Fp
+			{
+				$.m_value = $1.m_data.m_double;
+			}
+	|	TokenKind_Null
+			{
+				$.m_value = Value ();
+			}
+	|	'(' expression ')'
+			{
+				$.m_value = $2.m_value;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+postfix_expression
+	:	primary_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		(postfix_inc_operator
+			{
+				return
+					$.m_value.lvalueCheck () &&
+					$.m_value.m_variable->m_value.binaryOperator ($2.m_opKind, 1);
+			}
+		)*
+	;
+
+class
+{
+	BinOpKind m_opKind;
+}
+postfix_inc_operator
+	:	TokenKind_Inc
+			{
+				$.m_opKind = BinOpKind_Add;
+			}
+	|	TokenKind_Dec
+			{
+				$.m_opKind = BinOpKind_Sub;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+unary_expression
+	:	postfix_expression
+			{
+				$.m_value = $1.m_value;
+			}
+	|	'+' unary_expression
+			{
+				$.m_value = $2.m_value;
+			}
+	|	'!' unary_expression
+			{
+				$.m_value = !$2.m_value.isTrue ();
+			}
+	|	unary_operator unary_expression
+			{
+				return $2.m_value.unaryOperator ($1.m_opKind);
+			}
+	|	prefix_inc_operator unary_expression
+			{
+				if (!$2.m_value.lvalueCheck () ||
+					!$2.m_value.m_variable->m_value.binaryOperator ($1.m_opKind, 1))
+					return false;
+
+				$.m_value = $2.m_value.m_variable; // reload variable
+			}
+	;
+
+class
+{
+	UnOpKind m_opKind;
+}
+unary_operator
+	:	'-'
+			{
+				$.m_opKind = UnOpKind_Minus;
+			}
+	|	'~'
+			{
+				$.m_opKind = UnOpKind_BitwiseNot;
+			}
+	;
+
+class
+{
+	BinOpKind m_opKind;
+}
+prefix_inc_operator
+	:	TokenKind_Inc
+			{
+				$.m_opKind = BinOpKind_Add;
+			}
+	|	TokenKind_Dec
+			{
+				$.m_opKind = BinOpKind_Sub;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+assignment_expression
+	:	unary_expression
+			{
+				$.m_value = $1.m_value
+			}
+		assign <&$.m_value>?
+	;
+
+assign <Value* $target>
+	enter
+	{
+		return $target->lvalueCheck ();
+	}
+	leave
+	{
+		*$target = $target->m_variable; // reload variable
+	}
+	:	'=' assignment_expression
+			{
+				$target->m_variable->m_value = $2.m_value;
+			}
+	|	op_assignment_operator assignment_expression
+			{
+				return $target->m_variable->m_value.binaryOperator ($1.m_opKind, $2.m_value);
+			}
+	;
+
+class
+{
+	BinOpKind m_opKind;
+}
+op_assignment_operator
+	:	TokenKind_MulAssign
+			{
+				$.m_opKind = BinOpKind_Mul;
+			}
+	|	TokenKind_DivAssign
+			{
+				$.m_opKind = BinOpKind_Div;
+			}
+	|	TokenKind_ModAssign
+			{
+				$.m_opKind = BinOpKind_Mod;
+			}
+	|	TokenKind_AddAssign
+			{
+				$.m_opKind = BinOpKind_Add;
+			}
+	|	TokenKind_SubAssign
+			{
+				$.m_opKind = BinOpKind_Sub;
+			}
+	|	TokenKind_ShlAssign
+			{
+				$.m_opKind = BinOpKind_Shl;
+			}
+	|	TokenKind_ShrAssign
+			{
+				$.m_opKind = BinOpKind_Shr;
+			}
+	|	TokenKind_AndAssign
+			{
+				$.m_opKind = BinOpKind_And;
+			}
+	|	TokenKind_XorAssign
+			{
+				$.m_opKind = BinOpKind_Xor;
+			}
+	|	TokenKind_OrAssign
+			{
+				$.m_opKind = BinOpKind_Or;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+multiplicative_expression
+	:	assignment_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		(multiplicative_operator assignment_expression
+			{
+				return $.m_value.binaryOperator ($2.m_opKind, $3.m_value);
+			}
+		)*
+	;
+
+class
+{
+	BinOpKind m_opKind;
+}
+multiplicative_operator
+	:	'*'
+			{
+				$.m_opKind = BinOpKind_Mul;
+			}
+	|	'/'
+			{
+				$.m_opKind = BinOpKind_Div;
+			}
+	|	'%'
+			{
+				$.m_opKind = BinOpKind_Mod;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+additive_expression
+	:	multiplicative_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		(additive_operator multiplicative_expression
+			{
+				return $.m_value.binaryOperator ($2.m_opKind, $3.m_value);
+			}
+		)*
+	;
+
+class
+{
+	BinOpKind m_opKind;
+}
+additive_operator
+	:	'+'
+			{
+				$.m_opKind = BinOpKind_Add;
+			}
+	|	'-'
+			{
+				$.m_opKind = BinOpKind_Sub;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+shift_expression
+	:	additive_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		(shift_operator additive_expression
+			{
+				return $.m_value.binaryOperator ($2.m_opKind, $3.m_value);
+			}
+		)*
+	;
+
+class
+{
+	BinOpKind m_opKind;
+}
+shift_operator
+	:	TokenKind_Shl
+			{
+				$.m_opKind = BinOpKind_Shl;
+			}
+	|	TokenKind_Shr
+			{
+				$.m_opKind = BinOpKind_Shr;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+relational_expression
+	:	shift_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		(relational_operator shift_expression
+			{
+				return $.m_value.relationalOperator ($2.m_opKind, $3.m_value);
+			}
+		)*
+	;
+
+class
+{
+	RelOpKind m_opKind;
+}
+relational_operator
+	:	'<'
+			{
+				$.m_opKind = RelOpKind_Lt;
+			}
+	|	'>'
+			{
+				$.m_opKind = RelOpKind_Gt;
+			}
+	|	TokenKind_Le
+			{
+				$.m_opKind = RelOpKind_Le;
+			}
+	|	TokenKind_Ge
+			{
+				$.m_opKind = RelOpKind_Ge;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+equality_expression
+	:	relational_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		(equality_operator relational_expression
+			{
+				return $.m_value.relationalOperator ($2.m_opKind, $3.m_value);
+			}
+		)*
+	;
+
+class
+{
+	RelOpKind m_opKind;
+}
+equality_operator
+	:	TokenKind_Eq
+			{
+				$.m_opKind = RelOpKind_Eq;
+			}
+	|	TokenKind_Ne
+			{
+				$.m_opKind = RelOpKind_Ne;
+			}
+	;
+
+class
+{
+	Value m_value;
+}
+and_expression
+	:	equality_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		('&' equality_expression
+			{
+				return $.m_value.binaryOperator (BinOpKind_And, $3.m_value);
+			}
+		)*
+	;
+
+class
+{
+	Value m_value;
+}
+exclusive_or_expression
+	:	and_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		('^' and_expression
+			{
+				return $.m_value.binaryOperator (BinOpKind_Xor, $3.m_value);
+			}
+		)*
+	;
+
+class
+{
+	Value m_value;
+}
+inclusive_or_expression
+	:	exclusive_or_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		('|' exclusive_or_expression
+			{
+				return $.m_value.binaryOperator (BinOpKind_Or, $3.m_value);
+			}
+		)*
+	;
+
+// for short-circuit-evaluation, control-flow-graph needs to be implemented
+
+class
+{
+	Value m_value;
+}
+logical_and_expression
+	:	inclusive_or_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		(TokenKind_LogicalAnd inclusive_or_expression
+			{
+				$.m_value = $.m_value.isTrue () && $3.m_value.isTrue ();
+			}
+		)*
+	;
+
+class
+{
+	Value m_value;
+}
+logical_or_expression
+	:	logical_and_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		(TokenKind_LogicalOr logical_and_expression
+			{
+				$.m_value = $.m_value.isTrue () || $3.m_value.isTrue ();
+			}
+		)*
+	;
+
+class
+{
+	Value m_value;
+}
+expression
+	:	logical_or_expression
+			{
+				$.m_value = $1.m_value;
+			}
+		('?' logical_or_expression $t ':' expression $f
+			{
+				$.m_value = $.m_value.isTrue () ? $t.m_value : $f.m_value;
+			}
+		)?
+	;
+
+//..............................................................................

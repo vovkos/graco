@@ -68,7 +68,6 @@ add_graco_double_step
 			-o${_OUTPUT_PATH_2}
 			-f${_FRAME_PATH_1}
 			-f${_FRAME_PATH_2}
-			-l
 		DEPENDS ${_DEPENDENCY_LIST}
 		)
 endmacro ()

@@ -49,7 +49,7 @@ Parser::lookupIdentifier (
 	if (!it)
 	{
 		err::setFormatStringError ("'%d': undeclared identifier", name.sz ());
-		return NULL;
+		return false;
 	}
 
 	*value = it->m_value;

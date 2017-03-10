@@ -327,7 +327,7 @@ Value::relationalOperator (
 		return false;
 	}
 
-	ASSERT (opKind < countof (operatorTable));
+	ASSERT ((size_t) opKind < countof (operatorTable));
 	Operator* op = &operatorTable [opKind];
 
 	Type type = AXL_MAX (m_type, value.m_type);

@@ -10,31 +10,31 @@
 #...............................................................................
 
 add_test (
-	NAME jancy
+	NAME graco-jancy
 	WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/jancy
 	COMMAND $<TARGET_FILE:graco> jnc_ct_Parser.llk
 	)
 
 add_test (
-	NAME java
+	NAME graco-java
 	WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 	COMMAND $<TARGET_FILE:graco> java.llk
 	)
 
 add_test (
-	NAME c
+	NAME graco-c
 	WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 	COMMAND $<TARGET_FILE:graco> c.llk
 	)
 
 add_test (
-	NAME left-recursion
+	NAME graco-left-recursion
 	WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 	COMMAND $<TARGET_FILE:graco> left-recursion.llk
 	)
 
 set_tests_properties (
-	left-recursion
+	graco-left-recursion
 	PROPERTIES
 		WILL_FAIL TRUE
 	)

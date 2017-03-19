@@ -17,7 +17,7 @@
 Define*
 DefineMgr::getDefine (const sl::StringRef& name)
 {
-	sl::StringHashTableMapIterator <Define*> it = m_defineMap.visit (name);
+	sl::StringHashTableIterator <Define*> it = m_defineMap.visit (name);
 	if (it->m_value)
 		return it->m_value;
 

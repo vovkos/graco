@@ -109,7 +109,7 @@ main (
 
 	if (!module.m_importList.isEmpty ())
 	{
-		sl::StringHashTable filePathSet;
+		sl::StringHashTable <bool> filePathSet;
 		filePathSet.visit (srcFilePath);
 
 		sl::BoxIterator <sl::String> import = module.m_importList.getHead ();

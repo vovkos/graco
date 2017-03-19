@@ -53,7 +53,7 @@ class ClassMgr
 {
 protected:
 	sl::StdList <Class> m_classList;
-	sl::StringHashTableMap <Class*> m_classMap;
+	sl::StringHashTable <Class*> m_classMap;
 
 public:
 	bool
@@ -90,7 +90,7 @@ public:
 	Class*
 	findClass (const sl::StringRef& name)
 	{
-		sl::StringHashTableMapIterator <Class*> it = m_classMap.find (name);
+		sl::StringHashTableIterator <Class*> it = m_classMap.find (name);
 		return it ? it->m_value : NULL;
 	}
 

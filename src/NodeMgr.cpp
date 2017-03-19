@@ -91,7 +91,7 @@ NodeMgr::trace ()
 SymbolNode*
 NodeMgr::getTokenNode (int token)
 {
-	sl::HashTableMapIterator <int, SymbolNode*> mapIt = m_tokenMap.visit (token);
+	sl::HashTableIterator <int, SymbolNode*> mapIt = m_tokenMap.visit (token);
 	if (mapIt->m_value)
 		return mapIt->m_value;
 
@@ -113,7 +113,7 @@ NodeMgr::getTokenNode (int token)
 SymbolNode*
 NodeMgr::getSymbolNode (const sl::StringRef& name)
 {
-	sl::StringHashTableMapIterator <SymbolNode*> mapIt = m_symbolMap.visit (name);
+	sl::StringHashTableIterator <SymbolNode*> mapIt = m_symbolMap.visit (name);
 	if (mapIt->m_value)
 		return mapIt->m_value;
 

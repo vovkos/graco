@@ -37,7 +37,7 @@ Class::luaExport (lua::LuaState* luaState)
 Class*
 ClassMgr::getClass (const sl::StringRef& name)
 {
-	sl::StringHashTableMapIterator <Class*> it = m_classMap.visit (name);
+	sl::StringHashTableIterator <Class*> it = m_classMap.visit (name);
 	if (it->m_value)
 		return it->m_value;
 

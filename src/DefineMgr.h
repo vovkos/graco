@@ -43,7 +43,7 @@ class DefineMgr
 {
 protected:
 	sl::StdList <Define> m_defineList;
-	sl::StringHashTableMap <Define*> m_defineMap;
+	sl::StringHashTable <Define*> m_defineMap;
 
 public:
 	bool
@@ -77,7 +77,7 @@ public:
 	Define*
 	findDefine (const sl::StringRef& name)
 	{
-		sl::StringHashTableMapIterator <Define*> it = m_defineMap.find (name);
+		sl::StringHashTableIterator <Define*> it = m_defineMap.find (name);
 		return it ? it->m_value : NULL;
 	}
 };

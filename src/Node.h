@@ -209,8 +209,8 @@ public:
 
 	sl::BoxList <sl::String> m_argNameList;
 	sl::BoxList <sl::String> m_localNameList;
-	sl::StringHashTable m_argNameSet;
-	sl::StringHashTable m_localNameSet;
+	sl::StringHashTable <bool> m_argNameSet;
+	sl::StringHashTable <bool> m_localNameSet;
 
 public:
 	SymbolNode ();

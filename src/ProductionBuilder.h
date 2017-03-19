@@ -45,7 +45,7 @@ protected:
 	sl::Array <ArgumentNode*> m_argumentArray;
 	sl::Array <BeaconNode*> m_beaconArray;
 	sl::Array <BeaconNode*> m_beaconDeleteArray;
-	sl::StringHashTableMap <BeaconNode*> m_beaconMap;
+	sl::StringHashTable <BeaconNode*> m_beaconMap;
 
 public:
 	ProductionBuilder (NodeMgr* nodeMgr);

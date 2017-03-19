@@ -251,7 +251,7 @@ ProductionBuilder::addBeacon (BeaconNode* beacon)
 
 	if (!beacon->m_label.isEmpty ())
 	{
-		sl::StringHashTableMapIterator <BeaconNode*> it = m_beaconMap.visit (beacon->m_label);
+		sl::StringHashTableIterator <BeaconNode*> it = m_beaconMap.visit (beacon->m_label);
 		if (!it->m_value)
 			it->m_value = beacon;
 	}
@@ -379,7 +379,7 @@ ProductionBuilder::findVariable (
 	BeaconNode** beacon_o
 	)
 {
-	sl::StringHashTableMapIterator <BeaconNode*> it = m_beaconMap.find (name);
+	sl::StringHashTableIterator <BeaconNode*> it = m_beaconMap.find (name);
 	if (it)
 	{
 		BeaconNode* beacon = it->m_value;
@@ -389,7 +389,7 @@ ProductionBuilder::findVariable (
 			VariableKind_SymbolBeacon;
 	}
 
-	sl::StringHashTableIterator it2 = m_symbol->m_localNameSet.find (name);
+	sl::StringHashTableIterator <bool> it2 = m_symbol->m_localNameSet.find (name);
 	if (it2)
 		return VariableKind_Local;
 

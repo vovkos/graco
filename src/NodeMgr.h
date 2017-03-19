@@ -23,8 +23,8 @@ class NodeMgr
 	friend class ParseTableBuilder;
 
 protected:
-	sl::SimpleHashTableMap <int, SymbolNode*> m_tokenMap;
-	sl::StringHashTableMap <SymbolNode*> m_symbolMap;
+	sl::SimpleHashTable <int, SymbolNode*> m_tokenMap;
+	sl::StringHashTable <SymbolNode*> m_symbolMap;
 
 	GrammarNode m_epsilonNode;
 	SymbolNode m_eofTokenNode;

@@ -730,7 +730,7 @@ Parser::processSymbolEventHandler (
 		if (token->m_token <= 0)
 			break;
 
-		sl::StringHashTableIterator it;
+		sl::StringHashTableIterator <bool> it;
 
 		switch (token->m_token)
 		{

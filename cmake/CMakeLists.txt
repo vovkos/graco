@@ -13,7 +13,7 @@ string (REGEX REPLACE "[a-z]+" ".." GRACO_INSTALL_ROOT_SUBDIR ${GRACO_INSTALL_CM
 
 configure_file (
 	graco_config_build.cmake.in
-	graco_config_build.cmake
+	graco_config.cmake
 	@ONLY
 	)
 

@@ -37,7 +37,7 @@ On Windows you will need to specify paths to Lua librariy -- they are unlikely t
 
 	set (LUA_INC_DIR c:/Develop/lua/lua-${LUA_VERSION}/include)
 
-	if ("${AXL_CPU}" STREQUAL "amd64")
+	if ("${TARGET_CPU}" STREQUAL "amd64")
 		set (LUA_LIB_DIR c:/Develop/lua/lua-${LUA_VERSION}/lib/amd64/${CONFIGURATION_SUFFIX})
 	else ()
 		set (LUA_LIB_DIR c:/Develop/lua/lua-${LUA_VERSION}/lib/x86/${CONFIGURATION_SUFFIX})

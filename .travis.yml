@@ -42,7 +42,7 @@ script:
     - THIS_DIR=`pwd`
     - mkdir axl/build
     - cd axl/build
-    - cmake .. -DAXL_CPU=$TARGET_CPU -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION
+    - cmake .. -DTARGET_CPU=$TARGET_CPU -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION
     - make
 
     - cd $THIS_DIR
@@ -50,6 +50,6 @@ script:
 
     - mkdir build
     - cd build
-    - cmake .. -DAXL_CPU=$TARGET_CPU -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION
+    - cmake .. -DTARGET_CPU=$TARGET_CPU -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION
     - make
     - ctest --output-on-failure

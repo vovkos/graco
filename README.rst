@@ -13,6 +13,8 @@ Graco
 =====
 .. image:: https://travis-ci.org/vovkos/graco.svg?branch=master
 	:target: https://travis-ci.org/vovkos/graco
+.. image:: https://ci.appveyor.com/api/projects/status/1l8srr6wo3ixnc7o?svg=true
+	:target: https://ci.appveyor.com/project/vovkos/graco
 
 Abstract
 --------

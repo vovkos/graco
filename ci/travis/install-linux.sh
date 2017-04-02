@@ -1,4 +1,13 @@
-#!/bin/bash
+#...............................................................................
+#
+#  This file is part of the Graco toolkit.
+#
+#  Graco is distributed under the MIT license.
+#  For details see accompanying license.txt file,
+#  the public copy of which is also available at:
+#  http://tibbo.com/downloads/archive/graco/license.txt
+#
+#...............................................................................
 
 # manually install CMake -- we need at least CMake 3.3
 
@@ -33,4 +42,11 @@ else
 	echo "set (LUA_LIB_DIR /usr/lib/i386-linux-gnu)" >> paths.cmake
 	echo "set (OPENSSL_INC_DIR DISABLED)" >> paths.cmake
 	echo "set (EXPAT_INC_DIR DISABLED)" >> paths.cmake
+fi
+
+# lcov doesn't work with clang on ubuntu out-of-the-box
+
+if [ "$CC" != "clang" ]; then
+	sudo apt-get install -y lcov
+	echo "axl_override_setting (GCC_FLAG_COVERAGE -coverage)" >> settings.cmake
 fi

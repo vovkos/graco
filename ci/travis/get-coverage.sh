@@ -9,9 +9,12 @@
 #
 #...............................................................................
 
-brew update
-brew install lua
-brew install ragel
-brew install lcov
+if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$CC" == "clang" ]; then
+	return # lcov doesn't work with clang on ubuntu out-of-the-box
+fi
 
-echo "axl_override_setting (GCC_FLAG_COVERAGE -coverage)" >> settings.cmake
+lcov --capture --directory . --no-external --output-file coverage.info
+lcov --remove coverage.info '*/axl/*' --output-file coverage.info
+lcov --list coverage.info
+
+curl -s https://codecov.io/bash | bash

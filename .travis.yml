@@ -57,3 +57,6 @@ script:
     - cmake .. -DTARGET_CPU=$TARGET_CPU -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION
     - make
     - ctest --output-on-failure
+
+    - cd $THIS_DIR
+    - source ci/travis/get-coverage.sh

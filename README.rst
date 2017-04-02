@@ -15,6 +15,8 @@ Graco
 	:target: https://travis-ci.org/vovkos/graco
 .. image:: https://ci.appveyor.com/api/projects/status/1l8srr6wo3ixnc7o?svg=true
 	:target: https://ci.appveyor.com/project/vovkos/graco
+.. image:: https://codecov.io/gh/vovkos/graco/branch/master/graph/badge.svg
+	:target: https://codecov.io/gh/vovkos/graco
 
 Abstract
 --------

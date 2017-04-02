@@ -45,8 +45,9 @@ else
 fi
 
 # lcov doesn't work with clang on ubuntu out-of-the-box
+# also, coverage should be collected without optimizations
 
-if [ "$CC" != "clang" ]; then
+if [ "$CC" != "clang" ] && [ "$BUILD_CONFIGURATION" == "Debug" ]; then
 	sudo apt-get install -y lcov
 	echo "axl_override_setting (GCC_FLAG_COVERAGE -coverage)" >> settings.cmake
 fi

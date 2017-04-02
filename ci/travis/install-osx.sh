@@ -12,6 +12,10 @@
 brew update
 brew install lua
 brew install ragel
-brew install lcov
 
-echo "axl_override_setting (GCC_FLAG_COVERAGE -coverage)" >> settings.cmake
+# coverage should be collected without optimizations
+
+if [ "$BUILD_CONFIGURATION" == "Debug" ]; then
+	brew install lcov
+	echo "axl_override_setting (GCC_FLAG_COVERAGE -coverage)" >> settings.cmake
+fi

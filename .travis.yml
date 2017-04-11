@@ -40,7 +40,7 @@ matrix:
 
 before_install:
     - source ci/travis/install-$TRAVIS_OS_NAME.sh
-    - git clone http://github.com/vovkos/axl
+    - git clone --depth 1 http://github.com/vovkos/axl
 
 script:
     - THIS_DIR=`pwd`

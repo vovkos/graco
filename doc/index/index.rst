@@ -14,4 +14,4 @@ Graco Documentation Index
 
 Follow the links below for additional information.
 
-* `Graco Build Guide <http://docs.tibbo.com/graco/build-guide>`_
+* `Graco Build Guide <build-guide/index.html>`_

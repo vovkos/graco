@@ -39,27 +39,12 @@ matrix:
           env: TARGET_CPU=x86 BUILD_CONFIGURATION=Release
 
 before_install:
-    - source ci/travis/install-$TRAVIS_OS_NAME.sh
+    - source ci/travis/set-env.sh
+    - bash ci/travis/install-$TRAVIS_OS_NAME.sh
     - git clone --depth 1 http://github.com/vovkos/axl
 
 script:
-    - THIS_DIR=`pwd`
-    - mkdir axl/build
-    - cd axl/build
-    - cmake .. -DTARGET_CPU=$TARGET_CPU -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION
-    - make
-
-    - cd $THIS_DIR
-    - echo "set (AXL_CMAKE_DIR $THIS_DIR/axl/cmake $THIS_DIR/axl/build/cmake)" >> paths.cmake
-
-    - mkdir build
-    - cd build
-    - cmake .. -DTARGET_CPU=$TARGET_CPU -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION
-    - make
-    - ctest --output-on-failure
-
-    - cd $THIS_DIR
-    - source ci/travis/get-coverage.sh
+    - bash -e ci/travis/build.sh
 
 notifications:
     webhooks:

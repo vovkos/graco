@@ -12,7 +12,7 @@
 set (GRACO_INC_DIR     "@GRACO_ROOT_DIR@/include")
 set (GRACO_FRAME_DIR   "@GRACO_ROOT_DIR@/frame")
 set (GRACO_SAMPLE_DIR  "@GRACO_ROOT_DIR@/samples")
-set (GRACO_EXE         "@GRACO_BIN_BASE_DIR@/${CONFIGURATION_SUFFIX}/graco")
+set (GRACO_EXE         "@GRACO_BIN_BASE_DIR@/${CONFIGURATION}/graco")
 
 set (
 	GRACO_CMAKE_DIR

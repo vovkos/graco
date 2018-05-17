@@ -233,7 +233,7 @@ if (WIN32 AND LUA_DLL_DIR)
 		TARGET graco
 		POST_BUILD
 		COMMAND
-			echo "Copying DLL files for graco..."
+			echo Copying DLL files for graco...
 		COMMAND
 			${CMAKE_COMMAND} -E copy
 			${LUA_DLL_DIR}/${LUA_LIB_NAME}.dll

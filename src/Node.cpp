@@ -13,8 +13,6 @@
 #include "Node.h"
 #include "ClassMgr.h"
 
-#include "axl_g_WarningSuppression.h" // gcc loses warning suppression from pch
-
 //..............................................................................
 
 Node::Node ()

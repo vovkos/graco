@@ -15,8 +15,6 @@
 #include "ParseTableBuilder.h"
 #include "LaDfaBuilder.h"
 
-#include "axl_g_WarningSuppression.h" // gcc loses warning suppression from pch
-
 //..............................................................................
 
 Module::Module ()

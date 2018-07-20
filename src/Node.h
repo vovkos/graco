@@ -11,8 +11,6 @@
 
 #pragma once
 
-#include "axl_g_WarningSuppression.h" // gcc loses warning suppression from pch
-
 //..............................................................................
 
 // forwards

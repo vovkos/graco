@@ -19,11 +19,11 @@
 
 enum ErrorCode
 {
-	ErrorCode_Success = 0,
-	ErrorCode_InvalidCmdLine,
-	ErrorCode_ParseFailure,
-	ErrorCode_BuildFailure,
-	ErrorCode_GenerateFailure,
+	ErrorCode_Success         = 0,
+	ErrorCode_InvalidCmdLine  = -1,
+	ErrorCode_ParseFailure    = -2,
+	ErrorCode_BuildFailure    = -3,
+	ErrorCode_GenerateFailure = -4,
 };
 
 //..............................................................................
@@ -75,7 +75,7 @@ main (
 	CmdLineParser cmdLineParser (&cmdLine);
 	result = cmdLineParser.parse (argc, argv);
 	if (!result)
-		return false;
+		return ErrorCode_InvalidCmdLine;
 
 	if (cmdLine.m_inputFileName.isEmpty ())
 	{

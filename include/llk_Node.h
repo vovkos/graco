@@ -132,7 +132,7 @@ public:
 public:
 	AstNode* m_astNode;
 
-	axl::sl::StdList <Node> m_locatorList;
+	axl::sl::List <Node> m_locatorList;
 	axl::sl::Array <Node*> m_locatorArray;
 
 public:

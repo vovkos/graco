@@ -52,7 +52,7 @@ public:
 class ClassMgr
 {
 protected:
-	sl::StdList <Class> m_classList;
+	sl::List <Class> m_classList;
 	sl::StringHashTable <Class*> m_classMap;
 
 public:

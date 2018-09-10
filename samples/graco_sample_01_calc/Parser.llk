@@ -19,7 +19,7 @@ Includes
 
 Members
 {
-	sl::StdList <Variable> m_variableList;
+	sl::List <Variable> m_variableList;
 	sl::StringHashTable <Variable*> m_variableMap;
 
 	Variable*

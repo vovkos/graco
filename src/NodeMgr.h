@@ -32,17 +32,17 @@ protected:
 	SymbolNode m_startPragmaSymbol;
 	SymbolNode* m_primaryStartSymbol;
 
-	sl::StdList <SymbolNode> m_charTokenList;
-	sl::StdList <SymbolNode> m_namedTokenList;
-	sl::StdList <SymbolNode> m_namedSymbolList;
-	sl::StdList <SymbolNode> m_tempSymbolList;
-	sl::StdList <SequenceNode> m_sequenceList;
-	sl::StdList <BeaconNode> m_beaconList;
-	sl::StdList <DispatcherNode> m_dispatcherList;
-	sl::StdList <ActionNode> m_actionList;
-	sl::StdList <ArgumentNode> m_argumentList;
-	sl::StdList <ConflictNode> m_conflictList;
-	sl::StdList <LaDfaNode> m_laDfaList;
+	sl::List <SymbolNode> m_charTokenList;
+	sl::List <SymbolNode> m_namedTokenList;
+	sl::List <SymbolNode> m_namedSymbolList;
+	sl::List <SymbolNode> m_tempSymbolList;
+	sl::List <SequenceNode> m_sequenceList;
+	sl::List <BeaconNode> m_beaconList;
+	sl::List <DispatcherNode> m_dispatcherList;
+	sl::List <ActionNode> m_actionList;
+	sl::List <ArgumentNode> m_argumentList;
+	sl::List <ConflictNode> m_conflictList;
+	sl::List <LaDfaNode> m_laDfaList;
 
 	sl::Array <SymbolNode*> m_tokenArray;  // char tokens + named tokens
 	sl::Array <SymbolNode*> m_symbolArray; // named symbols + temp symbols

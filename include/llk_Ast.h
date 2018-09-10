@@ -59,7 +59,7 @@ public:
 	typedef AstNode_0 AstNode;
 
 protected:
-	axl::sl::StdList <AstNode> m_list;
+	axl::sl::List <AstNode> m_list;
 	AstNode* m_root;
 
 public:

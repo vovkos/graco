@@ -65,7 +65,7 @@ protected:
 	};
 
 protected:
-	axl::sl::StdList <Node> m_nodeList;
+	axl::sl::List <Node> m_nodeList;
 	axl::ref::Buf <Ast> m_ast;
 
 	axl::sl::Array <Node*> m_predictionStack;

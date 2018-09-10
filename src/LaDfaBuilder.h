@@ -57,10 +57,10 @@ public:
 	size_t m_index;
 	int m_flags;
 
-	sl::StdList <LaDfaThread> m_activeThreadList;
-	sl::StdList <LaDfaThread> m_resolverThreadList;
-	sl::StdList <LaDfaThread> m_completeThreadList;
-	sl::StdList <LaDfaThread> m_epsilonThreadList;
+	sl::List <LaDfaThread> m_activeThreadList;
+	sl::List <LaDfaThread> m_resolverThreadList;
+	sl::List <LaDfaThread> m_completeThreadList;
+	sl::List <LaDfaThread> m_epsilonThreadList;
 
 	LaDfaState* m_fromState;
 	SymbolNode* m_token;
@@ -110,7 +110,7 @@ public:
 class LaDfaBuilder
 {
 protected:
-	sl::StdList <LaDfaState> m_stateList;
+	sl::List <LaDfaState> m_stateList;
 	NodeMgr* m_nodeMgr;
 	sl::Array <Node*>* m_parseTable;
 	size_t m_lookeaheadLimit;

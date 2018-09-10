@@ -42,7 +42,7 @@ public:
 class DefineMgr
 {
 protected:
-	sl::StdList <Define> m_defineList;
+	sl::List <Define> m_defineList;
 	sl::StringHashTable <Define*> m_defineMap;
 
 public:

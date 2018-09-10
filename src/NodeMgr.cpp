@@ -302,7 +302,7 @@ NodeMgr::markReachableNodes ()
 template <typename T>
 static
 void
-deleteUnreachableNodesFromList (sl::StdList <T>* list)
+deleteUnreachableNodesFromList (sl::List <T>* list)
 {
 	sl::Iterator <T> nodeIt = list->getHead ();
 	while (nodeIt)

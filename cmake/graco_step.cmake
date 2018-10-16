@@ -33,7 +33,6 @@ add_graco_step
 			${_INPUT_PATH}
 			-o${_OUTPUT_PATH}
 			-f${_FRAME_PATH}
-			-l
 		DEPENDS ${_DEPENDENCY_LIST}
 		)
 endmacro ()

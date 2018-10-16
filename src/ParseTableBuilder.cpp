@@ -24,7 +24,7 @@ ParseTableBuilder::build ()
 	size_t symbolCount = m_nodeMgr->m_symbolArray.getCount ();
 	size_t terminalCount = m_nodeMgr->m_tokenArray.getCount ();
 
-	m_parseTable->setCount (symbolCount * terminalCount);
+	m_parseTable->setCountZeroConstruct (symbolCount * terminalCount);
 
 	// normal productions
 

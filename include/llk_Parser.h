@@ -693,7 +693,7 @@ protected:
 			SymbolNode* symbolNode = getSymbolTop ();
 			ASSERT (symbolNode);
 
-			symbolNode->m_locatorArray.ensureCount (slotIndex + 1);
+			symbolNode->m_locatorArray.ensureCountZeroConstruct (slotIndex + 1);
 			symbolNode->m_locatorArray [slotIndex] = node;
 			symbolNode->m_locatorList.insertTail (node);
 		}

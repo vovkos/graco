@@ -15,71 +15,71 @@
 //..............................................................................
 
 void
-Class::luaExport (lua::LuaState* luaState)
+Class::luaExport(lua::LuaState* luaState)
 {
-	luaState->createTable (0, 2);
-	luaState->setMemberString ("Name", m_name);
+	luaState->createTable(0, 2);
+	luaState->setMemberString("Name", m_name);
 	if (m_baseClass)
-		luaState->setMemberString ("BaseClass", m_baseClass->m_name);
+		luaState->setMemberString("BaseClass", m_baseClass->m_name);
 
-	luaState->setMemberString ("Members", m_members);
+	luaState->setMemberString("Members", m_members);
 
-	luaState->createTable (0, 3);
-	luaState->setMemberString ("FilePath", m_srcPos.m_filePath);
-	luaState->setMemberInteger ("Line", m_srcPos.m_line);
-	luaState->setMemberInteger ("Col", m_srcPos.m_col);
-	luaState->setMember ("SrcPos");
+	luaState->createTable(0, 3);
+	luaState->setMemberString("FilePath", m_srcPos.m_filePath);
+	luaState->setMemberInteger("Line", m_srcPos.m_line);
+	luaState->setMemberInteger("Col", m_srcPos.m_col);
+	luaState->setMember("SrcPos");
 
 }
 
 //..............................................................................
 
 Class*
-ClassMgr::getClass (const sl::StringRef& name)
+ClassMgr::getClass(const sl::StringRef& name)
 {
-	sl::StringHashTableIterator <Class*> it = m_classMap.visit (name);
+	sl::StringHashTableIterator<Class*> it = m_classMap.visit(name);
 	if (it->m_value)
 		return it->m_value;
 
-	Class* cls = AXL_MEM_NEW (Class);
+	Class* cls = AXL_MEM_NEW(Class);
 	cls->m_flags |= ClassFlag_Named;
 	cls->m_name = name;
-	m_classList.insertTail (cls);
+	m_classList.insertTail(cls);
 	it->m_value = cls;
 	return cls;
 }
 
 Class*
-ClassMgr::createUnnamedClass ()
+ClassMgr::createUnnamedClass()
 {
-	Class* cls = AXL_MEM_NEW (Class);
-	cls->m_name.format ("_cls%d", m_classList.getCount () + 1);
-	m_classList.insertTail (cls); // don't add to class map
+	Class* cls = AXL_MEM_NEW(Class);
+	cls->m_name.format("_cls%d", m_classList.getCount() + 1);
+	m_classList.insertTail(cls); // don't add to class map
 	return cls;
 }
 
 void
-ClassMgr::deleteClass (Class* cls)
+ClassMgr::deleteClass(Class* cls)
 {
 	if (cls->m_flags & ClassFlag_Named)
-		m_classMap.eraseKey (cls->m_name);
+		m_classMap.eraseKey(cls->m_name);
 
-	m_classList.erase (cls);
+	m_classList.erase(cls);
 }
 
 bool
-ClassMgr::verify ()
+ClassMgr::verify()
 {
-	sl::Iterator <Class> it = m_classList.getHead ();
+	sl::Iterator<Class> it = m_classList.getHead();
 	for (; it; it++)
 	{
 		Class* cls = *it;
 
 		if ((cls->m_flags & ClassFlag_Used) && !(cls->m_flags & ClassFlag_Defined))
 		{
-			err::setFormatStringError (
+			err::setFormatStringError(
 				"class '%s' is not defined",
-				cls->m_name.sz ()
+				cls->m_name.sz()
 				);
 			return false;
 		}
@@ -89,26 +89,26 @@ ClassMgr::verify ()
 }
 
 void
-ClassMgr::deleteUnusedClasses ()
+ClassMgr::deleteUnusedClasses()
 {
-	sl::Iterator <Class> it = m_classList.getHead ();
+	sl::Iterator<Class> it = m_classList.getHead();
 	while (it)
 	{
 		Class* cls = *it++;
 		if (!(cls->m_flags & ClassFlag_Used))
-			deleteClass (cls);
+			deleteClass(cls);
 	}
 }
 
 void
-ClassMgr::deleteUnreachableClasses ()
+ClassMgr::deleteUnreachableClasses()
 {
-	sl::Iterator <Class> it = m_classList.getHead ();
+	sl::Iterator<Class> it = m_classList.getHead();
 	while (it)
 	{
 		Class* cls = *it++;
 		if (!(cls->m_flags & ClassFlag_Reachable))
-			deleteClass (cls);
+			deleteClass(cls);
 	}
 }
 

@@ -16,39 +16,39 @@
 //..............................................................................
 
 Variable*
-Parser::createVariable (
+Parser::createVariable(
 	const sl::String& name,
 	const Value& initializer,
 	bool isConst
 	)
 {
-	sl::StringHashTableIterator <Variable*> it = m_variableMap.visit (name);
+	sl::StringHashTableIterator<Variable*> it = m_variableMap.visit(name);
 	if (it->m_value)
 	{
-		err::setFormatStringError ("'%s': identifier redefinition", name.sz ());
+		err::setFormatStringError("'%s': identifier redefinition", name.sz());
 		return NULL;
 	}
 
-	Variable* variable = AXL_MEM_NEW (Variable);
+	Variable* variable = AXL_MEM_NEW(Variable);
 	variable->m_name = name;
 	variable->m_value = initializer;
 	variable->m_isConst = isConst;
-	m_variableList.insertTail (variable);
+	m_variableList.insertTail(variable);
 	it->m_value = variable;
 
 	return variable;
 }
 
 bool
-Parser::lookupIdentifier (
+Parser::lookupIdentifier(
 	const sl::StringRef& name,
 	Value* value
 	)
 {
-	sl::StringHashTableIterator <Variable*> it = m_variableMap.find (name);
+	sl::StringHashTableIterator<Variable*> it = m_variableMap.find(name);
 	if (!it)
 	{
-		err::setFormatStringError ("'%d': undeclared identifier", name.sz ());
+		err::setFormatStringError("'%d': undeclared identifier", name.sz());
 		return false;
 	}
 
@@ -57,17 +57,17 @@ Parser::lookupIdentifier (
 }
 
 bool
-Parser::assertionCheck (
+Parser::assertionCheck(
 	const Value& value,
 	const Token::Pos& openPos,
 	const Token::Pos& closePos
 	)
 {
-	if (!value.isTrue ())
+	if (!value.isTrue())
 	{
-		err::setFormatStringError (
+		err::setFormatStringError(
 			"Assertion failure: %s\n",
-			sl::StringRef (openPos.m_p, closePos.m_p + closePos.m_length - openPos.m_p).sz ()
+			sl::StringRef(openPos.m_p, closePos.m_p + closePos.m_length - openPos.m_p).sz()
 			);
 		return false;
 	}

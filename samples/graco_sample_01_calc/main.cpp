@@ -16,33 +16,33 @@
 //..............................................................................
 
 bool
-parse (const sl::StringRef& p)
+parse(const sl::StringRef& p)
 {
 	bool result;
 
 	Lexer lexer;
-	lexer.create ("my-source", p);
+	lexer.create("my-source", p);
 
 	Parser parser;
-	parser.create (Parser::StartSymbol);
+	parser.create(Parser::StartSymbol);
 
 	for (;;)
 	{
-		const Token* token = lexer.getToken ();
+		const Token* token = lexer.getToken();
 		if (token->m_token == TokenKind_Error)
 		{
-			err::setFormatStringError ("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
+			err::setFormatStringError("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
 			return false;
 		}
 
-		result = parser.parseToken (token);
+		result = parser.parseToken(token);
 		if (!result)
 			return false;
 
 		if (token->m_token == TokenKind_Eof)
 			break;
 
-		lexer.nextToken ();
+		lexer.nextToken();
 	}
 
 	return true;
@@ -52,27 +52,27 @@ parse (const sl::StringRef& p)
 
 #if (_AXL_OS_WIN)
 int
-wmain (
+wmain(
 	int argc,
-	wchar_t* argv []
+	wchar_t* argv[]
 	)
 #else
 int
-main (
+main(
 	int argc,
-	char* argv []
+	char* argv[]
 	)
 #endif
 {
-	g::getModule ()->setTag ("graco_test_cpp");
+	g::getModule()->setTag("graco_test_cpp");
 
-	bool result = parse (
+	bool result = parse(
 		"const pi = 3.14159265358979323846; var r = 100; 2 * pi * r;"
 		"var x, y, z; x = y = z = 10; assert (x == 11);"
 		);
 	if (!result)
 	{
-		printf ("error: %s\n", err::getLastErrorDescription ().sz ());
+		printf("error: %s\n", err::getLastErrorDescription().sz());
 		return -1;
 	}
 

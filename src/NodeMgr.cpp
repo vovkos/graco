@@ -14,7 +14,7 @@
 
 //..............................................................................
 
-NodeMgr::NodeMgr ()
+NodeMgr::NodeMgr()
 {
 	m_masterCount = 0;
 	m_primaryStartSymbol = NULL;
@@ -45,180 +45,180 @@ NodeMgr::NodeMgr ()
 }
 
 void
-NodeMgr::clear ()
+NodeMgr::clear()
 {
-	m_charTokenList.clear ();
-	m_namedTokenList.clear ();
-	m_namedSymbolList.clear ();
-	m_tempSymbolList.clear ();
-	m_sequenceList.clear ();
-	m_beaconList.clear ();
-	m_dispatcherList.clear ();
-	m_actionList.clear ();
-	m_argumentList.clear ();
-	m_conflictList.clear ();
-	m_laDfaList.clear ();
+	m_charTokenList.clear();
+	m_namedTokenList.clear();
+	m_namedSymbolList.clear();
+	m_tempSymbolList.clear();
+	m_sequenceList.clear();
+	m_beaconList.clear();
+	m_dispatcherList.clear();
+	m_actionList.clear();
+	m_argumentList.clear();
+	m_conflictList.clear();
+	m_laDfaList.clear();
 
-	m_tokenMap.clear ();
-	m_symbolMap.clear ();
-	m_anyTokenNode.m_firstArray.clear ();
-	m_anyTokenNode.m_firstSet.clear ();
+	m_tokenMap.clear();
+	m_symbolMap.clear();
+	m_anyTokenNode.m_firstArray.clear();
+	m_anyTokenNode.m_firstSet.clear();
 
 	m_startPragmaSymbol.m_index = -1;
 	m_startPragmaSymbol.m_masterIndex = -1;
-	m_startPragmaSymbol.m_productionArray.clear ();
+	m_startPragmaSymbol.m_productionArray.clear();
 
 	m_masterCount = 0;
 	m_primaryStartSymbol = NULL;
 }
 
 void
-NodeMgr::trace ()
+NodeMgr::trace()
 {
-	traceNodeArray ("TOKENS", &m_tokenArray);
-	traceNodeArray ("SYMBOLS", &m_symbolArray);
-	traceNodeList ("SEQUENCES", m_sequenceList.getHead ());
-	traceNodeList ("BEACONS", m_beaconList.getHead ());
-	traceNodeList ("DISPATCHERS", m_dispatcherList.getHead ());
-	traceNodeList ("ACTIONS", m_actionList.getHead ());
-	traceNodeList ("ARGUMENTS", m_argumentList.getHead ());
-	traceNodeList ("CONFLICTS", m_conflictList.getHead ());
-	traceNodeList ("LOOKAHEAD DFA", m_laDfaList.getHead ());
+	traceNodeArray("TOKENS", &m_tokenArray);
+	traceNodeArray("SYMBOLS", &m_symbolArray);
+	traceNodeList("SEQUENCES", m_sequenceList.getHead ());
+	traceNodeList("BEACONS", m_beaconList.getHead ());
+	traceNodeList("DISPATCHERS", m_dispatcherList.getHead ());
+	traceNodeList("ACTIONS", m_actionList.getHead ());
+	traceNodeList("ARGUMENTS", m_argumentList.getHead ());
+	traceNodeList("CONFLICTS", m_conflictList.getHead ());
+	traceNodeList("LOOKAHEAD DFA", m_laDfaList.getHead ());
 }
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 SymbolNode*
-NodeMgr::getTokenNode (int token)
+NodeMgr::getTokenNode(int token)
 {
-	sl::HashTableIterator <int, SymbolNode*> mapIt = m_tokenMap.visit (token);
+	sl::HashTableIterator<int, SymbolNode*> mapIt = m_tokenMap.visit(token);
 	if (mapIt->m_value)
 		return mapIt->m_value;
 
-	SymbolNode* node = AXL_MEM_NEW (SymbolNode);
+	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
 	node->m_kind = NodeKind_Token;
 	node->m_charToken = token;
 
-	if (isprint (token))
-		node->m_name.format ("\'%c\'", (char) token);
+	if (isprint(token))
+		node->m_name.format("\'%c\'", (char) token);
 	else
-		node->m_name.format ("\\0%d", token);
+		node->m_name.format("\\0%d", token);
 
-	m_charTokenList.insertTail (node);
+	m_charTokenList.insertTail(node);
 	mapIt->m_value = node;
 
 	return node;
 }
 
 SymbolNode*
-NodeMgr::getSymbolNode (const sl::StringRef& name)
+NodeMgr::getSymbolNode(const sl::StringRef& name)
 {
-	sl::StringHashTableIterator <SymbolNode*> mapIt = m_symbolMap.visit (name);
+	sl::StringHashTableIterator<SymbolNode*> mapIt = m_symbolMap.visit(name);
 	if (mapIt->m_value)
 		return mapIt->m_value;
 
-	SymbolNode* node = AXL_MEM_NEW (SymbolNode);
+	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
 	node->m_kind = NodeKind_Symbol;
 	node->m_flags = SymbolNodeFlag_Named;
 	node->m_name = name;
 
-	m_namedSymbolList.insertTail (node);
+	m_namedSymbolList.insertTail(node);
 	mapIt->m_value = node;
 
 	return node;
 }
 
 SymbolNode*
-NodeMgr::createTempSymbolNode ()
+NodeMgr::createTempSymbolNode()
 {
-	SymbolNode* node = AXL_MEM_NEW (SymbolNode);
-	node->m_name.format ("_tmp%d", m_tempSymbolList.getCount () + 1);
-	m_tempSymbolList.insertTail (node);
+	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
+	node->m_name.format("_tmp%d", m_tempSymbolList.getCount() + 1);
+	m_tempSymbolList.insertTail(node);
 	return node;
 }
 
 SequenceNode*
-NodeMgr::createSequenceNode ()
+NodeMgr::createSequenceNode()
 {
-	SequenceNode* node = AXL_MEM_NEW (SequenceNode);
-	node->m_name.format ("_seq%d", m_sequenceList.getCount () + 1);
-	m_sequenceList.insertTail (node);
+	SequenceNode* node = AXL_MEM_NEW(SequenceNode);
+	node->m_name.format("_seq%d", m_sequenceList.getCount() + 1);
+	m_sequenceList.insertTail(node);
 	return node;
 }
 
 SequenceNode*
-NodeMgr::createSequenceNode (GrammarNode* node)
+NodeMgr::createSequenceNode(GrammarNode* node)
 {
-	SequenceNode* sequenceNode = createSequenceNode ();
-	sequenceNode->append (node);
+	SequenceNode* sequenceNode = createSequenceNode();
+	sequenceNode->append(node);
 	return sequenceNode;
 }
 
 BeaconNode*
-NodeMgr::createBeaconNode (SymbolNode* target)
+NodeMgr::createBeaconNode(SymbolNode* target)
 {
-	BeaconNode* beaconNode = AXL_MEM_NEW (BeaconNode);
+	BeaconNode* beaconNode = AXL_MEM_NEW(BeaconNode);
 	beaconNode->m_kind = NodeKind_Beacon;
 	beaconNode->m_target = target;
 	if (target->m_kind == NodeKind_Symbol)
 		beaconNode->m_label = target->m_name;
-	beaconNode->m_name.format (
+	beaconNode->m_name.format(
 		"_bcn%d(%s)",
-		m_beaconList.getCount () + 1,
-		target->m_name.sz ()
+		m_beaconList.getCount() + 1,
+		target->m_name.sz()
 		);
-	m_beaconList.insertTail (beaconNode);
+	m_beaconList.insertTail(beaconNode);
 	return beaconNode;
 }
 
 DispatcherNode*
-NodeMgr::createDispatcherNode (SymbolNode* symbol)
+NodeMgr::createDispatcherNode(SymbolNode* symbol)
 {
-	DispatcherNode* dispatcherNode = AXL_MEM_NEW (DispatcherNode);
-	dispatcherNode->m_name.format ("_dsp%d", m_dispatcherList.getCount () + 1);
+	DispatcherNode* dispatcherNode = AXL_MEM_NEW(DispatcherNode);
+	dispatcherNode->m_name.format("_dsp%d", m_dispatcherList.getCount() + 1);
 	dispatcherNode->m_symbol = symbol;
-	m_dispatcherList.insertTail (dispatcherNode);
+	m_dispatcherList.insertTail(dispatcherNode);
 	return dispatcherNode;
 }
 
 ActionNode*
-NodeMgr::createActionNode ()
+NodeMgr::createActionNode()
 {
-	ActionNode* node = AXL_MEM_NEW (ActionNode);
-	node->m_name.format ("_act%d", m_actionList.getCount () + 1);
-	m_actionList.insertTail (node);
+	ActionNode* node = AXL_MEM_NEW(ActionNode);
+	node->m_name.format("_act%d", m_actionList.getCount() + 1);
+	m_actionList.insertTail(node);
 	return node;
 }
 
 ArgumentNode*
-NodeMgr::createArgumentNode ()
+NodeMgr::createArgumentNode()
 {
-	ArgumentNode* node = AXL_MEM_NEW (ArgumentNode);
-	node->m_name.format ("_arg%d", m_argumentList.getCount () + 1);
-	m_argumentList.insertTail (node);
+	ArgumentNode* node = AXL_MEM_NEW(ArgumentNode);
+	node->m_name.format("_arg%d", m_argumentList.getCount() + 1);
+	m_argumentList.insertTail(node);
 	return node;
 }
 
 ConflictNode*
-NodeMgr::createConflictNode ()
+NodeMgr::createConflictNode()
 {
-	ConflictNode* node = AXL_MEM_NEW (ConflictNode);
-	node->m_name.format ("_cnf%d", m_conflictList.getCount () + 1);
-	m_conflictList.insertTail (node);
+	ConflictNode* node = AXL_MEM_NEW(ConflictNode);
+	node->m_name.format("_cnf%d", m_conflictList.getCount() + 1);
+	m_conflictList.insertTail(node);
 	return node;
 }
 
 LaDfaNode*
-NodeMgr::createLaDfaNode ()
+NodeMgr::createLaDfaNode()
 {
-	LaDfaNode* node = AXL_MEM_NEW (LaDfaNode);
-	node->m_name.format ("_dfa%d", m_laDfaList.getCount () + 1);
-	m_laDfaList.insertTail (node);
+	LaDfaNode* node = AXL_MEM_NEW(LaDfaNode);
+	node->m_name.format("_dfa%d", m_laDfaList.getCount() + 1);
+	m_laDfaList.insertTail(node);
 	return node;
 }
 
 GrammarNode*
-NodeMgr::createQuantifierNode (
+NodeMgr::createQuantifierNode(
 	GrammarNode* node,
 	int kind
 	)
@@ -228,45 +228,45 @@ NodeMgr::createQuantifierNode (
 
 	if (node->m_kind == NodeKind_Action || node->m_kind == NodeKind_Epsilon)
 	{
-		err::setFormatStringError ("can't apply quantifier to action or epsilon nodes");
+		err::setFormatStringError("can't apply quantifier to action or epsilon nodes");
 		return NULL;
 	}
 
 	GrammarNode* resultNode;
 
-	switch (kind)
+	switch(kind)
 	{
 	case '?':
-		tempAlt = createTempSymbolNode ();
-		tempAlt->addProduction (node);
-		tempAlt->addProduction (&m_epsilonNode);
+		tempAlt = createTempSymbolNode();
+		tempAlt->addProduction(node);
+		tempAlt->addProduction(&m_epsilonNode);
 
 		resultNode = tempAlt;
 		break;
 
 	case '*':
-		tempAlt = createTempSymbolNode ();
+		tempAlt = createTempSymbolNode();
 
-		tempSeq = createSequenceNode ();
-		tempSeq->append (node);
-		tempSeq->append (tempAlt);
+		tempSeq = createSequenceNode();
+		tempSeq->append(node);
+		tempSeq->append(tempAlt);
 
-		tempAlt->addProduction (tempSeq);
-		tempAlt->addProduction (&m_epsilonNode);
+		tempAlt->addProduction(tempSeq);
+		tempAlt->addProduction(&m_epsilonNode);
 
 		resultNode = tempAlt;
 		break;
 
 	case '+':
-		tempSeq = createSequenceNode ();
-		tempSeq->append (node);
-		tempSeq->append (createQuantifierNode (node, '*'));
+		tempSeq = createSequenceNode();
+		tempSeq->append(node);
+		tempSeq->append(createQuantifierNode(node, '*'));
 
 		resultNode = tempSeq;
 		break;
 
 	default:
-		ASSERT (false);
+		ASSERT(false);
 		return NULL;
 	}
 
@@ -278,87 +278,87 @@ NodeMgr::createQuantifierNode (
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
-NodeMgr::markReachableNodes ()
+NodeMgr::markReachableNodes()
 {
-	sl::Iterator <SymbolNode> nodeIt = m_namedSymbolList.getHead ();
+	sl::Iterator<SymbolNode> nodeIt = m_namedSymbolList.getHead();
 
 	if (m_primaryStartSymbol)
 		for (; nodeIt; nodeIt++)
 		{
 			SymbolNode* node = *nodeIt;
 			if (node->m_flags & SymbolNodeFlag_Start)
-				node->markReachable ();
+				node->markReachable();
 		}
 	else
 		for (; nodeIt; nodeIt++)
 		{
 			SymbolNode* node = *nodeIt;
-			node->markReachable ();
+			node->markReachable();
 		}
 
-	m_startPragmaSymbol.markReachable ();
+	m_startPragmaSymbol.markReachable();
 }
 
 template <typename T>
 static
 void
-deleteUnreachableNodesFromList (sl::List <T>* list)
+deleteUnreachableNodesFromList(sl::List<T>* list)
 {
-	sl::Iterator <T> nodeIt = list->getHead ();
+	sl::Iterator<T> nodeIt = list->getHead();
 	while (nodeIt)
 	{
 		T* node = *nodeIt++;
-		if (!node->isReachable ())
-			list->erase (node);
+		if (!node->isReachable())
+			list->erase(node);
 	}
 }
 
 void
-NodeMgr::deleteUnreachableNodes ()
+NodeMgr::deleteUnreachableNodes()
 {
-	deleteUnreachableNodesFromList (&m_charTokenList);
-	deleteUnreachableNodesFromList (&m_namedSymbolList);
-	deleteUnreachableNodesFromList (&m_tempSymbolList);
-	deleteUnreachableNodesFromList (&m_sequenceList);
-	deleteUnreachableNodesFromList (&m_beaconList);
-	deleteUnreachableNodesFromList (&m_actionList);
-	deleteUnreachableNodesFromList (&m_argumentList);
+	deleteUnreachableNodesFromList(&m_charTokenList);
+	deleteUnreachableNodesFromList(&m_namedSymbolList);
+	deleteUnreachableNodesFromList(&m_tempSymbolList);
+	deleteUnreachableNodesFromList(&m_sequenceList);
+	deleteUnreachableNodesFromList(&m_beaconList);
+	deleteUnreachableNodesFromList(&m_actionList);
+	deleteUnreachableNodesFromList(&m_argumentList);
 }
 
 void
-NodeMgr::indexTokens ()
+NodeMgr::indexTokens()
 {
 	size_t i = 0;
 
-	size_t count = m_charTokenList.getCount () + 2;
-	m_tokenArray.setCount (count);
+	size_t count = m_charTokenList.getCount() + 2;
+	m_tokenArray.setCount(count);
 
-	m_tokenArray [i++] = &m_eofTokenNode;
-	m_tokenArray [i++] = &m_anyTokenNode;
+	m_tokenArray[i++] = &m_eofTokenNode;
+	m_tokenArray[i++] = &m_anyTokenNode;
 
-	sl::Iterator <SymbolNode> nodeIt = m_charTokenList.getHead ();
+	sl::Iterator<SymbolNode> nodeIt = m_charTokenList.getHead();
 	for (; nodeIt; nodeIt++, i++)
 	{
 		SymbolNode* node = *nodeIt;
 		node->m_index = i;
 		node->m_masterIndex = i;
-		m_tokenArray [i] = node;
+		m_tokenArray[i] = node;
 	}
 
 	m_masterCount = i;
 }
 
 void
-NodeMgr::indexSymbols ()
+NodeMgr::indexSymbols()
 {
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	sl::Iterator <SymbolNode> nodeIt = m_namedSymbolList.getHead ();
+	sl::Iterator<SymbolNode> nodeIt = m_namedSymbolList.getHead();
 	while (nodeIt)
 	{
 		SymbolNode* node = *nodeIt++;
-		if (!node->m_productionArray.isEmpty ())
+		if (!node->m_productionArray.isEmpty())
 			continue;
 
 		node->m_kind = NodeKind_Token;
@@ -367,37 +367,37 @@ NodeMgr::indexSymbols ()
 
 		j++;
 
-		m_namedSymbolList.remove (node);
-		m_namedTokenList.insertTail (node);
-		m_tokenArray.append (node);
+		m_namedSymbolList.remove(node);
+		m_namedTokenList.insertTail(node);
+		m_tokenArray.append(node);
 	}
 
-	size_t count = m_namedSymbolList.getCount () + m_tempSymbolList.getCount ();
-	m_symbolArray.setCount (count);
+	size_t count = m_namedSymbolList.getCount() + m_tempSymbolList.getCount();
+	m_symbolArray.setCount(count);
 
-	nodeIt = m_namedSymbolList.getHead ();
+	nodeIt = m_namedSymbolList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		SymbolNode* node = *nodeIt;
 		node->m_index = i;
 		node->m_masterIndex = j;
-		m_symbolArray [i] = node;
+		m_symbolArray[i] = node;
 	}
 
-	nodeIt = m_tempSymbolList.getHead ();
+	nodeIt = m_tempSymbolList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		SymbolNode* node = *nodeIt;
 		node->m_index = i;
 		node->m_masterIndex = j;
-		m_symbolArray [i] = node;
+		m_symbolArray[i] = node;
 	}
 
-	if (!m_startPragmaSymbol.m_productionArray.isEmpty ())
+	if (!m_startPragmaSymbol.m_productionArray.isEmpty())
 	{
 		m_startPragmaSymbol.m_index = i;
 		m_startPragmaSymbol.m_masterIndex = j;
-		m_symbolArray.append (&m_startPragmaSymbol);
+		m_symbolArray.append(&m_startPragmaSymbol);
 
 		i++;
 		j++;
@@ -407,14 +407,14 @@ NodeMgr::indexSymbols ()
 }
 
 void
-NodeMgr::indexSequences ()
+NodeMgr::indexSequences()
 {
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	size_t count = m_sequenceList.getCount ();
+	size_t count = m_sequenceList.getCount();
 
-	sl::Iterator <SequenceNode> nodeIt = m_sequenceList.getHead ();
+	sl::Iterator<SequenceNode> nodeIt = m_sequenceList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		SequenceNode* node = *nodeIt;
@@ -426,12 +426,12 @@ NodeMgr::indexSequences ()
 }
 
 void
-NodeMgr::indexBeacons ()
+NodeMgr::indexBeacons()
 {
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	sl::Iterator <BeaconNode> nodeIt = m_beaconList.getHead ();
+	sl::Iterator<BeaconNode> nodeIt = m_beaconList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		BeaconNode* node = *nodeIt;
@@ -443,11 +443,11 @@ NodeMgr::indexBeacons ()
 }
 
 void
-NodeMgr::indexDispatchers ()
+NodeMgr::indexDispatchers()
 {
 	size_t i = 0;
 
-	sl::Iterator <DispatcherNode> nodeIt = m_dispatcherList.getHead ();
+	sl::Iterator<DispatcherNode> nodeIt = m_dispatcherList.getHead();
 	for (; nodeIt; nodeIt++, i++)
 	{
 		DispatcherNode* node = *nodeIt;
@@ -456,12 +456,12 @@ NodeMgr::indexDispatchers ()
 }
 
 void
-NodeMgr::indexActions ()
+NodeMgr::indexActions()
 {
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	sl::Iterator <ActionNode> nodeIt = m_actionList.getHead ();
+	sl::Iterator<ActionNode> nodeIt = m_actionList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		ActionNode* node = *nodeIt;
@@ -473,12 +473,12 @@ NodeMgr::indexActions ()
 }
 
 void
-NodeMgr::indexArguments ()
+NodeMgr::indexArguments()
 {
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	sl::Iterator <ArgumentNode> nodeIt = m_argumentList.getHead ();
+	sl::Iterator<ArgumentNode> nodeIt = m_argumentList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		ArgumentNode* node = *nodeIt;
@@ -490,12 +490,12 @@ NodeMgr::indexArguments ()
 }
 
 void
-NodeMgr::indexLaDfaNodes ()
+NodeMgr::indexLaDfaNodes()
 {
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	sl::Iterator <LaDfaNode> nodeIt = m_laDfaList.getHead ();
+	sl::Iterator<LaDfaNode> nodeIt = m_laDfaList.getHead();
 	for (; nodeIt; nodeIt++)
 	{
 		LaDfaNode* node = *nodeIt;
@@ -514,73 +514,73 @@ NodeMgr::indexLaDfaNodes ()
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
-NodeMgr::luaExport (lua::LuaState* luaState)
+NodeMgr::luaExport(lua::LuaState* luaState)
 {
-	luaState->setGlobalInteger ("StartSymbol", m_primaryStartSymbol ? m_primaryStartSymbol->m_index : -1);
-	luaState->setGlobalInteger ("StartPragmaSymbol", m_startPragmaSymbol.m_index);
-	luaState->setGlobalInteger ("NamedTokenCount", m_namedTokenList.getCount ());
-	luaState->setGlobalInteger ("NamedSymbolCount", m_namedSymbolList.getCount ());
+	luaState->setGlobalInteger("StartSymbol", m_primaryStartSymbol ? m_primaryStartSymbol->m_index : -1);
+	luaState->setGlobalInteger("StartPragmaSymbol", m_startPragmaSymbol.m_index);
+	luaState->setGlobalInteger("NamedTokenCount", m_namedTokenList.getCount());
+	luaState->setGlobalInteger("NamedSymbolCount", m_namedSymbolList.getCount());
 
-	luaExportNodeArray (luaState, "TokenTable", (Node**) (SymbolNode**) m_tokenArray, m_tokenArray.getCount ());
-	luaExportNodeArray (luaState, "SymbolTable", (Node**) (SymbolNode**) m_symbolArray, m_symbolArray.getCount ());
-	luaExportNodeList (luaState, "SequenceTable", m_sequenceList.getHead (), m_sequenceList.getCount ());
-	luaExportNodeList (luaState, "BeaconTable", m_beaconList.getHead (), m_beaconList.getCount ());
-	luaExportNodeList (luaState, "DispatcherTable", m_dispatcherList.getHead (), m_dispatcherList.getCount ());
-	luaExportNodeList (luaState, "ActionTable", m_actionList.getHead (), m_actionList.getCount ());
-	luaExportNodeList (luaState, "ArgumentTable", m_argumentList.getHead (), m_argumentList.getCount ());
+	luaExportNodeArray(luaState, "TokenTable", (Node**) (SymbolNode**) m_tokenArray, m_tokenArray.getCount());
+	luaExportNodeArray(luaState, "SymbolTable", (Node**) (SymbolNode**) m_symbolArray, m_symbolArray.getCount());
+	luaExportNodeList(luaState, "SequenceTable", m_sequenceList.getHead (), m_sequenceList.getCount());
+	luaExportNodeList(luaState, "BeaconTable", m_beaconList.getHead (), m_beaconList.getCount());
+	luaExportNodeList(luaState, "DispatcherTable", m_dispatcherList.getHead (), m_dispatcherList.getCount());
+	luaExportNodeList(luaState, "ActionTable", m_actionList.getHead (), m_actionList.getCount());
+	luaExportNodeList(luaState, "ArgumentTable", m_argumentList.getHead (), m_argumentList.getCount());
 
-	luaExportLaDfaTable (luaState);
+	luaExportLaDfaTable(luaState);
 }
 
 void
-NodeMgr::luaExportNodeArray (
+NodeMgr::luaExportNodeArray(
 	lua::LuaState* luaState,
 	const sl::StringRef& name,
 	Node* const* nodeArray,
 	size_t count
 	)
 {
-	luaState->createTable (count);
+	luaState->createTable(count);
 
 	for (size_t i = 0; i < count; i++)
 	{
-		Node* node = nodeArray [i];
-		node->luaExport (luaState);
-		luaState->setArrayElement (i + 1);
+		Node* node = nodeArray[i];
+		node->luaExport(luaState);
+		luaState->setArrayElement(i + 1);
 	}
 
 
-	luaState->setGlobal (name);
+	luaState->setGlobal(name);
 }
 
 void
-NodeMgr::luaExportNodeList (
+NodeMgr::luaExportNodeList(
 	lua::LuaState* luaState,
 	const sl::StringRef& name,
-	sl::Iterator <Node> nodeIt,
+	sl::Iterator<Node> nodeIt,
 	size_t countEstimate
 	)
 {
-	luaState->createTable (countEstimate);
+	luaState->createTable(countEstimate);
 
 	size_t i = 1;
 
 	for (; nodeIt; nodeIt++, i++)
 	{
-		nodeIt->luaExport (luaState);
-		luaState->setArrayElement (i);
+		nodeIt->luaExport(luaState);
+		luaState->setArrayElement(i);
 	}
 
-	luaState->setGlobal (name);
+	luaState->setGlobal(name);
 }
 
 void
-NodeMgr::luaExportLaDfaTable (lua::LuaState* luaState)
+NodeMgr::luaExportLaDfaTable(lua::LuaState* luaState)
 {
-	luaState->createTable (m_laDfaList.getCount ());
+	luaState->createTable(m_laDfaList.getCount());
 
 	size_t i = 1;
-	sl::Iterator <LaDfaNode> nodeIt = m_laDfaList.getHead ();
+	sl::Iterator<LaDfaNode> nodeIt = m_laDfaList.getHead();
 
 	for (; nodeIt; nodeIt++)
 	{
@@ -588,12 +588,12 @@ NodeMgr::luaExportLaDfaTable (lua::LuaState* luaState)
 
 		if (node->m_masterIndex != -1)
 		{
-			node->luaExport (luaState);
-			luaState->setArrayElement (i++);
+			node->luaExport(luaState);
+			luaState->setArrayElement(i++);
 		}
 	}
 
-	luaState->setGlobal ("LaDfaTable");
+	luaState->setGlobal("LaDfaTable");
 }
 
 //..............................................................................

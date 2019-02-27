@@ -29,9 +29,9 @@ enum ErrorCode
 //..............................................................................
 
 void
-printVersion ()
+printVersion()
 {
-	printf (
+	printf(
 		"Graco Grammar Compiler v%d.%d.%d (%s%s)\n",
 		VERSION_MAJOR,
 		VERSION_MINOR,
@@ -42,54 +42,54 @@ printVersion ()
 }
 
 void
-printUsage ()
+printUsage()
 {
-	printVersion ();
+	printVersion();
 
-	sl::String helpString = CmdLineSwitchTable::getHelpString ();
-	printf ("Usage: graco [<options>...] <source_file>\n%s", helpString.sz ());
+	sl::String helpString = CmdLineSwitchTable::getHelpString();
+	printf("Usage: graco [<options>...] <source_file>\n%s", helpString.sz());
 }
 
 //..............................................................................
 
 #if (_AXL_OS_WIN)
 int
-wmain (
+wmain(
 	int argc,
-	wchar_t* argv []
+	wchar_t* argv[]
 	)
 #else
 int
-main (
+main(
 	int argc,
-	char* argv []
+	char* argv[]
 	)
 #endif
 {
 	bool result;
 
-	g::getModule ()->setTag ("graco");
-	lex::registerParseErrorProvider ();
+	g::getModule()->setTag("graco");
+	lex::registerParseErrorProvider();
 
 	CmdLine cmdLine;
-	CmdLineParser cmdLineParser (&cmdLine);
-	result = cmdLineParser.parse (argc, argv);
+	CmdLineParser cmdLineParser(&cmdLine);
+	result = cmdLineParser.parse(argc, argv);
 	if (!result)
 		return ErrorCode_InvalidCmdLine;
 
-	if (cmdLine.m_inputFileName.isEmpty ())
+	if (cmdLine.m_inputFileName.isEmpty())
 	{
-		printUsage ();
+		printUsage();
 		return ErrorCode_Success;
 	}
 
-	sl::String srcFilePath = io::getFullFilePath (cmdLine.m_inputFileName);
-	if (srcFilePath.isEmpty ())
+	sl::String srcFilePath = io::getFullFilePath(cmdLine.m_inputFileName);
+	if (srcFilePath.isEmpty())
 	{
-		printf (
+		printf(
 			"Cannot get full file path of '%s': %s\n",
-			cmdLine.m_inputFileName.sz (),
-			err::getLastErrorDescription ().sz ()
+			cmdLine.m_inputFileName.sz(),
+			err::getLastErrorDescription().sz()
 			);
 		return ErrorCode_ParseFailure;
 	}
@@ -100,70 +100,70 @@ main (
 	Module module;
 	Parser parser;
 
-	result = parser.parseFile (&module, &cmdLine, srcFilePath);
+	result = parser.parseFile(&module, &cmdLine, srcFilePath);
 	if (!result)
 	{
-		printf ("%s\n", err::getLastErrorDescription ().sz ());
+		printf("%s\n", err::getLastErrorDescription().sz());
 		return ErrorCode_ParseFailure;
 	}
 
-	if (!module.m_importList.isEmpty ())
+	if (!module.m_importList.isEmpty())
 	{
-		sl::StringHashTable <bool> filePathSet;
-		filePathSet.visit (srcFilePath);
+		sl::StringHashTable<bool> filePathSet;
+		filePathSet.visit(srcFilePath);
 
-		sl::BoxIterator <sl::String> import = module.m_importList.getHead ();
+		sl::BoxIterator<sl::String> import = module.m_importList.getHead();
 		for (; import; import++)
 		{
 			sl::String importFilePath = *import;
-			if (filePathSet.find (importFilePath))
+			if (filePathSet.find(importFilePath))
 				continue;
 
-			result = parser.parseFile (&module, &cmdLine, importFilePath);
+			result = parser.parseFile(&module, &cmdLine, importFilePath);
 			if (!result)
 			{
-				printf ("%s\n", err::getLastErrorDescription ().sz ());
+				printf("%s\n", err::getLastErrorDescription().sz());
 				return ErrorCode_ParseFailure;
 			}
 
-			filePathSet.visit (importFilePath);
+			filePathSet.visit(importFilePath);
 		}
 	}
 
-	if (!cmdLine.m_bnfFileName.isEmpty ())
+	if (!cmdLine.m_bnfFileName.isEmpty())
 	{
-		result = module.writeBnfFile (cmdLine.m_bnfFileName);
+		result = module.writeBnfFile(cmdLine.m_bnfFileName);
 		if (!result)
 		{
-			printf ("%s\n", err::getLastErrorDescription ().sz ());
+			printf("%s\n", err::getLastErrorDescription().sz());
 			return ErrorCode_BuildFailure;
 		}
 	}
 
-	result = module.build (&cmdLine);
+	result = module.build(&cmdLine);
 	if (!result)
 	{
-		printf ("%s\n", err::getLastErrorDescription ().sz ());
+		printf("%s\n", err::getLastErrorDescription().sz());
 		return ErrorCode_BuildFailure;
 	}
 
 	if (cmdLine.m_flags & CmdLineFlag_Verbose)
-		module.trace ();
+		module.trace();
 
 	Generator generator;
-	generator.prepare (&module);
+	generator.prepare(&module);
 	generator.m_cmdLine = &cmdLine;
 
-	ASSERT (cmdLine.m_outputFileNameList.getCount () == cmdLine.m_frameFileNameList.getCount ());
-	sl::BoxIterator <sl::String> outputFileNameIt = cmdLine.m_outputFileNameList.getHead ();
-	sl::BoxIterator <sl::String> frameFileNameIt = cmdLine.m_frameFileNameList.getHead ();
+	ASSERT(cmdLine.m_outputFileNameList.getCount() == cmdLine.m_frameFileNameList.getCount());
+	sl::BoxIterator<sl::String> outputFileNameIt = cmdLine.m_outputFileNameList.getHead();
+	sl::BoxIterator<sl::String> frameFileNameIt = cmdLine.m_frameFileNameList.getHead();
 
 	for (; outputFileNameIt && frameFileNameIt; outputFileNameIt++, frameFileNameIt++)
 	{
-		result = generator.generate (*outputFileNameIt, *frameFileNameIt);
+		result = generator.generate(*outputFileNameIt, *frameFileNameIt);
 		if (!result)
 		{
-			printf ("%s\n", err::getLastErrorDescription ().sz ());
+			printf("%s\n", err::getLastErrorDescription().sz());
 			return ErrorCode_GenerateFailure;
 		}
 	}

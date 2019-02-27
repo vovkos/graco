@@ -60,43 +60,43 @@ public:
 	int m_flags;
 
 public:
-	Node ();
+	Node();
 
 	virtual
-	~Node ()
+	~Node()
 	{
 	}
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	virtual
 	void
-	luaExport (lua::LuaState* luaState)
+	luaExport(lua::LuaState* luaState)
 	{
 	}
 
 	bool
-	isReachable ()
+	isReachable()
 	{
 		return (m_flags & NodeFlag_Reachable) != 0;
 	}
 
 	virtual
 	bool
-	markReachable ();
+	markReachable();
 
 	virtual
 	sl::String
-	getProductionString ()
+	getProductionString()
 	{
 		return m_name;
 	}
 
 	virtual
 	sl::String
-	getBnfString ()
+	getBnfString()
 	{
 		return m_name;
 	}
@@ -120,50 +120,50 @@ public:
 	int m_quantifierKind; // '?' '*' '+'
 	GrammarNode* m_quantifiedNode;
 
-	sl::Array <SymbolNode*> m_firstArray;
-	sl::Array <SymbolNode*> m_followArray;
+	sl::Array<SymbolNode*> m_firstArray;
+	sl::Array<SymbolNode*> m_followArray;
 
 	sl::BitMap m_firstSet;
 	sl::BitMap m_followSet;
 
 public:
-	GrammarNode ()
+	GrammarNode()
 	{
 		m_quantifierKind = 0;
 	}
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	bool
-	isNullable ()
+	isNullable()
 	{
 		return (m_flags & GrammarNodeFlag_Nullable) != 0;
 	}
 
 	bool
-	isFinal ()
+	isFinal()
 	{
 		return (m_flags & GrammarNodeFlag_Final) != 0;
 	}
 
 	bool
-	markNullable ();
+	markNullable();
 
 	bool
-	markFinal ();
+	markFinal();
 
 	GrammarNode*
-	stripBeacon ();
+	stripBeacon();
 
 	virtual
 	sl::String
-	getBnfString ();
+	getBnfString();
 
 protected:
 	void
-	luaExportSrcPos (
+	luaExportSrcPos(
 		lua::LuaState* luaState,
 		const lex::LineCol& lineCol
 		);
@@ -193,7 +193,7 @@ public:
 	Class* m_class;
 	GrammarNode* m_resolver;
 	size_t m_resolverPriority;
-	sl::Array <GrammarNode*> m_productionArray;
+	sl::Array<GrammarNode*> m_productionArray;
 
 	sl::String m_arg;
 	sl::String m_local;
@@ -205,35 +205,35 @@ public:
 	lex::LineCol m_enterLineCol;
 	lex::LineCol m_leaveLineCol;
 
-	sl::BoxList <sl::String> m_argNameList;
-	sl::BoxList <sl::String> m_localNameList;
-	sl::StringHashTable <bool> m_argNameSet;
-	sl::StringHashTable <bool> m_localNameSet;
+	sl::BoxList<sl::String> m_argNameList;
+	sl::BoxList<sl::String> m_localNameList;
+	sl::StringHashTable<bool> m_argNameSet;
+	sl::StringHashTable<bool> m_localNameSet;
 
 public:
-	SymbolNode ();
+	SymbolNode();
 
 	sl::String
-	getArgName (size_t index);
+	getArgName(size_t index);
 
 	void
-	addProduction (GrammarNode* node);
+	addProduction(GrammarNode* node);
 
 	virtual
 	bool
-	markReachable ();
+	markReachable();
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	virtual
 	void
-	luaExport (lua::LuaState* luaState);
+	luaExport(lua::LuaState* luaState);
 
 	virtual
 	sl::String
-	getBnfString ();
+	getBnfString();
 };
 
 //..............................................................................
@@ -241,33 +241,33 @@ public:
 class SequenceNode: public GrammarNode
 {
 public:
-	sl::Array <GrammarNode*> m_sequence;
+	sl::Array<GrammarNode*> m_sequence;
 
 public:
-	SequenceNode ();
+	SequenceNode();
 
 	void
-	append (GrammarNode* node);
+	append(GrammarNode* node);
 
 	virtual
 	bool
-	markReachable ();
+	markReachable();
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	virtual
 	void
-	luaExport (lua::LuaState* luaState);
+	luaExport(lua::LuaState* luaState);
 
 	virtual
 	sl::String
-	getProductionString ();
+	getProductionString();
 
 	virtual
 	sl::String
-	getBnfString ();
+	getBnfString();
 };
 
 //..............................................................................
@@ -286,7 +286,7 @@ public:
 	DispatcherNode* m_dispatcher;
 	GrammarNode* m_resolver;
 
-	UserNode ();
+	UserNode();
 };
 
 //..............................................................................
@@ -297,21 +297,21 @@ public:
 	sl::String m_userCode;
 
 public:
-	ActionNode ();
+	ActionNode();
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	virtual
 	void
-	luaExport (lua::LuaState* luaState);
+	luaExport(lua::LuaState* luaState);
 
 	virtual
 	sl::String
-	getBnfString ()
+	getBnfString()
 	{
-		return sl::String ();
+		return sl::String();
 	}
 };
 
@@ -321,24 +321,24 @@ class ArgumentNode: public UserNode
 {
 public:
 	SymbolNode* m_targetSymbol;
-	sl::BoxList <sl::String> m_argValueList;
+	sl::BoxList<sl::String> m_argValueList;
 
 public:
-	ArgumentNode ();
+	ArgumentNode();
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	virtual
 	void
-	luaExport (lua::LuaState* luaState);
+	luaExport(lua::LuaState* luaState);
 
 	virtual
 	sl::String
-	getBnfString ()
+	getBnfString()
 	{
-		return sl::String ();
+		return sl::String();
 	}
 };
 
@@ -362,25 +362,25 @@ public:
 	GrammarNode* m_resolver;
 
 public:
-	BeaconNode ();
+	BeaconNode();
 
 	virtual
 	bool
-	markReachable ();
+	markReachable();
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	virtual
 	void
-	luaExport (lua::LuaState* luaState);
+	luaExport(lua::LuaState* luaState);
 
 	virtual
 	sl::String
-	getBnfString ()
+	getBnfString()
 	{
-		return m_target ? m_target->getBnfString () : m_name;
+		return m_target ? m_target->getBnfString() : m_name;
 	}
 };
 
@@ -390,21 +390,21 @@ class DispatcherNode: public Node
 {
 public:
 	SymbolNode* m_symbol;
-	sl::Array <BeaconNode*> m_beaconArray;
+	sl::Array<BeaconNode*> m_beaconArray;
 
 public:
-	DispatcherNode ()
+	DispatcherNode()
 	{
 		m_kind = NodeKind_Dispatcher;
 	}
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	virtual
 	void
-	luaExport (lua::LuaState* luaState);
+	luaExport(lua::LuaState* luaState);
 };
 
 //..............................................................................
@@ -415,29 +415,29 @@ public:
 	SymbolNode* m_symbol;
 	SymbolNode* m_token;
 	Node* m_resultNode; // lookahead DFA or immediate production
-	sl::Array <GrammarNode*> m_productionArray;
+	sl::Array<GrammarNode*> m_productionArray;
 
 public:
-	ConflictNode ();
+	ConflictNode();
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	virtual
 	void
-	luaExport (lua::LuaState* luaState)
+	luaExport(lua::LuaState* luaState)
 	{
-		ASSERT (false); // all the conflicts should be resolved
+		ASSERT(false); // all the conflicts should be resolved
 	}
 
 	void
-	pushError ()
+	pushError()
 	{
-		err::pushFormatStringError (
+		err::pushFormatStringError(
 			"conflict at '%s':'%s'",
-			m_symbol->m_name.sz (),
-			m_token->m_name.sz ()
+			m_symbol->m_name.sz(),
+			m_token->m_name.sz()
 			);
 	}
 };
@@ -461,41 +461,41 @@ public:
 	LaDfaNode* m_resolverUplink;
 	Node* m_production;
 
-	sl::Array <LaDfaNode*> m_transitionArray;
+	sl::Array<LaDfaNode*> m_transitionArray;
 
 public:
-	LaDfaNode ();
+	LaDfaNode();
 
 	virtual
 	void
-	trace ();
+	trace();
 
 	virtual
 	void
-	luaExport (lua::LuaState* luaState);
+	luaExport(lua::LuaState* luaState);
 
 protected:
 	void
-	luaExportResolverMembers (lua::LuaState* luaState);
+	luaExportResolverMembers(lua::LuaState* luaState);
 };
 
 //..............................................................................
 
 template <typename T>
 void
-traceNodeList (
+traceNodeList(
 	const sl::StringRef& name,
-	sl::Iterator <T> nodeIt
+	sl::Iterator<T> nodeIt
 	)
 {
-	printf ("%s\n", name.sz ());
+	printf("%s\n", name.sz());
 
 	for (; nodeIt; nodeIt++)
 	{
 		T* node = *nodeIt;
 
-		printf ("%3d/%-3d\t", node->m_index, node->m_masterIndex);
-		node->trace ();
+		printf("%3d/%-3d\t", node->m_index, node->m_masterIndex);
+		node->trace();
 	}
 }
 
@@ -503,20 +503,20 @@ traceNodeList (
 
 template <typename T>
 void
-traceNodeArray (
+traceNodeArray(
 	const sl::StringRef& name,
-	const sl::Array <T*>* array
+	const sl::Array<T*>* array
 	)
 {
-	printf ("%s\n", name.sz ());
+	printf("%s\n", name.sz());
 
-	size_t count = array->getCount ();
+	size_t count = array->getCount();
 	for (size_t i = 0; i < count; i++)
 	{
 		T* node = (*array) [i];
 
-		printf ("%3d/%-3d ", node->m_index, node->m_masterIndex);
-		node->trace ();
+		printf("%3d/%-3d ", node->m_index, node->m_masterIndex);
+		node->trace();
 	}
 }
 
@@ -524,11 +524,11 @@ traceNodeArray (
 
 template <typename T>
 sl::String
-nodeArrayToString (const sl::Array <T*>* array)
+nodeArrayToString(const sl::Array<T*>* array)
 {
-	size_t count = array->getCount ();
+	size_t count = array->getCount();
 	if (!count)
-		return sl::String ();
+		return sl::String();
 
 	sl::String string = (*array) [0]->m_name;
 

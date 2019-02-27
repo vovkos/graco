@@ -45,38 +45,38 @@ enum TokenKind
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-AXL_LEX_BEGIN_TOKEN_NAME_MAP (TokenName)
-	AXL_LEX_TOKEN_NAME (TokenKind_Eof,          "eof")
-	AXL_LEX_TOKEN_NAME (TokenKind_Error,        "error")
-	AXL_LEX_TOKEN_NAME (TokenKind_Identifier,   "identifier")
-	AXL_LEX_TOKEN_NAME (TokenKind_Integer,      "integer-constant")
-	AXL_LEX_TOKEN_NAME (TokenKind_Literal,      "string-literal")
-	AXL_LEX_TOKEN_NAME (TokenKind_Lookahead,    "lookahead")
-	AXL_LEX_TOKEN_NAME (TokenKind_Import,       "import")
-	AXL_LEX_TOKEN_NAME (TokenKind_Using,        "using")
-	AXL_LEX_TOKEN_NAME (TokenKind_Class,        "class")
-	AXL_LEX_TOKEN_NAME (TokenKind_NoAst,        "noast")
-	AXL_LEX_TOKEN_NAME (TokenKind_Default,      "default")
-	AXL_LEX_TOKEN_NAME (TokenKind_Arg,          "arg")
-	AXL_LEX_TOKEN_NAME (TokenKind_Local,        "local")
-	AXL_LEX_TOKEN_NAME (TokenKind_Enter,        "enter")
-	AXL_LEX_TOKEN_NAME (TokenKind_Leave,        "leave")
-	AXL_LEX_TOKEN_NAME (TokenKind_Start,        "start")
-	AXL_LEX_TOKEN_NAME (TokenKind_Pragma,       "pragma")
-	AXL_LEX_TOKEN_NAME (TokenKind_Resolver,     "resolver")
-	AXL_LEX_TOKEN_NAME (TokenKind_Priority,     "priority")
-	AXL_LEX_TOKEN_NAME (TokenKind_Any,          "any")
-	AXL_LEX_TOKEN_NAME (TokenKind_Epsilon,      "epsilon")
-	AXL_LEX_TOKEN_NAME (TokenKind_Nullable,     "nullable")
-	AXL_LEX_TOKEN_NAME (TokenKind_OpenBrace,    "{.")
-	AXL_LEX_TOKEN_NAME (TokenKind_CloseBrace,   ".}")
-	AXL_LEX_TOKEN_NAME (TokenKind_OpenChevron,  "<.")
-	AXL_LEX_TOKEN_NAME (TokenKind_CloseChevron, ".>")
-AXL_LEX_END_TOKEN_NAME_MAP ()
+AXL_LEX_BEGIN_TOKEN_NAME_MAP(TokenName)
+	AXL_LEX_TOKEN_NAME(TokenKind_Eof,          "eof")
+	AXL_LEX_TOKEN_NAME(TokenKind_Error,        "error")
+	AXL_LEX_TOKEN_NAME(TokenKind_Identifier,   "identifier")
+	AXL_LEX_TOKEN_NAME(TokenKind_Integer,      "integer-constant")
+	AXL_LEX_TOKEN_NAME(TokenKind_Literal,      "string-literal")
+	AXL_LEX_TOKEN_NAME(TokenKind_Lookahead,    "lookahead")
+	AXL_LEX_TOKEN_NAME(TokenKind_Import,       "import")
+	AXL_LEX_TOKEN_NAME(TokenKind_Using,        "using")
+	AXL_LEX_TOKEN_NAME(TokenKind_Class,        "class")
+	AXL_LEX_TOKEN_NAME(TokenKind_NoAst,        "noast")
+	AXL_LEX_TOKEN_NAME(TokenKind_Default,      "default")
+	AXL_LEX_TOKEN_NAME(TokenKind_Arg,          "arg")
+	AXL_LEX_TOKEN_NAME(TokenKind_Local,        "local")
+	AXL_LEX_TOKEN_NAME(TokenKind_Enter,        "enter")
+	AXL_LEX_TOKEN_NAME(TokenKind_Leave,        "leave")
+	AXL_LEX_TOKEN_NAME(TokenKind_Start,        "start")
+	AXL_LEX_TOKEN_NAME(TokenKind_Pragma,       "pragma")
+	AXL_LEX_TOKEN_NAME(TokenKind_Resolver,     "resolver")
+	AXL_LEX_TOKEN_NAME(TokenKind_Priority,     "priority")
+	AXL_LEX_TOKEN_NAME(TokenKind_Any,          "any")
+	AXL_LEX_TOKEN_NAME(TokenKind_Epsilon,      "epsilon")
+	AXL_LEX_TOKEN_NAME(TokenKind_Nullable,     "nullable")
+	AXL_LEX_TOKEN_NAME(TokenKind_OpenBrace,    "{.")
+	AXL_LEX_TOKEN_NAME(TokenKind_CloseBrace,   ".}")
+	AXL_LEX_TOKEN_NAME(TokenKind_OpenChevron,  "<.")
+	AXL_LEX_TOKEN_NAME(TokenKind_CloseChevron, ".>")
+AXL_LEX_END_TOKEN_NAME_MAP()
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-typedef lex::RagelToken <TokenKind, TokenName> Token;
+typedef lex::RagelToken<TokenKind, TokenName> Token;
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
@@ -89,51 +89,51 @@ enum LexerMachine
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Lexer: public lex::RagelLexer <Lexer, Token>
+class Lexer: public lex::RagelLexer<Lexer, Token>
 {
-	friend class lex::RagelLexer <Lexer, Token>;
+	friend class lex::RagelLexer<Lexer, Token>;
 
 public:
 	static
 	int
-	getMachineState (LexerMachine machine);
+	getMachineState(LexerMachine machine);
 
 protected:
 	Token*
-	createStringToken (
+	createStringToken(
 		int tokenKind,
 		int left = 0,
 		int right = 0
 		)
 	{
-		Token* token = createToken (tokenKind);
-		token->m_data.m_string = sl::StringRef (ts + left, token->m_pos.m_length - (left + right));
+		Token* token = createToken(tokenKind);
+		token->m_data.m_string = sl::StringRef(ts + left, token->m_pos.m_length - (left + right));
 		return token;
 	}
 
 	Token*
-	createCharToken (int tokenKind)
+	createCharToken(int tokenKind)
 	{
-		Token* token = createToken (tokenKind);
-		token->m_data.m_integer = ts [1];
+		Token* token = createToken(tokenKind);
+		token->m_data.m_integer = ts[1];
 		return token;
 	}
 
 	Token*
-	createIntegerToken (
+	createIntegerToken(
 		int radix = 10,
 		int left = 0
 		)
 	{
-		Token* token = createToken (TokenKind_Integer);
-		token->m_data.m_integer = strtol (ts + left, NULL, radix);
+		Token* token = createToken(TokenKind_Integer);
+		token->m_data.m_integer = strtol(ts + left, NULL, radix);
 		return token;
 	}
 
 	Token*
-	createConstIntegerToken (int value)
+	createConstIntegerToken(int value)
 	{
-		Token* token = createToken (TokenKind_Integer);
+		Token* token = createToken(TokenKind_Integer);
 		token->m_data.m_integer = value;
 		return token;
 	}
@@ -141,10 +141,10 @@ protected:
 	// implemented in *.rl
 
 	void
-	init ();
+	init();
 
 	void
-	exec ();
+	exec();
 };
 
 //..............................................................................

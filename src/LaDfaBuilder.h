@@ -35,10 +35,10 @@ public:
 	GrammarNode* m_resolver;
 	size_t m_resolverPriority;
 	Node* m_production;
-	sl::Array <Node*> m_stack;
+	sl::Array<Node*> m_stack;
 
 public:
-	LaDfaThread ();
+	LaDfaThread();
 };
 
 //..............................................................................
@@ -57,52 +57,52 @@ public:
 	size_t m_index;
 	int m_flags;
 
-	sl::List <LaDfaThread> m_activeThreadList;
-	sl::List <LaDfaThread> m_resolverThreadList;
-	sl::List <LaDfaThread> m_completeThreadList;
-	sl::List <LaDfaThread> m_epsilonThreadList;
+	sl::List<LaDfaThread> m_activeThreadList;
+	sl::List<LaDfaThread> m_resolverThreadList;
+	sl::List<LaDfaThread> m_completeThreadList;
+	sl::List<LaDfaThread> m_epsilonThreadList;
 
 	LaDfaState* m_fromState;
 	SymbolNode* m_token;
-	sl::Array <LaDfaState*> m_transitionArray;
+	sl::Array<LaDfaState*> m_transitionArray;
 	LaDfaNode* m_dfaNode;
 
 public:
-	LaDfaState ();
+	LaDfaState();
 
 	bool
-	isResolved ()
+	isResolved()
 	{
 		return (m_dfaNode->m_flags & LaDfaNodeFlag_Resolved) != 0;
 	}
 
 	bool
-	isAnyTokenIgnored ()
+	isAnyTokenIgnored()
 	{
 		return (m_flags & LaDfaStateFlag_TokenMatch) || (m_flags & LaDfaStateFlag_EpsilonProduction);
 	}
 
 	bool
-	isEmpty ()
+	isEmpty()
 	{
 		return
-			m_activeThreadList.isEmpty () &&
-			m_resolverThreadList.isEmpty () &&
-			m_completeThreadList.isEmpty () &&
-			m_epsilonThreadList.isEmpty ();
+			m_activeThreadList.isEmpty() &&
+			m_resolverThreadList.isEmpty() &&
+			m_completeThreadList.isEmpty() &&
+			m_epsilonThreadList.isEmpty();
 	}
 
 	bool
-	calcResolved ();
+	calcResolved();
 
 	LaDfaThread*
-	createThread (LaDfaThread* src = NULL);
+	createThread(LaDfaThread* src = NULL);
 
 	Node*
-	getResolvedProduction ();
+	getResolvedProduction();
 
 	Node*
-	getDefaultProduction ();
+	getDefaultProduction();
 };
 
 //..............................................................................
@@ -110,50 +110,50 @@ public:
 class LaDfaBuilder
 {
 protected:
-	sl::List <LaDfaState> m_stateList;
+	sl::List<LaDfaState> m_stateList;
 	NodeMgr* m_nodeMgr;
-	sl::Array <Node*>* m_parseTable;
+	sl::Array<Node*>* m_parseTable;
 	size_t m_lookeaheadLimit;
 	size_t m_lookeahead;
 	size_t m_conflictDepthLimit;
 
 public:
-	LaDfaBuilder (
+	LaDfaBuilder(
 		NodeMgr* nodeMgr,
-		sl::Array <Node*>* parseTable,
+		sl::Array<Node*>* parseTable,
 		size_t lookeaheadLimit,
 		size_t conflictDepthLimit
 		);
 
 	Node*
-	build (
+	build(
 		CmdLine* cmdLine,
 		ConflictNode* conflict,
 		size_t* lookahead = NULL
 		); // returns DFA or immediate production
 
 	void
-	trace ();
+	trace();
 
 	size_t
-	getLookahead ()
+	getLookahead()
 	{
 		return m_lookeahead;
 	}
 
 protected:
 	LaDfaState*
-	createState ();
+	createState();
 
 	bool
-	transition (
+	transition(
 		LaDfaState** resultState,
 		LaDfaState* state,
 		SymbolNode* token
 		);
 
 	bool
-	processThread (
+	processThread(
 		LaDfaThread* thread,
 		size_t depth
 		);

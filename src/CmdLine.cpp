@@ -14,7 +14,7 @@
 
 //..............................................................................
 
-CmdLine::CmdLine ()
+CmdLine::CmdLine()
 {
 	m_flags = 0;
 	m_lookaheadLimit = 2;
@@ -24,19 +24,19 @@ CmdLine::CmdLine ()
 //..............................................................................
 
 bool
-CmdLineParser::onValue (const sl::StringRef& value)
+CmdLineParser::onValue(const sl::StringRef& value)
 {
 	m_cmdLine->m_inputFileName = value;
 	return true;
 }
 
 bool
-CmdLineParser::onSwitch (
+CmdLineParser::onSwitch(
 	SwitchKind switchKind,
 	const sl::StringRef& value
 	)
 {
-	switch (switchKind)
+	switch(switchKind)
 	{
 	case CmdLineSwitchKind_Help:
 		m_cmdLine->m_flags |= CmdLineFlag_Help;
@@ -55,19 +55,19 @@ CmdLineParser::onSwitch (
 		break;
 
 	case CmdLineSwitchKind_LookaheadLimit:
-		m_cmdLine->m_lookaheadLimit = atoi (value.sz ());
+		m_cmdLine->m_lookaheadLimit = atoi(value.sz());
 		break;
 
 	case CmdLineSwitchKind_ConflictDepthLimit:
-		m_cmdLine->m_conflictDepthLimit = atoi (value.sz ());
+		m_cmdLine->m_conflictDepthLimit = atoi(value.sz());
 		break;
 
 	case CmdLineSwitchKind_OutputFileName:
-		m_cmdLine->m_outputFileNameList.insertTail (value);
+		m_cmdLine->m_outputFileNameList.insertTail(value);
 		break;
 
 	case CmdLineSwitchKind_FrameFileName:
-		m_cmdLine->m_frameFileNameList.insertTail (value);
+		m_cmdLine->m_frameFileNameList.insertTail(value);
 		break;
 
 	case CmdLineSwitchKind_BnfFileName:
@@ -83,27 +83,27 @@ CmdLineParser::onSwitch (
 		break;
 
 	case CmdLineSwitchKind_FrameDir:
-		m_cmdLine->m_frameDirList.insertTail (value);
+		m_cmdLine->m_frameDirList.insertTail(value);
 		break;
 
 	case CmdLineSwitchKind_ImportDir:
-		m_cmdLine->m_importDirList.insertTail (value);
+		m_cmdLine->m_importDirList.insertTail(value);
 		break;
 
 	default:
-		ASSERT (false);
+		ASSERT(false);
 	}
 
 	return true;
 }
 
 bool
-CmdLineParser::finalize ()
+CmdLineParser::finalize()
 {
-	if (m_cmdLine->m_outputFileNameList.getCount () !=
-		m_cmdLine->m_frameFileNameList.getCount ())
+	if (m_cmdLine->m_outputFileNameList.getCount() !=
+		m_cmdLine->m_frameFileNameList.getCount())
 	{
-		err::setError ("output-file-count vs frame-file-count mismatch\n");
+		err::setError("output-file-count vs frame-file-count mismatch\n");
 		return false;
 	}
 

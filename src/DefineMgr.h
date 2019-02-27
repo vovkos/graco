@@ -30,7 +30,7 @@ public:
 	sl::String m_stringValue;
 	int m_integerValue;
 
-	Define ()
+	Define()
 	{
 		m_kind = DefineKind_String;
 		m_integerValue = 0;
@@ -42,42 +42,42 @@ public:
 class DefineMgr
 {
 protected:
-	sl::List <Define> m_defineList;
-	sl::StringHashTable <Define*> m_defineMap;
+	sl::List<Define> m_defineList;
+	sl::StringHashTable<Define*> m_defineMap;
 
 public:
 	bool
-	isEmpty ()
+	isEmpty()
 	{
-		return m_defineList.isEmpty ();
+		return m_defineList.isEmpty();
 	}
 
 	size_t
-	getCount ()
+	getCount()
 	{
-		return m_defineList.getCount ();
+		return m_defineList.getCount();
 	}
 
 	void
-	clear ()
+	clear()
 	{
-		m_defineList.clear ();
-		m_defineMap.clear ();
+		m_defineList.clear();
+		m_defineMap.clear();
 	}
 
-	sl::Iterator <Define>
-	getHead ()
+	sl::Iterator<Define>
+	getHead()
 	{
-		return m_defineList.getHead ();
+		return m_defineList.getHead();
 	}
 
 	Define*
-	getDefine (const sl::StringRef& name);
+	getDefine(const sl::StringRef& name);
 
 	Define*
-	findDefine (const sl::StringRef& name)
+	findDefine(const sl::StringRef& name)
 	{
-		sl::StringHashTableIterator <Define*> it = m_defineMap.find (name);
+		sl::StringHashTableIterator<Define*> it = m_defineMap.find(name);
 		return it ? it->m_value : NULL;
 	}
 };

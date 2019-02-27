@@ -38,13 +38,13 @@ public:
 	sl::String m_name;
 	sl::String m_members;
 
-	Class ()
+	Class()
 	{
 		m_flags = 0;
 		m_baseClass = NULL;
 	}
 
-	void luaExport (lua::LuaState* luaState);
+	void luaExport(lua::LuaState* luaState);
 };
 
 //..............................................................................
@@ -52,59 +52,59 @@ public:
 class ClassMgr
 {
 protected:
-	sl::List <Class> m_classList;
-	sl::StringHashTable <Class*> m_classMap;
+	sl::List<Class> m_classList;
+	sl::StringHashTable<Class*> m_classMap;
 
 public:
 	bool
-	isEmpty ()
+	isEmpty()
 	{
-		return m_classList.isEmpty ();
+		return m_classList.isEmpty();
 	}
 
 	size_t
-	getCount ()
+	getCount()
 	{
-		return m_classList.getCount ();
+		return m_classList.getCount();
 	}
 
-	sl::Iterator <Class>
-	getHead ()
+	sl::Iterator<Class>
+	getHead()
 	{
-		return m_classList.getHead ();
+		return m_classList.getHead();
 	}
 
 	void
-	clear ()
+	clear()
 	{
-		m_classList.clear ();
-		m_classMap.clear ();
+		m_classList.clear();
+		m_classMap.clear();
 	}
 
 	Class*
-	getClass (const sl::StringRef& name);
+	getClass(const sl::StringRef& name);
 
 	Class*
-	createUnnamedClass ();
+	createUnnamedClass();
 
 	Class*
-	findClass (const sl::StringRef& name)
+	findClass(const sl::StringRef& name)
 	{
-		sl::StringHashTableIterator <Class*> it = m_classMap.find (name);
+		sl::StringHashTableIterator<Class*> it = m_classMap.find(name);
 		return it ? it->m_value : NULL;
 	}
 
 	void
-	deleteClass (Class* cls);
+	deleteClass(Class* cls);
 
 	bool
-	verify ();
+	verify();
 
 	void
-	deleteUnusedClasses ();
+	deleteUnusedClasses();
 
 	void
-	deleteUnreachableClasses ();
+	deleteUnreachableClasses();
 };
 
 //..............................................................................

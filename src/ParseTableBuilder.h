@@ -19,12 +19,12 @@ class ParseTableBuilder
 {
 protected:
 	NodeMgr* m_nodeMgr;
-	sl::Array <Node*>* m_parseTable;
+	sl::Array<Node*>* m_parseTable;
 
 public:
-	ParseTableBuilder (
+	ParseTableBuilder(
 		NodeMgr* nodeMgr,
-		sl::Array <Node*>* parseTable
+		sl::Array<Node*>* parseTable
 		)
 	{
 		m_nodeMgr = nodeMgr;
@@ -32,29 +32,29 @@ public:
 	}
 
 	bool
-	build ();
+	build();
 
 protected:
 	void
-	calcFirstFollow ();
+	calcFirstFollow();
 
 	void
-	buildFirstFollowArrays (GrammarNode* node);
+	buildFirstFollowArrays(GrammarNode* node);
 
 	void
-	addProductionToParseTable (
+	addProductionToParseTable(
 		SymbolNode* symbol,
 		GrammarNode* production
 		);
 
 	void
-	addAnyTokenProductionToParseTable (
+	addAnyTokenProductionToParseTable(
 		SymbolNode* symbol,
 		GrammarNode* production
 		);
 
 	size_t
-	addParseTableEntry (
+	addParseTableEntry(
 		SymbolNode* symbol,
 		SymbolNode* token,
 		GrammarNode* production

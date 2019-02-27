@@ -23,8 +23,8 @@ class NodeMgr
 	friend class ParseTableBuilder;
 
 protected:
-	sl::SimpleHashTable <int, SymbolNode*> m_tokenMap;
-	sl::StringHashTable <SymbolNode*> m_symbolMap;
+	sl::SimpleHashTable<int, SymbolNode*> m_tokenMap;
+	sl::StringHashTable<SymbolNode*> m_symbolMap;
 
 	GrammarNode m_epsilonNode;
 	SymbolNode m_eofTokenNode;
@@ -32,140 +32,140 @@ protected:
 	SymbolNode m_startPragmaSymbol;
 	SymbolNode* m_primaryStartSymbol;
 
-	sl::List <SymbolNode> m_charTokenList;
-	sl::List <SymbolNode> m_namedTokenList;
-	sl::List <SymbolNode> m_namedSymbolList;
-	sl::List <SymbolNode> m_tempSymbolList;
-	sl::List <SequenceNode> m_sequenceList;
-	sl::List <BeaconNode> m_beaconList;
-	sl::List <DispatcherNode> m_dispatcherList;
-	sl::List <ActionNode> m_actionList;
-	sl::List <ArgumentNode> m_argumentList;
-	sl::List <ConflictNode> m_conflictList;
-	sl::List <LaDfaNode> m_laDfaList;
+	sl::List<SymbolNode> m_charTokenList;
+	sl::List<SymbolNode> m_namedTokenList;
+	sl::List<SymbolNode> m_namedSymbolList;
+	sl::List<SymbolNode> m_tempSymbolList;
+	sl::List<SequenceNode> m_sequenceList;
+	sl::List<BeaconNode> m_beaconList;
+	sl::List<DispatcherNode> m_dispatcherList;
+	sl::List<ActionNode> m_actionList;
+	sl::List<ArgumentNode> m_argumentList;
+	sl::List<ConflictNode> m_conflictList;
+	sl::List<LaDfaNode> m_laDfaList;
 
-	sl::Array <SymbolNode*> m_tokenArray;  // char tokens + named tokens
-	sl::Array <SymbolNode*> m_symbolArray; // named symbols + temp symbols
+	sl::Array<SymbolNode*> m_tokenArray;  // char tokens + named tokens
+	sl::Array<SymbolNode*> m_symbolArray; // named symbols + temp symbols
 
 	size_t m_masterCount;
 
 public:
-	NodeMgr ();
+	NodeMgr();
 
 	bool
-	isEmpty ()
+	isEmpty()
 	{
-		return m_namedSymbolList.isEmpty ();
+		return m_namedSymbolList.isEmpty();
 	}
 
 	void
-	clear ();
+	clear();
 
 	void
-	luaExport (lua::LuaState* luaState);
+	luaExport(lua::LuaState* luaState);
 
 	SymbolNode*
-	getTokenNode (int token);
+	getTokenNode(int token);
 
 	SymbolNode*
-	getSymbolNode (const sl::StringRef& name);
+	getSymbolNode(const sl::StringRef& name);
 
 	SymbolNode*
-	createTempSymbolNode ();
+	createTempSymbolNode();
 
 	SequenceNode*
-	createSequenceNode ();
+	createSequenceNode();
 
 	SequenceNode*
-	createSequenceNode (GrammarNode* node);
+	createSequenceNode(GrammarNode* node);
 
 	BeaconNode*
-	createBeaconNode (SymbolNode* target);
+	createBeaconNode(SymbolNode* target);
 
 	void
-	deleteBeaconNode (BeaconNode* node)
+	deleteBeaconNode(BeaconNode* node)
 	{
-		m_beaconList.erase (node);
+		m_beaconList.erase(node);
 	}
 
 	void
-	deleteLaDfaNode (LaDfaNode* node)
+	deleteLaDfaNode(LaDfaNode* node)
 	{
-		m_laDfaList.erase (node);
+		m_laDfaList.erase(node);
 	}
 
 	DispatcherNode*
-	createDispatcherNode (SymbolNode* symbol);
+	createDispatcherNode(SymbolNode* symbol);
 
 	ActionNode*
-	createActionNode ();
+	createActionNode();
 
 	ArgumentNode*
-	createArgumentNode ();
+	createArgumentNode();
 
 	ConflictNode*
-	createConflictNode ();
+	createConflictNode();
 
 	LaDfaNode*
-	createLaDfaNode ();
+	createLaDfaNode();
 
 	GrammarNode*
-	createQuantifierNode (
+	createQuantifierNode(
 		GrammarNode* node,
 		int kind
 		);
 
 	void
-	trace ();
+	trace();
 
 	void
-	luaExport ();
+	luaExport();
 
 	void
-	markReachableNodes ();
+	markReachableNodes();
 
 	void
-	deleteUnreachableNodes ();
+	deleteUnreachableNodes();
 
 	void
-	indexTokens ();
+	indexTokens();
 
 	void
-	indexSymbols ();
+	indexSymbols();
 
 	void
-	indexSequences ();
+	indexSequences();
 
 	void
-	indexBeacons ();
+	indexBeacons();
 
 	void
-	indexDispatchers ();
+	indexDispatchers();
 
 	void
-	indexActions ();
+	indexActions();
 
 	void
-	indexArguments ();
+	indexArguments();
 
 	void
-	indexLaDfaNodes ();
+	indexLaDfaNodes();
 
 protected:
 	void
-	luaExportTokenTable (lua::LuaState* luaState);
+	luaExportTokenTable(lua::LuaState* luaState);
 
 	void
-	luaExportSymbolTable (lua::LuaState* luaState);
+	luaExportSymbolTable(lua::LuaState* luaState);
 
 	void
-	luaExportSequenceTable (lua::LuaState* luaState);
+	luaExportSequenceTable(lua::LuaState* luaState);
 
 	void
-	luaExportLaDfaTable (lua::LuaState* luaState);
+	luaExportLaDfaTable(lua::LuaState* luaState);
 
 	void
-	luaExportNodeArray (
+	luaExportNodeArray(
 		lua::LuaState* luaState,
 		const sl::StringRef& name,
 		Node* const* node,
@@ -173,10 +173,10 @@ protected:
 		);
 
 	void
-	luaExportNodeList (
+	luaExportNodeList(
 		lua::LuaState* luaState,
 		const sl::StringRef& name,
-		sl::Iterator <Node> node,
+		sl::Iterator<Node> node,
 		size_t countHint = 1
 		);
 };

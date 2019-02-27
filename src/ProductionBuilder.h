@@ -41,49 +41,49 @@ protected:
 	DispatcherNode* m_dispatcher;
 	GrammarNode* m_resolver;
 
-	sl::Array <ActionNode*> m_actionArray;
-	sl::Array <ArgumentNode*> m_argumentArray;
-	sl::Array <BeaconNode*> m_beaconArray;
-	sl::Array <BeaconNode*> m_beaconDeleteArray;
-	sl::StringHashTable <BeaconNode*> m_beaconMap;
+	sl::Array<ActionNode*> m_actionArray;
+	sl::Array<ArgumentNode*> m_argumentArray;
+	sl::Array<BeaconNode*> m_beaconArray;
+	sl::Array<BeaconNode*> m_beaconDeleteArray;
+	sl::StringHashTable<BeaconNode*> m_beaconMap;
 
 public:
-	ProductionBuilder (NodeMgr* nodeMgr);
+	ProductionBuilder(NodeMgr* nodeMgr);
 
 	GrammarNode*
-	build (
+	build(
 		SymbolNode* symbol,
 		GrammarNode* production
 		);
 
 protected:
 	bool
-	scan (GrammarNode* node);
+	scan(GrammarNode* node);
 
 	bool
-	addBeacon (BeaconNode* beacon);
+	addBeacon(BeaconNode* beacon);
 
 	void
-	findAndReplaceUnusedBeacons (GrammarNode*& node);
+	findAndReplaceUnusedBeacons(GrammarNode*& node);
 
 	bool
-	processAllUserCode ();
+	processAllUserCode();
 
 	bool
-	processUserCode (
+	processUserCode(
 		lex::SrcPos& srcPos,
 		sl::String* userCode,
 		GrammarNode* resolver
 		);
 
 	VariableKind
-	findVariable (
+	findVariable(
 		int index,
 		BeaconNode** beacon
 		);
 
 	VariableKind
-	findVariable (
+	findVariable(
 		const sl::StringRef& name,
 		BeaconNode** beacon
 		);

@@ -15,22 +15,22 @@
 //..............................................................................
 
 const char*
-getUnOpKindString (UnOpKind opKind)
+getUnOpKindString(UnOpKind opKind)
 {
-	const char* stringTable [UnOpKind__Count] =
+	const char* stringTable[UnOpKind__Count] =
 	{
 		"-", // UnOpKind_Minus,
 		"~", // UnOpKind_BitwiseNot,
 	};
 
-	ASSERT ((size_t) opKind < countof (stringTable));
-	return stringTable [(size_t) opKind];
+	ASSERT((size_t)opKind < countof(stringTable));
+	return stringTable[(size_t)opKind];
 }
 
 const char*
-getBinOpKindString (BinOpKind opKind)
+getBinOpKindString(BinOpKind opKind)
 {
-	const char* stringTable [BinOpKind__Count] =
+	const char* stringTable[BinOpKind__Count] =
 	{
 		"+",  // BinOpKind_Add,
 		"-",  // BinOpKind_Sub,
@@ -44,14 +44,14 @@ getBinOpKindString (BinOpKind opKind)
 		"|",  // BinOpKind_Or,
 	};
 
-	ASSERT ((size_t) opKind < countof (stringTable));
-	return stringTable [(size_t) opKind];
+	ASSERT((size_t)opKind < countof(stringTable));
+	return stringTable[(size_t)opKind];
 }
 
 const char*
-getRelOpKindString (RelOpKind opKind)
+getRelOpKindString(RelOpKind opKind)
 {
-	const char* stringTable [RelOpKind__Count] =
+	const char* stringTable[RelOpKind__Count] =
 	{
 		"==", // RelOpKind_Eq,
 		"!=", // RelOpKind_Ne,
@@ -61,8 +61,8 @@ getRelOpKindString (RelOpKind opKind)
 		">=", // RelOpKind_Ge,
 	};
 
-	ASSERT ((size_t) opKind < countof (stringTable));
-	return stringTable [(size_t) opKind];
+	ASSERT((size_t)opKind < countof(stringTable));
+	return stringTable[(size_t)opKind];
 }
 
 //..............................................................................
@@ -72,9 +72,9 @@ template <
 	typename Functor
 	>
 Type
-unOpFunc (Type value)
+unOpFunc(Type value)
 {
-	return Functor () (value);
+	return Functor() (value);
 }
 
 template <
@@ -82,12 +82,12 @@ template <
 	typename Functor
 	>
 Type
-binOpFunc (
+binOpFunc(
 	Type value1,
 	Type value2
 	)
 {
-	return Functor () (value1, value2);
+	return Functor() (value1, value2);
 }
 
 template <
@@ -95,38 +95,38 @@ template <
 	typename Functor
 	>
 bool
-relOpFunc (
+relOpFunc(
 	Type value1,
 	Type value2
 	)
 {
-	return Functor () (value1, value2);
+	return Functor() (value1, value2);
 }
 
 //..............................................................................
 
-Value::Value ()
+Value::Value()
 {
 	m_type = Type_Null;
 	m_variable = NULL;
 	m_fp = 0;
 }
 
-Value::Value (int integer)
+Value::Value(int integer)
 {
 	m_type = Type_Int;
 	m_variable = NULL;
 	m_integer = integer;
 }
 
-Value::Value (double fp)
+Value::Value(double fp)
 {
 	m_type = Type_Fp;
 	m_variable = NULL;
 	m_fp = fp;
 }
 
-Value::Value (Variable* variable)
+Value::Value(Variable* variable)
 {
 	m_type = variable->m_value.m_type;
 	m_variable = variable;
@@ -134,7 +134,7 @@ Value::Value (Variable* variable)
 }
 
 bool
-Value::isTrue () const
+Value::isTrue() const
 {
 	return
 		m_type == Type_Int && m_integer != 0 ||
@@ -142,17 +142,17 @@ Value::isTrue () const
 }
 
 bool
-Value::lvalueCheck () const
+Value::lvalueCheck() const
 {
 	if (!m_variable)
 	{
-		err::setError ("not l-value");
+		err::setError("not l-value");
 		return false;
 	}
 
 	if (m_variable->m_isConst)
 	{
-		err::setFormatStringError ("'%s' is constant", m_variable->m_name.sz ());
+		err::setFormatStringError("'%s' is constant", m_variable->m_name.sz());
 		return false;
 	}
 
@@ -160,27 +160,27 @@ Value::lvalueCheck () const
 }
 
 sl::String
-Value::getString () const
+Value::getString() const
 {
-	switch (m_type)
+	switch(m_type)
 	{
 	case Type_Null:
 		return "null";
 
 	case Type_Int:
-		return sl::formatString ("%d (0x%x)", m_integer, m_integer);
+		return sl::formatString("%d (0x%x)", m_integer, m_integer);
 
 	case Type_Fp:
-		return sl::formatString ("%.2f (%e)", m_fp, m_fp);
+		return sl::formatString("%.2f (%e)", m_fp, m_fp);
 
 	default:
-		ASSERT (false);
+		ASSERT(false);
 		return "<invalid-value>";
 	}
 }
 
 bool
-Value::unaryOperator (UnOpKind opKind)
+Value::unaryOperator(UnOpKind opKind)
 {
 	struct Operator
 	{
@@ -191,47 +191,47 @@ Value::unaryOperator (UnOpKind opKind)
 		(*m_fpFunc) (double);
 	};
 
-	static Operator operatorTable [UnOpKind__Count] =
+	static Operator operatorTable[UnOpKind__Count] =
 	{
-		{ unOpFunc <int, sl::Minus <int> >, unOpFunc <double, sl::Minus <double> > }, // UnOpKind_Minus,
-		{ unOpFunc <int, sl::Not <int> >,   NULL }                                    // UnOpKind_BitwiseNot,
+		{ unOpFunc<int, sl::Minus<int> >, unOpFunc<double, sl::Minus<double> > }, // UnOpKind_Minus,
+		{ unOpFunc<int, sl::Not<int> >,   NULL }                                    // UnOpKind_BitwiseNot,
 	};
 
-	ASSERT (opKind < countof (operatorTable));
-	Operator* op = &operatorTable [opKind];
+	ASSERT(opKind < countof(operatorTable));
+	Operator* op = &operatorTable[opKind];
 
-	switch (m_type)
+	switch(m_type)
 	{
 	case Type_Null:
-		err::setError ("cannot apply operators to 'null' values");
+		err::setError("cannot apply operators to 'null' values");
 		return false;
 
 	case Type_Int:
-		m_integer = op->m_intFunc (m_integer);
+		m_integer = op->m_intFunc(m_integer);
 		break;
 
 	case Type_Fp:
 		if (!op->m_fpFunc)
 		{
-			err::setFormatStringError (
+			err::setFormatStringError(
 				"cannot apply unary '%s' to floating-point values",
-				getUnOpKindString (opKind)
+				getUnOpKindString(opKind)
 				);
 			return false;
 		}
 
-		m_fp = op->m_fpFunc (m_fp);
+		m_fp = op->m_fpFunc(m_fp);
 		break;
 
 	default:
-		ASSERT (false);
+		ASSERT(false);
 	}
 
 	return true;
 }
 
 bool
-Value::binaryOperator (
+Value::binaryOperator(
 	BinOpKind opKind,
 	const Value& value
 	)
@@ -245,59 +245,59 @@ Value::binaryOperator (
 		(*m_fpFunc) (double, double);
 	};
 
-	static Operator operatorTable [BinOpKind__Count] =
+	static Operator operatorTable[BinOpKind__Count] =
 	{
-		{ binOpFunc <int, sl::Add <int> >, binOpFunc <double, sl::Add <double> > }, // BinOpKind_Add,
-		{ binOpFunc <int, sl::Sub <int> >, binOpFunc <double, sl::Sub <double> > }, // BinOpKind_Sub,
-		{ binOpFunc <int, sl::Mul <int> >, binOpFunc <double, sl::Mul <double> > }, // BinOpKind_Mul,
-		{ binOpFunc <int, sl::Div <int> >, binOpFunc <double, sl::Div <double> > }, // BinOpKind_Div,
-		{ binOpFunc <int, sl::Mod <int> >, NULL },                                  // BinOpKind_Mod,
-		{ binOpFunc <int, sl::Shl <int> >, NULL },                                  // BinOpKind_Shl,
-		{ binOpFunc <int, sl::Shr <int> >, NULL },                                  // BinOpKind_Shr,
-		{ binOpFunc <int, sl::And <int> >, NULL },                                  // BinOpKind_And,
-		{ binOpFunc <int, sl::Xor <int> >, NULL },                                  // BinOpKind_Xor,
-		{ binOpFunc <int, sl::Or  <int> >, NULL },                                  // BinOpKind_Or,
+		{ binOpFunc<int, sl::Add<int> >, binOpFunc<double, sl::Add<double> > }, // BinOpKind_Add,
+		{ binOpFunc<int, sl::Sub<int> >, binOpFunc<double, sl::Sub<double> > }, // BinOpKind_Sub,
+		{ binOpFunc<int, sl::Mul<int> >, binOpFunc<double, sl::Mul<double> > }, // BinOpKind_Mul,
+		{ binOpFunc<int, sl::Div<int> >, binOpFunc<double, sl::Div<double> > }, // BinOpKind_Div,
+		{ binOpFunc<int, sl::Mod<int> >, NULL },                                  // BinOpKind_Mod,
+		{ binOpFunc<int, sl::Shl<int> >, NULL },                                  // BinOpKind_Shl,
+		{ binOpFunc<int, sl::Shr<int> >, NULL },                                  // BinOpKind_Shr,
+		{ binOpFunc<int, sl::And<int> >, NULL },                                  // BinOpKind_And,
+		{ binOpFunc<int, sl::Xor<int> >, NULL },                                  // BinOpKind_Xor,
+		{ binOpFunc<int, sl::Or  <int> >, NULL },                                  // BinOpKind_Or,
 	};
 
 	if (!m_type || !value.m_type)
 	{
-		err::setError ("cannot apply operators to 'null' values");
+		err::setError("cannot apply operators to 'null' values");
 		return false;
 	}
 
-	ASSERT (opKind < countof (operatorTable));
-	Operator* op = &operatorTable [opKind];
+	ASSERT(opKind < countof(operatorTable));
+	Operator* op = &operatorTable[opKind];
 
-	Type type = AXL_MAX (m_type, value.m_type);
-	switch (type)
+	Type type = AXL_MAX(m_type, value.m_type);
+	switch(type)
 	{
 	case Type_Int:
-		m_integer = op->m_intFunc (m_integer, value.m_integer);
+		m_integer = op->m_intFunc(m_integer, value.m_integer);
 		break;
 
 	case Type_Fp:
 		if (!op->m_fpFunc)
 		{
-			err::setFormatStringError (
+			err::setFormatStringError(
 				"cannot apply binary '%s' to floating-point values",
-				getBinOpKindString (opKind)
+				getBinOpKindString(opKind)
 				);
 			return false;
 		}
 
-		m_fp = op->m_fpFunc (getFp (), value.getFp ());
+		m_fp = op->m_fpFunc(getFp(), value.getFp());
 		m_type = Type_Fp;
 		break;
 
 	default:
-		ASSERT (false);
+		ASSERT(false);
 	}
 
 	return true;
 }
 
 bool
-Value::relationalOperator (
+Value::relationalOperator(
 	RelOpKind opKind,
 	const Value& value
 	)
@@ -311,39 +311,39 @@ Value::relationalOperator (
 		(*m_fpFunc) (double, double);
 	};
 
-	static Operator operatorTable [BinOpKind__Count] =
+	static Operator operatorTable[BinOpKind__Count] =
 	{
-		{ relOpFunc <int, sl::Eq <int> >, relOpFunc <double, sl::Eq <double> > }, // RelOpKind_Eq,
-		{ relOpFunc <int, sl::Ne <int> >, relOpFunc <double, sl::Ne <double> > }, // RelOpKind_Ne,
-		{ relOpFunc <int, sl::Lt <int> >, relOpFunc <double, sl::Lt <double> > }, // RelOpKind_Lt,
-		{ relOpFunc <int, sl::Gt <int> >, relOpFunc <double, sl::Gt <double> > }, // RelOpKind_Gt,
-		{ relOpFunc <int, sl::Le <int> >, relOpFunc <double, sl::Le <double> > }, // RelOpKind_Le,
-		{ relOpFunc <int, sl::Ge <int> >, relOpFunc <double, sl::Ge <double> > }, // RelOpKind_Ge,
+		{ relOpFunc<int, sl::Eq<int> >, relOpFunc<double, sl::Eq<double> > }, // RelOpKind_Eq,
+		{ relOpFunc<int, sl::Ne<int> >, relOpFunc<double, sl::Ne<double> > }, // RelOpKind_Ne,
+		{ relOpFunc<int, sl::Lt<int> >, relOpFunc<double, sl::Lt<double> > }, // RelOpKind_Lt,
+		{ relOpFunc<int, sl::Gt<int> >, relOpFunc<double, sl::Gt<double> > }, // RelOpKind_Gt,
+		{ relOpFunc<int, sl::Le<int> >, relOpFunc<double, sl::Le<double> > }, // RelOpKind_Le,
+		{ relOpFunc<int, sl::Ge<int> >, relOpFunc<double, sl::Ge<double> > }, // RelOpKind_Ge,
 	};
 
 	if (!m_type || !value.m_type)
 	{
-		err::setError ("cannot apply operators to 'null' values");
+		err::setError("cannot apply operators to 'null' values");
 		return false;
 	}
 
-	ASSERT ((size_t) opKind < countof (operatorTable));
-	Operator* op = &operatorTable [opKind];
+	ASSERT((size_t)opKind < countof(operatorTable));
+	Operator* op = &operatorTable[opKind];
 
-	Type type = AXL_MAX (m_type, value.m_type);
-	switch (type)
+	Type type = AXL_MAX(m_type, value.m_type);
+	switch(type)
 	{
 	case Type_Int:
-		m_integer = op->m_intFunc (m_integer, value.m_integer);
+		m_integer = op->m_intFunc(m_integer, value.m_integer);
 		break;
 
 	case Type_Fp:
-		m_integer = op->m_fpFunc (getFp (), value.getFp ());
+		m_integer = op->m_fpFunc(getFp(), value.getFp());
 		m_type = Type_Int;
 		break;
 
 	default:
-		ASSERT (false);
+		ASSERT(false);
 	}
 
 	return true;

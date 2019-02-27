@@ -35,17 +35,17 @@ public:
 	// we don't really need tree fields and listlink until we plan to keep ast nodes
 
 	AstNode* m_parent;
-	axl::sl::Array <AstNode*> m_children;
+	axl::sl::Array<AstNode*> m_children;
 
 public:
-	AstNode ()
+	AstNode()
 	{
 		m_kind = -1;
 		m_parent = NULL;
 	}
 
 	virtual
-	~AstNode () // could be subclassed
+	~AstNode() // could be subclassed
 	{
 	}
 };
@@ -59,32 +59,32 @@ public:
 	typedef AstNode_0 AstNode;
 
 protected:
-	axl::sl::List <AstNode> m_list;
+	axl::sl::List<AstNode> m_list;
 	AstNode* m_root;
 
 public:
-	Ast ()
+	Ast()
 	{
 		m_root = NULL;
 	}
 
 	AstNode*
-	getRoot ()
+	getRoot()
 	{
 		return m_root;
 	}
 
 	void
-	clear ()
+	clear()
 	{
-		m_list.clear ();
+		m_list.clear();
 		m_root = NULL;
 	}
 
 	void
-	add (AstNode* astNode)
+	add(AstNode* astNode)
 	{
-		m_list.insertTail (astNode);
+		m_list.insertTail(astNode);
 		if (!m_root)
 			m_root = astNode;
 	}

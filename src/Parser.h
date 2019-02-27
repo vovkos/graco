@@ -27,12 +27,12 @@ protected:
 		int m_symbolFlags;
 
 	public:
-		ProductionSpecifiers ()
+		ProductionSpecifiers()
 		{
-			reset ();
+			reset();
 		}
 
-		void reset ()
+		void reset()
 		{
 			m_class = NULL;
 			m_symbolFlags = 0;
@@ -46,14 +46,14 @@ protected:
 	ProductionSpecifiers m_defaultProductionSpecifiers;
 
 public:
-	Parser ()
+	Parser()
 	{
 		m_module = NULL;
 		m_cmdLine = NULL;
 	}
 
 	bool
-	parse (
+	parse(
 		Module* module,
 		const CmdLine* cmdLine,
 		const sl::StringRef& filePath,
@@ -61,7 +61,7 @@ public:
 		);
 
 	bool
-	parseFile (
+	parseFile(
 		Module* module,
 		CmdLine* cmdLine,
 		const sl::StringRef& filePath
@@ -71,98 +71,98 @@ protected:
 	// grammar
 
 	bool
-	program ();
+	program();
 
 	bool
-	lookaheadStatement ();
+	lookaheadStatement();
 
 	bool
-	importStatement ();
+	importStatement();
 
 	bool
-	declarationStatement ();
+	declarationStatement();
 
 	bool
-	productionSpecifiers (ProductionSpecifiers* specifiers);
+	productionSpecifiers(ProductionSpecifiers* specifiers);
 
 	bool
-	classStatement ();
+	classStatement();
 
 	bool
-	usingStatement ();
+	usingStatement();
 
 	bool
-	defineStatement ();
+	defineStatement();
 
 	bool
-	production (const ProductionSpecifiers* specifiers);
+	production(const ProductionSpecifiers* specifiers);
 
 	Class*
-	classSpecifier ();
+	classSpecifier();
 
 	GrammarNode*
-	alternative ();
+	alternative();
 
 	GrammarNode*
-	sequence ();
+	sequence();
 
 	GrammarNode*
-	quantifier ();
+	quantifier();
 
 	GrammarNode*
-	primary ();
+	primary();
 
 	SymbolNode*
-	resolver ();
+	resolver();
 
 	BeaconNode*
-	beacon ();
+	beacon();
 
 	bool
-	userCode (
+	userCode(
 		int openBracket,
 		sl::String* string,
 		lex::SrcPos* srcPos
 		);
 
 	bool
-	userCode (
+	userCode(
 		int openBracket,
 		sl::String* string,
 		lex::LineCol* lineCol
 		);
 
 	bool
-	customizeSymbol (SymbolNode* node);
+	customizeSymbol(SymbolNode* node);
 
 	bool
-	processLocalList (SymbolNode* node);
+	processLocalList(SymbolNode* node);
 
 	bool
-	processFormalArgList (SymbolNode* node);
+	processFormalArgList(SymbolNode* node);
 
 	bool
-	processActualArgList (
+	processActualArgList(
 		ArgumentNode* node,
 		const sl::StringRef& string
 		);
 
 	bool
-	processSymbolEventHandler (
+	processSymbolEventHandler(
 		SymbolNode* node,
 		sl::String* string
 		);
 
 	void
-	setGrammarNodeSrcPos (
+	setGrammarNodeSrcPos(
 		GrammarNode* node,
 		const lex::LineCol& lineCol
 		);
 
 	void
-	setGrammarNodeSrcPos (GrammarNode* node)
+	setGrammarNodeSrcPos(GrammarNode* node)
 	{
-		setGrammarNodeSrcPos (node, m_lastTokenPos);
+		setGrammarNodeSrcPos(node, m_lastTokenPos);
 	}
 };
 

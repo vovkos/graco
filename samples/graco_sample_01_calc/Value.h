@@ -33,7 +33,7 @@ enum UnOpKind
 };
 
 const char*
-getUnOpKindString (UnOpKind opKind);
+getUnOpKindString(UnOpKind opKind);
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
@@ -53,7 +53,7 @@ enum BinOpKind
 };
 
 const char*
-getBinOpKindString (BinOpKind opKind);
+getBinOpKindString(BinOpKind opKind);
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
@@ -69,7 +69,7 @@ enum RelOpKind
 };
 
 const char*
-getRelOpKindString (RelOpKind opKind);
+getRelOpKindString(RelOpKind opKind);
 
 //..............................................................................
 
@@ -84,37 +84,37 @@ struct Value
 		double m_fp;
 	};
 
-	Value ();
-	Value (int integer);
-	Value (double fp);
-	Value (Variable* variable);
+	Value();
+	Value(int integer);
+	Value(double fp);
+	Value(Variable* variable);
 
 	bool
-	lvalueCheck () const;
+	lvalueCheck() const;
 
 	bool
-	isTrue () const;
+	isTrue() const;
 
 	double
-	getFp () const
+	getFp() const
 	{
-		return m_type == Type_Int ? (double) m_integer : m_fp;
+		return m_type == Type_Int ? (double)m_integer : m_fp;
 	}
 
 	sl::String
-	getString () const;
+	getString() const;
 
 	bool
-	unaryOperator (UnOpKind opKind);
+	unaryOperator(UnOpKind opKind);
 
 	bool
-	binaryOperator (
+	binaryOperator(
 		BinOpKind opKind,
 		const Value& value
 		);
 
 	bool
-	relationalOperator (
+	relationalOperator(
 		RelOpKind opKind,
 		const Value& value
 		);
@@ -128,7 +128,7 @@ struct Variable: sl::ListLink
 	Value m_value;
 	bool m_isConst;
 
-	Variable ()
+	Variable()
 	{
 		m_isConst = false;
 	}

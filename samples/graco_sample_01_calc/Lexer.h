@@ -56,84 +56,84 @@ enum TokenKind
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-AXL_LEX_BEGIN_TOKEN_NAME_MAP (TokenName)
+AXL_LEX_BEGIN_TOKEN_NAME_MAP(TokenName)
 
 	// common tokens
 
-	AXL_LEX_TOKEN_NAME (TokenKind_Eof,        "eof")
-	AXL_LEX_TOKEN_NAME (TokenKind_Error,      "error")
-	AXL_LEX_TOKEN_NAME (TokenKind_Identifier, "identifier")
-	AXL_LEX_TOKEN_NAME (TokenKind_Integer,    "integer-constant")
-	AXL_LEX_TOKEN_NAME (TokenKind_Fp,         "floating-point-constant")
+	AXL_LEX_TOKEN_NAME(TokenKind_Eof,        "eof")
+	AXL_LEX_TOKEN_NAME(TokenKind_Error,      "error")
+	AXL_LEX_TOKEN_NAME(TokenKind_Identifier, "identifier")
+	AXL_LEX_TOKEN_NAME(TokenKind_Integer,    "integer-constant")
+	AXL_LEX_TOKEN_NAME(TokenKind_Fp,         "floating-point-constant")
 
 	// special tokens
 
-	AXL_LEX_TOKEN_NAME (TokenKind_Inc,        "++")
-	AXL_LEX_TOKEN_NAME (TokenKind_Dec,        "--")
-	AXL_LEX_TOKEN_NAME (TokenKind_MulAssign,  "*=")
-	AXL_LEX_TOKEN_NAME (TokenKind_DivAssign,  "/=")
-	AXL_LEX_TOKEN_NAME (TokenKind_ModAssign,  "%=")
-	AXL_LEX_TOKEN_NAME (TokenKind_AddAssign,  "+=")
-	AXL_LEX_TOKEN_NAME (TokenKind_SubAssign,  "-=")
-	AXL_LEX_TOKEN_NAME (TokenKind_ShlAssign,  "<<=")
-	AXL_LEX_TOKEN_NAME (TokenKind_ShrAssign,  ">>=")
-	AXL_LEX_TOKEN_NAME (TokenKind_AndAssign,  "&=")
-	AXL_LEX_TOKEN_NAME (TokenKind_XorAssign,  "^=")
-	AXL_LEX_TOKEN_NAME (TokenKind_OrAssign,   "|=")
-	AXL_LEX_TOKEN_NAME (TokenKind_Shl,        "<<")
-	AXL_LEX_TOKEN_NAME (TokenKind_Shr,        ">>")
-	AXL_LEX_TOKEN_NAME (TokenKind_Le,         "<=")
-	AXL_LEX_TOKEN_NAME (TokenKind_Ge,         ">=")
-	AXL_LEX_TOKEN_NAME (TokenKind_Eq,         "==")
-	AXL_LEX_TOKEN_NAME (TokenKind_Ne,         "!=")
-	AXL_LEX_TOKEN_NAME (TokenKind_LogicalAnd, "&&")
-	AXL_LEX_TOKEN_NAME (TokenKind_LogicalOr,  "||")
+	AXL_LEX_TOKEN_NAME(TokenKind_Inc,        "++")
+	AXL_LEX_TOKEN_NAME(TokenKind_Dec,        "--")
+	AXL_LEX_TOKEN_NAME(TokenKind_MulAssign,  "*=")
+	AXL_LEX_TOKEN_NAME(TokenKind_DivAssign,  "/=")
+	AXL_LEX_TOKEN_NAME(TokenKind_ModAssign,  "%=")
+	AXL_LEX_TOKEN_NAME(TokenKind_AddAssign,  "+=")
+	AXL_LEX_TOKEN_NAME(TokenKind_SubAssign,  "-=")
+	AXL_LEX_TOKEN_NAME(TokenKind_ShlAssign,  "<<=")
+	AXL_LEX_TOKEN_NAME(TokenKind_ShrAssign,  ">>=")
+	AXL_LEX_TOKEN_NAME(TokenKind_AndAssign,  "&=")
+	AXL_LEX_TOKEN_NAME(TokenKind_XorAssign,  "^=")
+	AXL_LEX_TOKEN_NAME(TokenKind_OrAssign,   "|=")
+	AXL_LEX_TOKEN_NAME(TokenKind_Shl,        "<<")
+	AXL_LEX_TOKEN_NAME(TokenKind_Shr,        ">>")
+	AXL_LEX_TOKEN_NAME(TokenKind_Le,         "<=")
+	AXL_LEX_TOKEN_NAME(TokenKind_Ge,         ">=")
+	AXL_LEX_TOKEN_NAME(TokenKind_Eq,         "==")
+	AXL_LEX_TOKEN_NAME(TokenKind_Ne,         "!=")
+	AXL_LEX_TOKEN_NAME(TokenKind_LogicalAnd, "&&")
+	AXL_LEX_TOKEN_NAME(TokenKind_LogicalOr,  "||")
 
 	// keyword tokens
 
-	AXL_LEX_TOKEN_NAME (TokenKind_Var,    "var")
-	AXL_LEX_TOKEN_NAME (TokenKind_Const,  "const")
-	AXL_LEX_TOKEN_NAME (TokenKind_Null,   "null")
-	AXL_LEX_TOKEN_NAME (TokenKind_Assert, "assert")
-AXL_LEX_END_TOKEN_NAME_MAP ();
+	AXL_LEX_TOKEN_NAME(TokenKind_Var,    "var")
+	AXL_LEX_TOKEN_NAME(TokenKind_Const,  "const")
+	AXL_LEX_TOKEN_NAME(TokenKind_Null,   "null")
+	AXL_LEX_TOKEN_NAME(TokenKind_Assert, "assert")
+AXL_LEX_END_TOKEN_NAME_MAP();
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-typedef lex::RagelToken <TokenKind, TokenName, lex::StdTokenData> Token;
+typedef lex::RagelToken<TokenKind, TokenName, lex::StdTokenData> Token;
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Lexer: public lex::RagelLexer <Lexer, Token>
+class Lexer: public lex::RagelLexer<Lexer, Token>
 {
-	friend class lex::RagelLexer <Lexer, Token>;
+	friend class lex::RagelLexer<Lexer, Token>;
 
 protected:
 	Token*
-	createStringToken (
+	createStringToken(
 		int tokenKind,
 		size_t left = 0,
 		size_t right = 0
 		);
 
 	Token*
-	createCharToken (int tokenKind);
+	createCharToken(int tokenKind);
 
 	Token*
-	createIntegerToken (
+	createIntegerToken(
 		int radix = 10,
 		size_t left = 0
 		);
 
 	Token*
-	createFpToken ();
+	createFpToken();
 
 	// implemented in *.rl
 
 	void
-	init ();
+	init();
 
 	void
-	exec ();
+	exec();
 };
 
 //..............................................................................

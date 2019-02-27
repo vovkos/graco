@@ -23,7 +23,7 @@ class Module
 	friend class Parser;
 
 protected:
-	sl::Array <Node*> m_parseTable;
+	sl::Array<Node*> m_parseTable;
 	size_t m_lookaheadLimit;
 	size_t m_lookahead;
 	ClassMgr m_classMgr;
@@ -31,38 +31,38 @@ protected:
 	NodeMgr m_nodeMgr;
 
 public:
-	sl::BoxList <sl::String> m_importList;
+	sl::BoxList<sl::String> m_importList;
 
 public:
-	Module ();
+	Module();
 
 	void
-	clear ();
+	clear();
 
 	bool
-	build (CmdLine* cmdLine);
+	build(CmdLine* cmdLine);
 
 	void
-	luaExport (lua::LuaState* luaState);
+	luaExport(lua::LuaState* luaState);
 
 	void
-	trace ();
+	trace();
 
 	sl::String
-	generateBnfString ();
+	generateBnfString();
 
 	bool
-	writeBnfFile (const sl::StringRef& fileName);
+	writeBnfFile(const sl::StringRef& fileName);
 
 protected:
 	void
-	luaExportDefines (lua::LuaState* luaState);
+	luaExportDefines(lua::LuaState* luaState);
 
 	void
-	luaExportClassTable (lua::LuaState* luaState);
+	luaExportClassTable(lua::LuaState* luaState);
 
 	void
-	luaExportParseTable (lua::LuaState* luaState);
+	luaExportParseTable(lua::LuaState* luaState);
 };
 
 //..............................................................................

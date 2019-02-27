@@ -25,16 +25,16 @@ public:
 	const CmdLine* m_cmdLine;
 
 public:
-	Generator ()
+	Generator()
 	{
 		m_cmdLine = NULL;
 	}
 
 	void
-	prepare (class Module* module);
+	prepare(class Module* module);
 
 	bool
-	generate (
+	generate(
 		const sl::StringRef& fileName,
 		const sl::StringRef& frameFileName
 		);

@@ -36,9 +36,9 @@ enum NodeKind
 
 inline
 const char*
-getNodeKindString (NodeKind nodeKind)
+getNodeKindString(NodeKind nodeKind)
 {
-	static const char* stringTable [NodeKind__Count] =
+	static const char* stringTable[NodeKind__Count] =
 	{
 		"undefined-node-kind", // NodeKind_Undefined
 		"token-node",          // NodeKind_Token,
@@ -50,8 +50,8 @@ getNodeKindString (NodeKind nodeKind)
 	};
 
 	return nodeKind >= 0 && nodeKind < NodeKind__Count ?
-		stringTable [nodeKind] :
-		stringTable [NodeKind_Undefined];
+		stringTable[nodeKind] :
+		stringTable[NodeKind_Undefined];
 }
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -72,7 +72,7 @@ public:
 	size_t m_index;
 
 public:
-	Node ()
+	Node()
 	{
 		m_kind = NodeKind_Undefined;
 		m_flags = 0;
@@ -80,14 +80,14 @@ public:
 	}
 
 	virtual
-	~Node ()
+	~Node()
 	{
 	}
 
 	const char*
-	getNodeKindString ()
+	getNodeKindString()
 	{
-		return llk::getNodeKindString (m_kind);
+		return llk::getNodeKindString(m_kind);
 	}
 };
 
@@ -103,7 +103,7 @@ public:
 	Token m_token;
 
 public:
-	TokenNode ()
+	TokenNode()
 	{
 		m_kind = NodeKind_Token;
 	}
@@ -132,21 +132,21 @@ public:
 public:
 	AstNode* m_astNode;
 
-	axl::sl::List <Node> m_locatorList;
-	axl::sl::Array <Node*> m_locatorArray;
+	axl::sl::List<Node> m_locatorList;
+	axl::sl::Array<Node*> m_locatorArray;
 
 public:
-	SymbolNode ()
+	SymbolNode()
 	{
 		m_kind = NodeKind_Symbol;
 		m_astNode = NULL;
 	}
 
 	virtual
-	~SymbolNode ()
+	~SymbolNode()
 	{
 		if (m_astNode && !(m_flags & SymbolNodeFlag_KeepAst))
-			AXL_MEM_DELETE (m_astNode);
+			AXL_MEM_DELETE(m_astNode);
 	}
 };
 
@@ -170,11 +170,11 @@ public:
 	size_t m_resolverThenIndex;
 	size_t m_resolverElseIndex;
 
-	axl::sl::BoxIterator <Token> m_reparseLaDfaTokenCursor;
-	axl::sl::BoxIterator <Token> m_reparseResolverTokenCursor;
+	axl::sl::BoxIterator<Token> m_reparseLaDfaTokenCursor;
+	axl::sl::BoxIterator<Token> m_reparseResolverTokenCursor;
 
 public:
-	LaDfaNode ()
+	LaDfaNode()
 	{
 		m_kind = NodeKind_LaDfa;
 		m_resolverThenIndex = -1;

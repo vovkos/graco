@@ -28,11 +28,11 @@ class Parser
 public:
 	typedef Token_0 Token;
 	typedef typename Token::TokenKind TokenKind;
-	typedef llk::AstNode <Token> AstNode;
-	typedef llk::Ast <AstNode> Ast;
-	typedef llk::TokenNode <Token> TokenNode;
-	typedef llk::SymbolNode <AstNode> SymbolNode;
-	typedef llk::LaDfaNode <Token> LaDfaNode;
+	typedef llk::AstNode<Token> AstNode;
+	typedef llk::Ast<AstNode> Ast;
+	typedef llk::TokenNode<Token> TokenNode;
+	typedef llk::SymbolNode<AstNode> SymbolNode;
+	typedef llk::LaDfaNode<Token> LaDfaNode;
 
 protected:
 	enum Flag
@@ -65,15 +65,15 @@ protected:
 	};
 
 protected:
-	axl::sl::List <Node> m_nodeList;
-	axl::ref::Buf <Ast> m_ast;
+	axl::sl::List<Node> m_nodeList;
+	axl::ref::Buf<Ast> m_ast;
 
-	axl::sl::Array <Node*> m_predictionStack;
-	axl::sl::Array <SymbolNode*> m_symbolStack;
-	axl::sl::Array <LaDfaNode*> m_resolverStack;
+	axl::sl::Array<Node*> m_predictionStack;
+	axl::sl::Array<SymbolNode*> m_symbolStack;
+	axl::sl::Array<LaDfaNode*> m_resolverStack;
 
-	axl::sl::BoxList <Token> m_tokenList;
-	axl::sl::BoxIterator <Token> m_tokenCursor;
+	axl::sl::BoxList<Token> m_tokenList;
+	axl::sl::BoxIterator<Token> m_tokenCursor;
 
 	Token m_currentToken;
 	Token m_lastMatchedToken;
@@ -81,63 +81,63 @@ protected:
 	uint_t m_flags;
 
 public:
-	Parser ()
+	Parser()
 	{
 		m_flags = 0;
 	}
 
 	SymbolNode*
-	create (
+	create(
 		int symbol = T::StartSymbol,
 		bool isBuildingAst = false
 		)
 	{
-		clear ();
+		clear();
 
 		if (isBuildingAst)
 			m_flags |= Flag_BuildingAst;
 
-		return (SymbolNode*) pushPrediction (T::SymbolFirst + symbol);
+		return (SymbolNode*)pushPrediction(T::SymbolFirst + symbol);
 	}
 
-	axl::ref::Buf <Ast>
-	getAst ()
+	axl::ref::Buf<Ast>
+	getAst()
 	{
 		return m_ast;
 	}
 
 	void
-	clear ()
+	clear()
 	{
-		m_nodeList.clear ();
-		m_predictionStack.clear ();
-		m_symbolStack.clear ();
-		m_resolverStack.clear ();
-		m_tokenList.clear ();
+		m_nodeList.clear();
+		m_predictionStack.clear();
+		m_symbolStack.clear();
+		m_resolverStack.clear();
+		m_tokenList.clear();
 		m_tokenCursor = NULL;
-		m_ast.release ();
+		m_ast.release();
 		m_flags = 0;
 	}
 
 	bool
-	parseToken (const Token* token)
+	parseToken(const Token* token)
 	{
 		bool result;
 
-		m_tokenCursor = m_tokenList.insertTail (*token);
+		m_tokenCursor = m_tokenList.insertTail(*token);
 		m_currentToken = *token;
 
-		size_t* parseTable = static_cast <T*> (this)->getParseTable ();
-		size_t tokenIndex = static_cast <T*> (this)->getTokenIndex (token->m_token);
-		ASSERT (tokenIndex < T::TokenCount);
+		size_t* parseTable = static_cast<T*> (this)->getParseTable();
+		size_t tokenIndex = static_cast<T*> (this)->getTokenIndex(token->m_token);
+		ASSERT(tokenIndex < T::TokenCount);
 
 		// first check for pragma productions out of band
 
 		if (T::StartPragmaSymbol != -1)
 		{
-			size_t productionIndex = parseTable [T::StartPragmaSymbol * T::TokenCount + tokenIndex];
+			size_t productionIndex = parseTable[T::StartPragmaSymbol * T::TokenCount + tokenIndex];
 			if (productionIndex != -1 && productionIndex != 0)
-				pushPrediction (productionIndex);
+				pushPrediction(productionIndex);
 		}
 
 		m_flags &= ~Flag_TokenMatch;
@@ -146,62 +146,62 @@ public:
 		{
 			MatchResult matchResult;
 
-			Node* node = getPredictionTop ();
+			Node* node = getPredictionTop();
 			if (!node)
 			{
-				matchResult = matchEmptyPredictionStack ();
+				matchResult = matchEmptyPredictionStack();
 			}
 			else
 			{
-				switch (node->m_kind)
+				switch(node->m_kind)
 				{
 				case NodeKind_Token:
-					matchResult = matchTokenNode ((TokenNode*) node, tokenIndex);
+					matchResult = matchTokenNode((TokenNode*)node, tokenIndex);
 					break;
 
 				case NodeKind_Symbol:
-					matchResult = matchSymbolNode ((SymbolNode*) node, parseTable, tokenIndex);
+					matchResult = matchSymbolNode((SymbolNode*)node, parseTable, tokenIndex);
 					break;
 
 				case NodeKind_Sequence:
-					matchResult = matchSequenceNode (node);
+					matchResult = matchSequenceNode(node);
 					break;
 
 				case NodeKind_Action:
-					matchResult = matchActionNode (node);
+					matchResult = matchActionNode(node);
 					break;
 
 				case NodeKind_Argument:
-					ASSERT (node->m_flags & NodeFlag_Matched); // was handled during matching ENode_Symbol
-					popPrediction ();
+					ASSERT(node->m_flags & NodeFlag_Matched); // was handled during matching ENode_Symbol
+					popPrediction();
 					matchResult = MatchResult_Continue;
 					break;
 
 				case NodeKind_LaDfa:
-					matchResult = matchLaDfaNode ((LaDfaNode*) node);
+					matchResult = matchLaDfaNode((LaDfaNode*)node);
 					break;
 
 				default:
-					ASSERT (false);
+					ASSERT(false);
 				}
 			}
 
 			if (matchResult == MatchResult_Fail)
 			{
-				if (m_resolverStack.isEmpty ())
+				if (m_resolverStack.isEmpty())
 					return false;
 
-				matchResult = rollbackResolver ();
-				ASSERT (matchResult != MatchResult_Fail); // failed resolver means there is another possibility!
+				matchResult = rollbackResolver();
+				ASSERT(matchResult != MatchResult_Fail); // failed resolver means there is another possibility!
 			}
 
-			switch (matchResult)
+			switch(matchResult)
 			{
 			case MatchResult_Continue:
 				break;
 
 			case MatchResult_NextToken:
-				result = advanceTokenCursor ();
+				result = advanceTokenCursor();
 				if (!result)
 					return true; // no more tokens, we are done
 
@@ -209,13 +209,13 @@ public:
 
 			case MatchResult_NextTokenNoAdvance:
 				m_currentToken = *m_tokenCursor;
-				tokenIndex = static_cast <T*> (this)->getTokenIndex (m_currentToken.m_token);
-				ASSERT (tokenIndex < T::TokenCount);
+				tokenIndex = static_cast<T*> (this)->getTokenIndex(m_currentToken.m_token);
+				ASSERT(tokenIndex < T::TokenCount);
 				m_flags &= ~Flag_TokenMatch;
 				break;
 
 			default:
-				ASSERT (false);
+				ASSERT(false);
 			}
 		}
 	}
@@ -223,93 +223,93 @@ public:
 	// debug
 
 	void
-	traceSymbolStack ()
+	traceSymbolStack()
 	{
-		intptr_t count = m_symbolStack.getCount ();
+		intptr_t count = m_symbolStack.getCount();
 
-		TRACE ("SYMBOL STACK (%d symbols):\n", count);
+		TRACE("SYMBOL STACK (%d symbols):\n", count);
 		for (intptr_t i = 0; i < count; i++)
 		{
-			SymbolNode* node = m_symbolStack [i];
-			TRACE ("%s", static_cast <T*> (this)->getSymbolName (node->m_index));
+			SymbolNode* node = m_symbolStack[i];
+			TRACE("%s", static_cast <T*> (this)->getSymbolName (node->m_index));
 
 			if (node->m_astNode)
-				TRACE (" (%d:%d)", node->m_astNode->m_firstToken.m_pos.m_line + 1, node->m_astNode->m_firstToken.m_pos.m_col + 1);
+				TRACE(" (%d:%d)", node->m_astNode->m_firstToken.m_pos.m_line + 1, node->m_astNode->m_firstToken.m_pos.m_col + 1);
 
-			TRACE ("\n");
+			TRACE("\n");
 		}
 	}
 
 	void
-	tracePredictionStack ()
+	tracePredictionStack()
 	{
-		intptr_t count = m_predictionStack.getCount ();
+		intptr_t count = m_predictionStack.getCount();
 
-		TRACE ("PREDICTION STACK (%d nodes):\n", count);
+		TRACE("PREDICTION STACK (%d nodes):\n", count);
 		for (intptr_t i = 0; i < count; i++)
 		{
-			Node* node = m_predictionStack [i];
-			TRACE ("%s (%d)\n", getNodeKindString (node->m_kind), node->m_index);
+			Node* node = m_predictionStack[i];
+			TRACE("%s (%d)\n", getNodeKindString(node->m_kind), node->m_index);
 		}
 	}
 
 	void
-	traceTokenList ()
+	traceTokenList()
 	{
-		axl::sl::BoxIterator <Token> token = m_tokenList.getHead ();
+		axl::sl::BoxIterator<Token> token = m_tokenList.getHead();
 
-		TRACE ("TOKEN LIST (%d tokens):\n", m_tokenList.getCount ());
+		TRACE("TOKEN LIST (%d tokens):\n", m_tokenList.getCount());
 		for (; token; token++)
 		{
-			TRACE ("%s '%s' %s\n", token->getName (), token->getText (), token == m_tokenCursor ? "<--" : "");
+			TRACE("%s '%s' %s\n", token->getName(), token->getText(), token == m_tokenCursor ? "<--" : "");
 		}
 	}
 
 	// public info
 
 	const Token&
-	getLastMatchedToken ()
+	getLastMatchedToken()
 	{
 		return m_lastMatchedToken;
 	}
 
 	const Token&
-	getCurrentToken ()
+	getCurrentToken()
 	{
 		return m_currentToken;
 	}
 
 	Node*
-	getPredictionTop ()
+	getPredictionTop()
 	{
-		size_t count = m_predictionStack.getCount ();
-		return count ? m_predictionStack [count - 1] : NULL;
+		size_t count = m_predictionStack.getCount();
+		return count ? m_predictionStack[count - 1] : NULL;
 	}
 
 	size_t
-	getSymbolStackSize ()
+	getSymbolStackSize()
 	{
-		return m_symbolStack.getCount ();
+		return m_symbolStack.getCount();
 	}
 
 	SymbolNode*
-	getSymbolTop ()
+	getSymbolTop()
 	{
-		size_t count = m_symbolStack.getCount ();
-		return count ? m_symbolStack [count - 1] : NULL;
+		size_t count = m_symbolStack.getCount();
+		return count ? m_symbolStack[count - 1] : NULL;
 	}
 
 protected:
 	bool
-	advanceTokenCursor ()
+	advanceTokenCursor()
 	{
 		m_tokenCursor++;
 
-		Node* node = getPredictionTop ();
-		if (m_resolverStack.isEmpty () && (!node || node->m_kind != NodeKind_LaDfa))
+		Node* node = getPredictionTop();
+		if (m_resolverStack.isEmpty() && (!node || node->m_kind != NodeKind_LaDfa))
 		{
-			m_tokenList.removeHead (); // nobody gonna reparse you
-			ASSERT (m_tokenCursor == m_tokenList.getHead());
+			m_tokenList.removeHead(); // nobody gonna reparse you
+			ASSERT(m_tokenCursor == m_tokenList.getHead());
 		}
 
 		if (!m_tokenCursor)
@@ -321,17 +321,17 @@ protected:
 	// match against different kinds of nodes on top of prediction stack
 
 	MatchResult
-	matchEmptyPredictionStack ()
+	matchEmptyPredictionStack()
 	{
 		if ((m_flags & Flag_TokenMatch) || m_currentToken.m_token == T::EofToken)
 			return MatchResult_NextToken;
 
-		axl::err::setFormatStringError ("prediction stack empty while parsing '%s'", m_currentToken.getName ());
+		axl::err::setFormatStringError("prediction stack empty while parsing '%s'", m_currentToken.getName());
 		return MatchResult_Fail;
 	}
 
 	MatchResult
-	matchTokenNode (
+	matchTokenNode(
 		TokenNode* node,
 		size_t tokenIndex
 		)
@@ -341,10 +341,10 @@ protected:
 
 		if (node->m_index != T::AnyToken && node->m_index != tokenIndex)
 		{
-			if (m_resolverStack.isEmpty ()) // can't rollback so set error
+			if (m_resolverStack.isEmpty()) // can't rollback so set error
 			{
-				int expectedToken = static_cast <T*> (this)->getTokenFromIndex (node->m_index);
-				axl::lex::setExpectedTokenError (Token::getName (expectedToken), m_currentToken.getName ());
+				int expectedToken = static_cast<T*> (this)->getTokenFromIndex(node->m_index);
+				axl::lex::setExpectedTokenError(Token::getName(expectedToken), m_currentToken.getName());
 			}
 
 			return MatchResult_Fail;
@@ -359,12 +359,12 @@ protected:
 		m_lastMatchedToken = m_currentToken;
 		m_flags |= Flag_TokenMatch;
 
-		popPrediction ();
+		popPrediction();
 		return MatchResult_Continue; // don't advance to next token just yet (execute following actions)
 	}
 
 	MatchResult
-	matchSymbolNode (
+	matchSymbolNode(
 		SymbolNode* node,
 		size_t* parseTable,
 		size_t tokenIndex
@@ -374,9 +374,9 @@ protected:
 
 		if (node->m_flags & SymbolNodeFlag_Stacked)
 		{
-			SymbolNode* top = getSymbolTop ();
+			SymbolNode* top = getSymbolTop();
 
-			ASSERT (getSymbolTop () == node);
+			ASSERT(getSymbolTop() == node);
 
 			if (node->m_astNode)
 				node->m_astNode->m_lastToken = m_lastMatchedToken;
@@ -385,13 +385,13 @@ protected:
 
 			if (node->m_flags & SymbolNodeFlag_HasLeave)
 			{
-				result = static_cast <T*> (this)->leave (node->m_index);
+				result = static_cast<T*> (this)->leave(node->m_index);
 				if (!result)
 					return MatchResult_Fail;
 			}
 
-			popSymbol ();
-			popPrediction ();
+			popSymbol();
+			popPrediction();
 			return MatchResult_Continue;
 		}
 
@@ -407,92 +407,92 @@ protected:
 				m_lastMatchedToken = m_currentToken;
 			}
 
-			Node* argument = getArgument ();
+			Node* argument = getArgument();
 			if (argument)
 			{
-				static_cast <T*> (this)->argument (argument->m_index, node);
+				static_cast<T*> (this)->argument(argument->m_index, node);
 				argument->m_flags |= NodeFlag_Matched;
 			}
 
-			pushSymbol (node);
+			pushSymbol(node);
 
 			if (node->m_flags & SymbolNodeFlag_HasEnter)
 			{
-				result = static_cast <T*> (this)->enter (node->m_index);
+				result = static_cast<T*> (this)->enter(node->m_index);
 				if (!result)
 					return MatchResult_Fail;
 			}
 		}
 
-		size_t productionIndex = parseTable [node->m_index * T::TokenCount + tokenIndex];
+		size_t productionIndex = parseTable[node->m_index * T::TokenCount + tokenIndex];
 		if (productionIndex == -1)
 		{
-			if (m_resolverStack.isEmpty ()) // can't rollback so set error
+			if (m_resolverStack.isEmpty()) // can't rollback so set error
 			{
-				SymbolNode* symbol = getSymbolTop ();
-				ASSERT (symbol);
-				axl::err::setFormatStringError (
+				SymbolNode* symbol = getSymbolTop();
+				ASSERT(symbol);
+				axl::err::setFormatStringError(
 					"unexpected token '%s' in '%s'",
-					m_currentToken.getName (),
-					static_cast <T*> (this)->getSymbolName (symbol->m_index)
+					m_currentToken.getName(),
+					static_cast<T*> (this)->getSymbolName(symbol->m_index)
 					);
 			}
 
 			return MatchResult_Fail;
 		}
 
-		ASSERT (productionIndex < T::TotalCount);
+		ASSERT(productionIndex < T::TotalCount);
 
 		if (!(node->m_flags & SymbolNodeFlag_Named))
-			popPrediction ();
+			popPrediction();
 
-		pushPrediction (productionIndex);
+		pushPrediction(productionIndex);
 		return MatchResult_Continue;
 	}
 
 	MatchResult
-	matchSequenceNode (Node* node)
+	matchSequenceNode(Node* node)
 	{
 		if (m_flags & Flag_TokenMatch)
 			return MatchResult_NextToken;
 
-		size_t* p = static_cast <T*> (this)->getSequence (node->m_index);
+		size_t* p = static_cast<T*> (this)->getSequence(node->m_index);
 
-		popPrediction ();
+		popPrediction();
 		for (; *p != -1; p++)
-			pushPrediction (*p);
+			pushPrediction(*p);
 
 		return MatchResult_Continue;
 	}
 
 	MatchResult
-	matchActionNode (Node* node)
+	matchActionNode(Node* node)
 	{
-		bool result = static_cast <T*> (this)->action (node->m_index);
+		bool result = static_cast<T*> (this)->action(node->m_index);
 		if (!result)
 			return MatchResult_Fail;
 
-		popPrediction ();
+		popPrediction();
 		return MatchResult_Continue;
 	}
 
 	MatchResult
-	matchLaDfaNode (LaDfaNode* node)
+	matchLaDfaNode(LaDfaNode* node)
 	{
 		if (node->m_flags & LaDfaNodeFlag_PreResolver)
 		{
-			ASSERT (getPreResolverTop () == node);
+			ASSERT(getPreResolverTop() == node);
 
 			// successful match of resolver
 
 			size_t productionIndex = node->m_resolverThenIndex;
-			ASSERT (productionIndex < T::LaDfaFirst);
+			ASSERT(productionIndex < T::LaDfaFirst);
 
 			m_tokenCursor = node->m_reparseLaDfaTokenCursor;
 
-			popPreResolver ();
-			popPrediction ();
-			pushPrediction (productionIndex);
+			popPreResolver();
+			popPrediction();
+			pushPrediction(productionIndex);
 
 			return MatchResult_NextTokenNoAdvance;
 		}
@@ -502,13 +502,13 @@ protected:
 
 		LaDfaTransition transition = { 0 };
 
-		LaDfaResult laDfaResult = static_cast <T*> (this)->laDfa (
+		LaDfaResult laDfaResult = static_cast<T*> (this)->laDfa(
 			node->m_index,
 			m_currentToken.m_token,
 			&transition
 			);
 
-		switch (laDfaResult)
+		switch(laDfaResult)
 		{
 		case LaDfaResult_Production:
 			if (transition.m_productionIndex >= T::LaDfaFirst &&
@@ -523,8 +523,8 @@ protected:
 				// resolved! continue parsing
 				m_tokenCursor = node->m_reparseLaDfaTokenCursor;
 
-				popPrediction ();
-				pushPrediction (transition.m_productionIndex);
+				popPrediction();
+				pushPrediction(transition.m_productionIndex);
 
 				return MatchResult_NextTokenNoAdvance;
 			}
@@ -536,21 +536,21 @@ protected:
 			node->m_resolverThenIndex = transition.m_productionIndex;
 			node->m_resolverElseIndex = transition.m_resolverElseIndex;
 			node->m_reparseResolverTokenCursor = m_tokenCursor;
-			pushPreResolver (node);
-			pushPrediction (transition.m_resolverIndex);
+			pushPreResolver(node);
+			pushPrediction(transition.m_resolverIndex);
 			return MatchResult_Continue;
 
 		default:
-			ASSERT (laDfaResult == LaDfaResult_Fail);
+			ASSERT(laDfaResult == LaDfaResult_Fail);
 
-			if (m_resolverStack.isEmpty ()) // can't rollback so set error
+			if (m_resolverStack.isEmpty()) // can't rollback so set error
 			{
-				SymbolNode* symbol = getSymbolTop ();
-				ASSERT (symbol);
-				axl::err::setFormatStringError (
+				SymbolNode* symbol = getSymbolTop();
+				ASSERT(symbol);
+				axl::err::setFormatStringError(
 					"unexpected token '%s' while trying to resolve conflict in '%s'",
-					m_currentToken.getName (),
-					static_cast <T*> (this)->getSymbolName (symbol->m_index)
+					m_currentToken.getName(),
+					static_cast<T*> (this)->getSymbolName(symbol->m_index)
 					);
 			}
 
@@ -561,36 +561,36 @@ protected:
 	// rollback
 
 	MatchResult
-	rollbackResolver ()
+	rollbackResolver()
 	{
-		LaDfaNode* laDfaNode = getPreResolverTop ();
-		ASSERT (laDfaNode);
-		ASSERT (laDfaNode->m_flags & LaDfaNodeFlag_PreResolver);
+		LaDfaNode* laDfaNode = getPreResolverTop();
+		ASSERT(laDfaNode);
+		ASSERT(laDfaNode->m_flags & LaDfaNodeFlag_PreResolver);
 
 		// keep popping prediction stack until pre-resolver dfa node
 
-		while (!m_predictionStack.isEmpty ())
+		while (!m_predictionStack.isEmpty())
 		{
-			Node* node = getPredictionTop ();
+			Node* node = getPredictionTop();
 
 			if (node->m_kind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Stacked))
 			{
-				ASSERT (getSymbolTop () == node);
+				ASSERT(getSymbolTop() == node);
 
 				// do NOT call OnLeave () during resolver unwinding
 				// cause OnLeave () assumes parsing of the symbol is complete
 
-				popSymbol ();
+				popSymbol();
 			}
 
 			if (node == laDfaNode)
 				break; // found it!!
 
-			popPrediction ();
+			popPrediction();
 		}
 
-		ASSERT (getPredictionTop () == laDfaNode);
-		popPreResolver ();
+		ASSERT(getPredictionTop() == laDfaNode);
+		popPreResolver();
 
 		m_tokenCursor = laDfaNode->m_reparseResolverTokenCursor;
 
@@ -609,8 +609,8 @@ protected:
 		else
 		{
 			size_t productionIndex = laDfaNode->m_resolverElseIndex;
-			popPrediction ();
-			pushPrediction (productionIndex);
+			popPrediction();
+			pushPrediction(productionIndex);
 		}
 
 		return MatchResult_NextTokenNoAdvance;
@@ -620,9 +620,9 @@ protected:
 
 	static
 	SymbolNode*
-	createStdSymbolNode (size_t index)
+	createStdSymbolNode(size_t index)
 	{
-		SymbolNode* node = AXL_MEM_NEW (SymbolNode);
+		SymbolNode* node = AXL_MEM_NEW(SymbolNode);
 		node->m_kind = NodeKind_Symbol;
 		node->m_flags |= SymbolNodeFlag_Named;
 		node->m_index = index;
@@ -630,27 +630,27 @@ protected:
 	}
 
 	Node*
-	createNode (size_t masterIndex)
+	createNode(size_t masterIndex)
 	{
-		ASSERT (masterIndex < T::TotalCount);
+		ASSERT(masterIndex < T::TotalCount);
 
 		Node* node = NULL;
 
 		if (masterIndex < T::TokenEnd)
 		{
-			node = AXL_MEM_NEW (TokenNode);
+			node = AXL_MEM_NEW(TokenNode);
 			node->m_index = masterIndex;
 		}
 		else if (masterIndex < T::NamedSymbolEnd)
 		{
 			size_t index = masterIndex - T::SymbolFirst;
-			SymbolNode* symbolNode = static_cast <T*> (this)->createSymbolNode (index);
+			SymbolNode* symbolNode = static_cast<T*> (this)->createSymbolNode(index);
 			if (symbolNode->m_astNode && (m_flags & Flag_BuildingAst))
 			{
 				if (!m_ast)
-					m_ast.createBuffer ();
+					m_ast.createBuffer();
 
-				m_ast->add (symbolNode->m_astNode);
+				m_ast->add(symbolNode->m_astNode);
 				symbolNode->m_flags |= SymbolNodeFlag_KeepAst;
 			}
 
@@ -658,50 +658,50 @@ protected:
 		}
 		else if (masterIndex < T::SymbolEnd)
 		{
-			node = AXL_MEM_NEW (SymbolNode);
+			node = AXL_MEM_NEW(SymbolNode);
 			node->m_index = masterIndex - T::SymbolFirst;
 		}
 		else if (masterIndex < T::SequenceEnd)
 		{
-			node = AXL_MEM_NEW (Node);
+			node = AXL_MEM_NEW(Node);
 			node->m_kind = NodeKind_Sequence;
 			node->m_index = masterIndex - T::SequenceFirst;
 		}
 		else if (masterIndex < T::ActionEnd)
 		{
-			node = AXL_MEM_NEW (Node);
+			node = AXL_MEM_NEW(Node);
 			node->m_kind = NodeKind_Action;
 			node->m_index = masterIndex - T::ActionFirst;
 		}
 		else if (masterIndex < T::ArgumentEnd)
 		{
-			node = AXL_MEM_NEW (Node);
+			node = AXL_MEM_NEW(Node);
 			node->m_kind = NodeKind_Argument;
 			node->m_index = masterIndex - T::ArgumentFirst;
 		}
 		else if (masterIndex < T::BeaconEnd)
 		{
-			size_t* p = static_cast <T*> (this)->getBeacon (masterIndex - T::BeaconFirst);
-			size_t slotIndex = p [0];
-			size_t targetIndex = p [1];
+			size_t* p = static_cast<T*> (this)->getBeacon(masterIndex - T::BeaconFirst);
+			size_t slotIndex = p[0];
+			size_t targetIndex = p[1];
 
-			node = createNode (targetIndex);
-			ASSERT (node->m_kind == NodeKind_Token || node->m_kind == NodeKind_Symbol);
+			node = createNode(targetIndex);
+			ASSERT(node->m_kind == NodeKind_Token || node->m_kind == NodeKind_Symbol);
 
 			node->m_flags |= NodeFlag_Locator;
 
-			SymbolNode* symbolNode = getSymbolTop ();
-			ASSERT (symbolNode);
+			SymbolNode* symbolNode = getSymbolTop();
+			ASSERT(symbolNode);
 
-			symbolNode->m_locatorArray.ensureCountZeroConstruct (slotIndex + 1);
-			symbolNode->m_locatorArray [slotIndex] = node;
-			symbolNode->m_locatorList.insertTail (node);
+			symbolNode->m_locatorArray.ensureCountZeroConstruct(slotIndex + 1);
+			symbolNode->m_locatorArray[slotIndex] = node;
+			symbolNode->m_locatorList.insertTail(node);
 		}
 		else
 		{
-			ASSERT (masterIndex < T::LaDfaEnd);
+			ASSERT(masterIndex < T::LaDfaEnd);
 
-			node = AXL_MEM_NEW (LaDfaNode);
+			node = AXL_MEM_NEW(LaDfaNode);
 			node->m_index = masterIndex - T::LaDfaFirst;
 		}
 
@@ -711,62 +711,62 @@ protected:
 	// prediction stack
 
 	Node*
-	getArgument ()
+	getArgument()
 	{
-		size_t count = m_predictionStack.getCount ();
+		size_t count = m_predictionStack.getCount();
 		if (count < 2)
 			return NULL;
 
-		Node* node = m_predictionStack [count - 2];
+		Node* node = m_predictionStack[count - 2];
 		return node->m_kind == NodeKind_Argument ? node : NULL;
 	}
 
 	Node*
-	pushPrediction (size_t masterIndex)
+	pushPrediction(size_t masterIndex)
 	{
 		if (!masterIndex) // check for epsilon production
 			return NULL;
 
-		Node* node = createNode (masterIndex);
+		Node* node = createNode(masterIndex);
 		if (!(node->m_flags & NodeFlag_Locator))
-			m_nodeList.insertTail (node);
-		m_predictionStack.append (node);
+			m_nodeList.insertTail(node);
+		m_predictionStack.append(node);
 		return node;
 	}
 
 	void
-	popPrediction ()
+	popPrediction()
 	{
-		size_t count = m_predictionStack.getCount ();
+		size_t count = m_predictionStack.getCount();
 		if (!count)
 		{
-			ASSERT (false);
+			ASSERT(false);
 			return;
 		}
 
-		Node* node = m_predictionStack [count - 1];
+		Node* node = m_predictionStack[count - 1];
 		if (!(node->m_flags & NodeFlag_Locator))
-			m_nodeList.erase (node);
+			m_nodeList.erase(node);
 
-		m_predictionStack.setCount (count - 1);
+		m_predictionStack.setCount(count - 1);
 	}
 
 	// symbol stack
 
 	AstNode*
-	getAst (size_t index)
+	getAst(size_t index)
 	{
-		size_t count = m_symbolStack.getCount ();
-		return index < count ? m_symbolStack [count - index - 1]->m_astNode : NULL;
+		size_t count = m_symbolStack.getCount();
+		return index < count ? m_symbolStack[count - index - 1]->m_astNode : NULL;
 	}
 
 	AstNode*
-	getAstTop ()
+	getAstTop()
 	{
-		size_t count = m_symbolStack.getCount ();
+		size_t count = m_symbolStack.getCount();
 		for (intptr_t i = count - 1; i >= 0; i--)
 		{
-			SymbolNode* node = m_symbolStack [i];
+			SymbolNode* node = m_symbolStack[i];
 			if (node->m_astNode)
 				return node->m_astNode;
 		}
@@ -775,84 +775,84 @@ protected:
 	}
 
 	void
-	pushSymbol (SymbolNode* node)
+	pushSymbol(SymbolNode* node)
 	{
 		if ((m_flags & Flag_BuildingAst) && node->m_astNode)
 		{
-			AstNode* astTop = getAstTop ();
+			AstNode* astTop = getAstTop();
 			if (astTop)
 			{
 				node->m_astNode->m_parent = astTop;
-				astTop->m_children.append (node->m_astNode);
+				astTop->m_children.append(node->m_astNode);
 			}
 		}
 
-		m_symbolStack.append (node);
+		m_symbolStack.append(node);
 		node->m_flags |= SymbolNodeFlag_Stacked;
 	}
 
 	void
 	popSymbol()
 	{
-		size_t count = m_symbolStack.getCount ();
+		size_t count = m_symbolStack.getCount();
 		if (!count)
 		{
-			ASSERT (false);
+			ASSERT(false);
 			return;
 		}
 
-		SymbolNode* node = m_symbolStack [count - 1];
+		SymbolNode* node = m_symbolStack[count - 1];
 		node->m_flags |= SymbolNodeFlag_Stacked;
 
-		m_symbolStack.setCount (count - 1);
+		m_symbolStack.setCount(count - 1);
 	}
 
 	// resolver stack
 
 	LaDfaNode*
-	getPreResolverTop ()
+	getPreResolverTop()
 	{
-		size_t count = m_resolverStack.getCount ();
-		return count ? m_resolverStack [count - 1] : NULL;
+		size_t count = m_resolverStack.getCount();
+		return count ? m_resolverStack[count - 1] : NULL;
 	}
 
 	void
-	pushPreResolver (LaDfaNode* node)
+	pushPreResolver(LaDfaNode* node)
 	{
-		m_resolverStack.append (node);
+		m_resolverStack.append(node);
 		node->m_flags |= LaDfaNodeFlag_PreResolver;
 	}
 
 	void
-	popPreResolver ()
+	popPreResolver()
 	{
-		size_t count = m_resolverStack.getCount ();
+		size_t count = m_resolverStack.getCount();
 		if (!count)
 		{
-			ASSERT (false);
+			ASSERT(false);
 			return;
 		}
 
-		LaDfaNode* node = m_resolverStack [count - 1];
+		LaDfaNode* node = m_resolverStack[count - 1];
 		node->m_flags &= ~LaDfaNodeFlag_PreResolver;
 
-		m_resolverStack.setCount (count - 1);
+		m_resolverStack.setCount(count - 1);
 	}
 
 	// locators
 
 	Node*
-	getLocator (size_t index)
+	getLocator(size_t index)
 	{
-		SymbolNode* symbolNode = getSymbolTop ();
+		SymbolNode* symbolNode = getSymbolTop();
 		if (!symbolNode)
 			return NULL;
 
-		size_t count = symbolNode->m_locatorArray.getCount ();
+		size_t count = symbolNode->m_locatorArray.getCount();
 		if (index >= count)
 			return NULL;
 
-		Node* node = symbolNode->m_locatorArray [index];
+		Node* node = symbolNode->m_locatorArray[index];
 		if (!node || !(node->m_flags & NodeFlag_Matched))
 			return NULL;
 
@@ -860,17 +860,17 @@ protected:
 	}
 
 	AstNode*
-	getAstLocator (size_t index)
+	getAstLocator(size_t index)
 	{
-		Node* node = getLocator (index);
-		return node && node->m_kind == NodeKind_Symbol ? ((SymbolNode*) node)->m_astNode : NULL;
+		Node* node = getLocator(index);
+		return node && node->m_kind == NodeKind_Symbol ? ((SymbolNode*)node)->m_astNode : NULL;
 	}
 
 	const Token*
-	getTokenLocator (size_t index)
+	getTokenLocator(size_t index)
 	{
-		Node* node = getLocator (index);
-		return node && node->m_kind == NodeKind_Token ? &((TokenNode*) node)->m_token : NULL;
+		Node* node = getLocator(index);
+		return node && node->m_kind == NodeKind_Token ? &((TokenNode*)node)->m_token : NULL;
 	}
 
 	// must be implemented in derived class:

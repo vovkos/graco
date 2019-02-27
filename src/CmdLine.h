@@ -29,16 +29,16 @@ struct CmdLine
 	size_t m_lookaheadLimit;
 	size_t m_conflictDepthLimit;
 	sl::String m_inputFileName;
-	sl::BoxList <sl::String> m_outputFileNameList;
-	sl::BoxList <sl::String> m_frameFileNameList;
+	sl::BoxList<sl::String> m_outputFileNameList;
+	sl::BoxList<sl::String> m_frameFileNameList;
 	sl::String m_bnfFileName;
 	sl::String m_traceFileName;
 
 	sl::String m_outputDir;
-	sl::BoxList <sl::String> m_frameDirList;
-	sl::BoxList <sl::String> m_importDirList;
+	sl::BoxList<sl::String> m_frameDirList;
+	sl::BoxList<sl::String> m_importDirList;
 
-	CmdLine ();
+	CmdLine();
 };
 
 //..............................................................................
@@ -63,102 +63,102 @@ enum CmdLineSwitchKind
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE (CmdLineSwitchTable, CmdLineSwitchKind)
-	AXL_SL_CMD_LINE_SWITCH_GROUP ("General options")
-	AXL_SL_CMD_LINE_SWITCH_2 (
+AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE(CmdLineSwitchTable, CmdLineSwitchKind)
+	AXL_SL_CMD_LINE_SWITCH_GROUP("General options")
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_Help,
 		"h", "help", NULL,
 		"Display this help"
 		)
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_Version,
 		"v", "version", NULL,
 		"Display Graco version"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_NoPpLine,
 		"l", "no-line", NULL,
 		"Suppress #line preprocessor directives"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH (
+	AXL_SL_CMD_LINE_SWITCH(
 		CmdLineSwitchKind_LookaheadLimit,
 		"lookahead-limit", "<limit>",
 		"Specify number of tokens used for conflict resolution (defaults to 2)"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH (
+	AXL_SL_CMD_LINE_SWITCH(
 		CmdLineSwitchKind_ConflictDepthLimit,
 		"conflict-depth-limit", "<limit>",
 		"Limit the depth of nested conflicts (defaults to 2)"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_Verbose,
 		"z", "verbose", NULL,
 		"Verbose mode"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH_GROUP ("Files")
+	AXL_SL_CMD_LINE_SWITCH_GROUP("Files")
 
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_OutputFileName,
 		"o", "output", "<file>",
 		"Specify output file (multiple allowed)"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_FrameFileName,
 		"f", "frame", "<file>",
 		"Specify Lua frame file (multiple allowed)"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_BnfFileName,
 		"b", "bnf", "<file>",
 		"Generate \"clean\" EBNF file"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_TraceFileName,
 		"t", "trace", "<file>",
 		"Write verbose information into trace file"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH_GROUP ("Directories")
+	AXL_SL_CMD_LINE_SWITCH_GROUP("Directories")
 
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_OutputDir,
 		"O", "output-dir", "<dir>",
 		"Specify output directory"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_FrameDir,
 		"F", "frame-dir", "<dir>",
 		"Add Lua frame directory (multiple allowed)"
 		)
 
-	AXL_SL_CMD_LINE_SWITCH_2 (
+	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_ImportDir,
 		"I", "import-dir", "<dir>",
 		"Add import directory (multiple allowed)"
 		)
-AXL_SL_END_CMD_LINE_SWITCH_TABLE ()
+AXL_SL_END_CMD_LINE_SWITCH_TABLE()
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CmdLineParser: public sl::CmdLineParser <CmdLineParser, CmdLineSwitchTable>
+class CmdLineParser: public sl::CmdLineParser<CmdLineParser, CmdLineSwitchTable>
 {
-	friend class sl::CmdLineParser <CmdLineParser, CmdLineSwitchTable>;
+	friend class sl::CmdLineParser<CmdLineParser, CmdLineSwitchTable>;
 
 protected:
 	CmdLine* m_cmdLine;
 	size_t m_targetIdx;
 
 public:
-	CmdLineParser (CmdLine* cmdLine)
+	CmdLineParser(CmdLine* cmdLine)
 	{
 		m_cmdLine = cmdLine;
 		m_targetIdx = 0;
@@ -166,16 +166,16 @@ public:
 
 protected:
 	bool
-	onValue (const sl::StringRef& value);
+	onValue(const sl::StringRef& value);
 
 	bool
-	onSwitch (
+	onSwitch(
 		SwitchKind switchKind,
 		const sl::StringRef& value
 		);
 
 	bool
-	finalize ();
+	finalize();
 };
 
 //..............................................................................

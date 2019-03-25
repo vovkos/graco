@@ -234,7 +234,7 @@ NodeMgr::createQuantifierNode(
 
 	GrammarNode* resultNode;
 
-	switch(kind)
+	switch (kind)
 	{
 	case '?':
 		tempAlt = createTempSymbolNode();

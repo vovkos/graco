@@ -558,7 +558,7 @@ LaDfaBuilder::processThread(
 		SequenceNode* sequence;
 		size_t childrenCount;
 
-		switch(node->m_kind)
+		switch (node->m_kind)
 		{
 		case NodeKind_Token:
 			if (thread->m_match)

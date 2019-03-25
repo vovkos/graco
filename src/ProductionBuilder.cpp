@@ -32,7 +32,7 @@ ProductionBuilder::build(
 	bool result;
 	size_t formalArgCount;
 
-	switch(production->m_kind)
+	switch (production->m_kind)
 	{
 	case NodeKind_Epsilon:
 	case NodeKind_Token:
@@ -162,7 +162,7 @@ ProductionBuilder::scan(GrammarNode* node)
 
 	size_t childrenCount;
 
-	switch(node->m_kind)
+	switch (node->m_kind)
 	{
 	case NodeKind_Epsilon:
 	case NodeKind_Token:
@@ -293,7 +293,7 @@ ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode*& node)
 
 	size_t count;
 
-	switch(node->m_kind)
+	switch (node->m_kind)
 	{
 	case NodeKind_Epsilon:
 	case NodeKind_Token:
@@ -431,7 +431,7 @@ ProductionBuilder::processUserCode(
 		if (token->m_token <= 0)
 			break;
 
-		switch(token->m_token)
+		switch (token->m_token)
 		{
 		case TokenKind_Integer:
 			variableKind = findVariable(token->m_data.m_integer, &beacon);
@@ -451,7 +451,7 @@ ProductionBuilder::processUserCode(
 
 		resultString.append(p, token->m_pos.m_p - p);
 
-		switch(variableKind)
+		switch (variableKind)
 		{
 		case VariableKind_SymbolBeacon:
 			if (beacon->m_target->m_flags & SymbolNodeFlag_NoAst)

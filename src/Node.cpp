@@ -103,7 +103,7 @@ isParenthesNeeded(const sl::StringRef& string)
 	const char* end = string.getEnd();
 
 	for (; p < end; p++)
-		switch(*p)
+		switch (*p)
 		{
 		case ' ':
 			if (!level)

@@ -92,7 +92,7 @@ Parser::program()
 		if (!token->m_token)
 			break;
 
-		switch(token->m_token)
+		switch (token->m_token)
 		{
 		case TokenKind_Lookahead:
 			result = lookaheadStatement();
@@ -258,7 +258,7 @@ Parser::productionSpecifiers(ProductionSpecifiers* specifiers)
 		const Token* token = getToken();
 		const Token* laToken;
 
-		switch(token->m_token)
+		switch (token->m_token)
 		{
 		case TokenKind_Class:
 			if (isClassSpecified)
@@ -338,7 +338,7 @@ Parser::productionSpecifiers(ProductionSpecifiers* specifiers)
 
 		case TokenKind_Identifier:
 			laToken = getToken(1);
-			switch(laToken->m_token)
+			switch (laToken->m_token)
 			{
 			case TokenKind_Class:
 			case TokenKind_Default:
@@ -447,7 +447,7 @@ Parser::defineStatement()
 	nextToken();
 
 	token = getToken();
-	switch(token->m_token)
+	switch (token->m_token)
 	{
 	case '{':
 		return userCode('{', &define->m_stringValue, &define->m_srcPos);
@@ -456,7 +456,7 @@ Parser::defineStatement()
 		nextToken();
 
 		token = getToken();
-		switch(token->m_token)
+		switch (token->m_token)
 		{
 		case TokenKind_Identifier:
 		case TokenKind_Literal:
@@ -538,7 +538,7 @@ Parser::customizeSymbol(SymbolNode* node)
 		sl::String* string = NULL;
 		lex::LineCol* lineCol = NULL;
 
-		switch(token->m_token)
+		switch (token->m_token)
 		{
 		case TokenKind_Local:
 			string = &node->m_local;
@@ -732,7 +732,7 @@ Parser::processSymbolEventHandler(
 
 		sl::StringHashTableIterator<bool> it;
 
-		switch(token->m_token)
+		switch (token->m_token)
 		{
 		case TokenKind_Identifier:
 			it = node->m_localNameSet.find(token->m_data.m_string);
@@ -808,7 +808,7 @@ Parser::processActualArgList(
 		if (token->m_token <= 0)
 			break;
 
-		switch(token->m_token)
+		switch (token->m_token)
 		{
 		case '(':
 		case '{':
@@ -951,7 +951,7 @@ inline
 bool
 isFirstOfPrimary(int token)
 {
-	switch(token)
+	switch (token)
 	{
 	case TokenKind_Identifier:
 	case TokenKind_Integer:
@@ -1039,7 +1039,7 @@ Parser::primary()
 	ActionNode* actionNode;
 
 	const Token* token = getToken();
-	switch(token->m_token)
+	switch (token->m_token)
 	{
 	case '.':
 	case TokenKind_Any:
@@ -1139,7 +1139,7 @@ Parser::beacon()
 	SymbolNode* node;
 
 	const Token* token = getToken();
-	switch(token->m_token)
+	switch (token->m_token)
 	{
 	case TokenKind_Any:
 	case '.':
@@ -1285,7 +1285,7 @@ Parser::userCode(
 
 	int closeBracket;
 
-	switch(openBracket)
+	switch (openBracket)
 	{
 	case '{':
 		closeBracket = '}';

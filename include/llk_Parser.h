@@ -153,7 +153,7 @@ public:
 			}
 			else
 			{
-				switch(node->m_kind)
+				switch (node->m_kind)
 				{
 				case NodeKind_Token:
 					matchResult = matchTokenNode((TokenNode*)node, tokenIndex);
@@ -195,7 +195,7 @@ public:
 				ASSERT(matchResult != MatchResult_Fail); // failed resolver means there is another possibility!
 			}
 
-			switch(matchResult)
+			switch (matchResult)
 			{
 			case MatchResult_Continue:
 				break;
@@ -508,7 +508,7 @@ protected:
 			&transition
 			);
 
-		switch(laDfaResult)
+		switch (laDfaResult)
 		{
 		case LaDfaResult_Production:
 			if (transition.m_productionIndex >= T::LaDfaFirst &&

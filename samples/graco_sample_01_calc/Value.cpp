@@ -162,7 +162,7 @@ Value::lvalueCheck() const
 sl::String
 Value::getString() const
 {
-	switch(m_type)
+	switch (m_type)
 	{
 	case Type_Null:
 		return "null";
@@ -200,7 +200,7 @@ Value::unaryOperator(UnOpKind opKind)
 	ASSERT(opKind < countof(operatorTable));
 	Operator* op = &operatorTable[opKind];
 
-	switch(m_type)
+	switch (m_type)
 	{
 	case Type_Null:
 		err::setError("cannot apply operators to 'null' values");
@@ -269,7 +269,7 @@ Value::binaryOperator(
 	Operator* op = &operatorTable[opKind];
 
 	Type type = AXL_MAX(m_type, value.m_type);
-	switch(type)
+	switch (type)
 	{
 	case Type_Int:
 		m_integer = op->m_intFunc(m_integer, value.m_integer);
@@ -331,7 +331,7 @@ Value::relationalOperator(
 	Operator* op = &operatorTable[opKind];
 
 	Type type = AXL_MAX(m_type, value.m_type);
-	switch(type)
+	switch (type)
 	{
 	case Type_Int:
 		m_integer = op->m_intFunc(m_integer, value.m_integer);

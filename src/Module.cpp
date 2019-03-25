@@ -235,7 +235,7 @@ Module::luaExportDefines(lua::LuaState* luaState)
 	{
 		Define* define = *defineIt;
 
-		switch(define->m_kind)
+		switch (define->m_kind)
 		{
 		case DefineKind_String:
 			luaState->setGlobalString(define->m_name, define->m_stringValue);

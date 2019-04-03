@@ -1,0 +1,157 @@
+//..............................................................................
+//
+//  This file is part of the Graco toolkit.
+//
+//  Graco is distributed under the MIT license.
+//  For details see accompanying license.txt file,
+//  the public copy of which is also available at:
+//  http://tibbo.com/downloads/archive/graco/license.txt
+//
+//..............................................................................
+
+lookahead = 2;
+
+start
+nullable
+block
+	:	statement*
+	;
+
+statement
+	:	expression_stmt
+	|	label
+	|	GOTO IDENTIFIER
+	|	BREAK
+	|	RETURN expression_list?
+	|	DO block END
+	|	WHILE expression DO block END
+	|	REPEAT block UNTIL expression
+	|	IF expression THEN block (ELSEIF expression THEN block)* (ELSE block)? END
+	|	FOR for_iterator DO block END
+	|	FUNCTION function_name function_body
+	|	LOCAL FUNCTION IDENTIFIER function_body
+	|	LOCAL name_list ('=' expression_list)?
+	|	';'
+	;
+
+label
+	:	CONTEXT IDENTIFIER CONTEXT
+	;
+
+function_name
+	:	IDENTIFIER ('.' IDENTIFIER)* (':' IDENTIFIER)?
+	;
+
+for_iterator
+	: 	IDENTIFIER '=' expression ',' expression (',' expression)?
+	| 	name_list IN expression_list
+	;
+
+name_list
+	:	IDENTIFIER (',' IDENTIFIER)*
+	;
+
+expression_stmt
+	:	postfix_expr (',' postfix_expr)* ('=' expression_list)?
+	;
+
+expression_list
+	:	expression (',' expression)*
+	;
+
+expression
+	:	unary_expr (bin_op expression)*
+	;
+
+unary_expr
+	:	postfix_expr
+	|	un_op unary_expr
+	;
+
+postfix_expr
+	: 	primary_expression postfix_op*
+	;
+
+postfix_op
+	:	'[' expression ']'
+	|	'.' IDENTIFIER
+	|	(':' IDENTIFIER)? arguments
+	;
+
+primary_expr
+	:	NIL
+	|	FALSE
+	|	TRUE
+	|	NUMBER
+	|	STRING
+	|	IDENTIFIER
+	|	ELLIPSIS
+	|	FUNCTION function_body
+	|	table_constructor
+	|	'(' expression ')'
+	;
+
+arguments
+	: 	'(' expression_list? ')'
+	|	table_constructor
+	|	STRING
+	;
+
+function_body
+	:	'(' parameter_list? ')' block END
+	;
+
+parameter_list
+	:	name_list (',' ELLIPSIS)?
+	|	ELLIPSIS
+	;
+
+table_constructor
+	:	'{' field_list? '}'
+	;
+
+field_list
+	:	field (field_sep field)* field_sep?
+	;
+
+field
+	:	'[' expression ']' '=' expression
+	|	IDENTIFIER '=' expression
+	|	expression
+	;
+
+field_sep
+	:	','
+	|	';'
+	;
+
+bin_op
+	:	OR
+	|	AND
+	|	'<'
+	|	'>'
+	|	LE
+	|	GE
+	|	NE
+	|	EQ
+	|	'|'
+	|	'~'
+	|	'&'
+	|	SHL
+	|	SHR
+	|	CONCAT
+	|	'+'
+	|	'-'
+	|	'*'
+	|	'/'
+	|	'%'
+	|	FLOORDIV
+	|	'^'
+	;
+
+un_op
+	:	'~'
+	|	'-'
+	|	'#'
+	|	NOT
+	;

@@ -9,15 +9,15 @@
 #
 #...............................................................................
 
-string (REGEX REPLACE "[a-z]+" ".." GRACO_INSTALL_ROOT_SUBDIR ${GRACO_INSTALL_CMAKE_SUBDIR})
+string(REGEX REPLACE "[a-z]+" ".." GRACO_INSTALL_ROOT_SUBDIR ${GRACO_INSTALL_CMAKE_SUBDIR})
 
-configure_file (
+configure_file(
 	graco_config_build.cmake.in
 	graco_config.cmake
 	@ONLY
 	)
 
-configure_file (
+configure_file(
 	graco_config_install.cmake.in
 	graco_config_install.cmake
 	@ONLY
@@ -25,7 +25,7 @@ configure_file (
 
 # make GRACO_CMAKE_DIR available to any project within the same source tree
 
-set (
+set(
 	GRACO_CMAKE_DIR
 	${CMAKE_CURRENT_LIST_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
@@ -35,7 +35,7 @@ set (
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-install (
+install(
 	FILES
 		import_graco.cmake
 		graco_step.cmake
@@ -43,13 +43,13 @@ install (
 	DESTINATION ${GRACO_INSTALL_CMAKE_SUBDIR}
 	)
 
-install (
+install(
 	FILES ${CMAKE_CURRENT_BINARY_DIR}/graco_config_install.cmake
 	RENAME graco_config.cmake
 	DESTINATION ${GRACO_INSTALL_CMAKE_SUBDIR}
 	)
 
-install (
+install(
 	FILES ${GRACO_ROOT_DIR}/version.cmake
 	RENAME graco_version.cmake
 	DESTINATION ${GRACO_INSTALL_CMAKE_SUBDIR}

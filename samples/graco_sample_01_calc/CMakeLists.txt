@@ -13,13 +13,13 @@
 # app folder
 #
 
-set (
+set(
 	APP_H_LIST
 	Lexer.h
 	Value.h
 	)
 
-set (
+set(
 	APP_CPP_LIST
 	main.cpp
 	Lexer.cpp
@@ -27,17 +27,17 @@ set (
 	Value.cpp
 	)
 
-set (
+set(
 	APP_RL_LIST
 	Lexer.rl
 	)
 
-set (
+set(
 	APP_LLK_LIST
 	Parser.llk
 	)
 
-source_group (
+source_group(
 	app
 	FILES
 	${APP_H_LIST}
@@ -51,17 +51,17 @@ source_group (
 # gen folder
 #
 
-set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
-file (MAKE_DIRECTORY ${GEN_DIR})
+set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+file(MAKE_DIRECTORY ${GEN_DIR})
 
-axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
 
-add_ragel_step (
+add_ragel_step(
 	Lexer.rl.cpp
 	Lexer.rl
 	)
 
-add_graco_double_step (
+add_graco_double_step(
 	Parser.llk.h
 	Parser.llk.cpp
 	CppParser.h.in
@@ -69,22 +69,22 @@ add_graco_double_step (
 	Parser.llk
 	)
 
-axl_pop (CMAKE_CURRENT_BINARY_DIR)
+axl_pop(CMAKE_CURRENT_BINARY_DIR)
 
-set (
+set(
 	GEN_LLK_H_LIST
 	${GEN_DIR}/Parser.llk.h
 	)
 
-set (
+set(
 	GEN_LLK_CPP_LIST
 	${GEN_DIR}/Parser.llk.cpp
 	)
 
-axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
-axl_exclude_from_build (${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+axl_exclude_from_build(${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
 
-source_group (
+source_group(
 	gen
 	FILES
 	${GEN_RL_CPP_LIST}
@@ -97,10 +97,10 @@ source_group (
 # pch folder
 #
 
-set (PCH_H   pch.h)
-set (PCH_CPP pch.cpp)
+set(PCH_H   pch.h)
+set(PCH_CPP pch.cpp)
 
-source_group (
+source_group(
 	pch
 	FILES
 	${PCH_H}
@@ -112,16 +112,16 @@ source_group (
 # graco_sample_01_calc app
 #
 
-include_directories (
+include_directories(
 	${AXL_INC_DIR}
 	${GRACO_INC_DIR}
 	${GEN_DIR}
 	${CMAKE_CURRENT_LIST_DIR}
 	)
 
-link_directories (${AXL_LIB_DIR})
+link_directories(${AXL_LIB_DIR})
 
-add_executable (
+add_executable(
 	graco_sample_01_calc
 	${PCH_H}
 	${PCH_CPP}
@@ -134,32 +134,32 @@ add_executable (
 	# ${GEN_LLK_CPP_LIST} # currently, cmake can't handle double-file output
 	)
 
-add_dependencies (
+add_dependencies(
 	graco_sample_01_calc
 	graco
 	)
 
-set_target_properties (
+set_target_properties(
 	graco_sample_01_calc
 	PROPERTIES
 	FOLDER samples
 	)
 
-target_link_libraries (
+target_link_libraries(
 	graco_sample_01_calc
 	axl_fsm
 	axl_io
 	axl_core
 	)
 
-if (UNIX)
-	target_link_libraries (
+if(UNIX)
+	target_link_libraries(
 		graco_sample_01_calc
 		pthread
 		)
-endif ()
+endif()
 
-axl_set_pch (
+axl_set_pch(
 	graco_sample_01_calc
 	${PCH_H}
 	${PCH_CPP}

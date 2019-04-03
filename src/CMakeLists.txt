@@ -13,7 +13,7 @@
 # app folder
 #
 
-set (
+set(
 	APP_H_LIST
 	ClassMgr.h
 	CmdLine.h
@@ -30,7 +30,7 @@ set (
 	version.h.in
 	)
 
-set (
+set(
 	APP_CPP_LIST
 	main.cpp
 	CmdLine.cpp
@@ -47,12 +47,12 @@ set (
 	ProductionBuilder.cpp
 	)
 
-set (
+set(
 	APP_RL_LIST
 	Lexer.rl
 	)
 
-source_group (
+source_group(
 	app
 	FILES
 	${APP_H_LIST}
@@ -65,7 +65,7 @@ source_group (
 # llk folder
 #
 
-set (
+set(
 	LLK_H_LIST
 	${GRACO_INC_DIR}/llk_Ast.h
 	${GRACO_INC_DIR}/llk_Node.h
@@ -73,7 +73,7 @@ set (
 	${GRACO_INC_DIR}/llk_Pch.h
 	)
 
-source_group (
+source_group(
 	llk
 	FILES
 	${LLK_H_LIST}
@@ -84,12 +84,12 @@ source_group (
 # frame folder
 #
 
-file (
+file(
 	GLOB FRAME_LIST
 	${GRACO_ROOT_DIR}/frame/*.*
 	)
 
-source_group (
+source_group(
 	frame
 	FILES
 	${FRAME_LIST}
@@ -100,12 +100,12 @@ source_group (
 # res folder
 #
 
-set (
+set(
 	RES_RC_LIST
 	res.rc
 	)
 
-source_group (
+source_group(
 	res
 	FILES
 	${RES_RC_LIST}
@@ -116,36 +116,36 @@ source_group (
 # gen folder
 #
 
-set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
-file (MAKE_DIRECTORY ${GEN_DIR})
+set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+file(MAKE_DIRECTORY ${GEN_DIR})
 
-axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
 
-configure_file (
+configure_file(
 	version.h.in
 	${GEN_DIR}/version.h
 	)
 
-set (
+set(
 	GEN_H_LIST
 	${GEN_DIR}/version.h
 	)
 
-add_ragel_step (
+add_ragel_step(
 	Lexer.rl.cpp
 	Lexer.rl
 	)
 
-set (
+set(
 	GEN_RL_CPP_LIST
 	${GEN_DIR}/Lexer.rl.cpp
 	)
 
-axl_pop (CMAKE_CURRENT_BINARY_DIR)
+axl_pop(CMAKE_CURRENT_BINARY_DIR)
 
-axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
 
-source_group (
+source_group(
 	gen
 	FILES
 	${GEN_RL_CPP_LIST}
@@ -157,10 +157,10 @@ source_group (
 # pch folder
 #
 
-set (PCH_H   pch.h)
-set (PCH_CPP pch.cpp)
+set(PCH_H   pch.h)
+set(PCH_CPP pch.cpp)
 
-source_group (
+source_group(
 	pch
 	FILES
 	${PCH_H}
@@ -172,18 +172,18 @@ source_group (
 # graco LL(k) grammar compiler
 #
 
-include_directories (
+include_directories(
 	${LUA_INC_DIR}
 	${AXL_INC_DIR}
 	${GEN_DIR}
 	)
 
-link_directories (
+link_directories(
 	${LUA_LIB_DIR}
 	${AXL_LIB_DIR}
 	)
 
-add_executable (
+add_executable(
 	graco
 	${PCH_H}
 	${PCH_CPP}
@@ -197,13 +197,13 @@ add_executable (
 	${RES_RC_LIST}
 	)
 
-axl_set_pch (
+axl_set_pch(
 	graco
 	${PCH_H}
 	${PCH_CPP}
 	)
 
-target_link_libraries (
+target_link_libraries(
 	graco
 	axl_st
 	axl_lua
@@ -213,23 +213,23 @@ target_link_libraries (
 	${LUA_LIB_NAME}
 	)
 
-if (UNIX)
-	target_link_libraries (
+if(UNIX)
+	target_link_libraries(
 		graco
 		dl
 		pthread
 		)
 
-	if (NOT APPLE)
-		target_link_libraries (
+	if(NOT APPLE)
+		target_link_libraries(
 			graco
 			rt
 			)
-	endif ()
-endif ()
+	endif()
+endif()
 
-if (WIN32 AND LUA_DLL_DIR)
-	add_custom_command (
+if(WIN32 AND LUA_DLL_DIR)
+	add_custom_command(
 		TARGET graco
 		POST_BUILD
 		COMMAND
@@ -239,11 +239,11 @@ if (WIN32 AND LUA_DLL_DIR)
 			${LUA_DLL_DIR}/${LUA_LIB_NAME}.dll
 			${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CONFIGURATION}
 		)
-endif ()
+endif()
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-install (
+install(
 	TARGETS graco
 	DESTINATION ${GRACO_INSTALL_BIN_SUBDIR}
 	)

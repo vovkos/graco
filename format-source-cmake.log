@@ -1,235 +1,1410 @@
 ----------------------
-27/02/2019 18:01:54 - C:\Projects\repos\ioninja\graco\dependencies.cmake
+02/04/2019 15:42:16 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\cmake\graco_config_build.cmake.in
+----------------------
+[-] set (GRACO_INC_DIR     "@GRACO_ROOT_DIR@/include")
+[+] set(GRACO_INC_DIR     "@GRACO_ROOT_DIR@/include")
+[-] set (GRACO_FRAME_DIR   "@GRACO_ROOT_DIR@/frame")
+[+] set(GRACO_FRAME_DIR   "@GRACO_ROOT_DIR@/frame")
+[-] set (GRACO_SAMPLE_DIR  "@GRACO_ROOT_DIR@/samples")
+[+] set(GRACO_SAMPLE_DIR  "@GRACO_ROOT_DIR@/samples")
+[-] set (GRACO_EXE         "@GRACO_BIN_BASE_DIR@/${CONFIGURATION}/graco")
+[+] set(GRACO_EXE         "@GRACO_BIN_BASE_DIR@/${CONFIGURATION}/graco")
+[-] set (
+[+] set(
+[-] include ("@GRACO_ROOT_DIR@/version.cmake")
+[+] include("@GRACO_ROOT_DIR@/version.cmake")
+[-] include ("@CMAKE_CURRENT_LIST_DIR@/graco_step.cmake")
+[+] include("@CMAKE_CURRENT_LIST_DIR@/graco_step.cmake")
+----------------------
+02/04/2019 15:42:16 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\cmake\graco_config_install.cmake.in
+----------------------
+[-] get_filename_component (GRACO_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/@GRACO_INSTALL_ROOT_SUBDIR@" ABSOLUTE)
+[+] get_filename_component(GRACO_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/@GRACO_INSTALL_ROOT_SUBDIR@" ABSOLUTE)
+[-] set (GRACO_INC_DIR     "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_INC_SUBDIR@")
+[+] set(GRACO_INC_DIR     "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_INC_SUBDIR@")
+[-] set (GRACO_FRAME_DIR   "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_FRAME_SUBDIR@")
+[+] set(GRACO_FRAME_DIR   "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_FRAME_SUBDIR@")
+[-] set (GRACO_SAMPLE_DIR  "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_SAMPLE_SUBDIR@")
+[+] set(GRACO_SAMPLE_DIR  "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_SAMPLE_SUBDIR@")
+[-] set (GRACO_EXE         "${GRACO_INSTALL_PREFIX}/bin/graco")
+[+] set(GRACO_EXE         "${GRACO_INSTALL_PREFIX}/bin/graco")
+[-] set (GRACO_CMAKE_DIR   "${CMAKE_CURRENT_LIST_DIR}")
+[+] set(GRACO_CMAKE_DIR   "${CMAKE_CURRENT_LIST_DIR}")
+[-] include ("${CMAKE_CURRENT_LIST_DIR}/graco_version.cmake")
+[+] include("${CMAKE_CURRENT_LIST_DIR}/graco_version.cmake")
+[-] include ("${CMAKE_CURRENT_LIST_DIR}/graco_step.cmake")
+[+] include("${CMAKE_CURRENT_LIST_DIR}/graco_step.cmake")
+----------------------
+02/04/2019 15:42:25 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\cmake\graco_config_build.cmake.in
+----------------------
+[-] set (GRACO_INC_DIR     "@GRACO_ROOT_DIR@/include")
+[+] set(GRACO_INC_DIR     "@GRACO_ROOT_DIR@/include")
+[-] set (GRACO_FRAME_DIR   "@GRACO_ROOT_DIR@/frame")
+[+] set(GRACO_FRAME_DIR   "@GRACO_ROOT_DIR@/frame")
+[-] set (GRACO_SAMPLE_DIR  "@GRACO_ROOT_DIR@/samples")
+[+] set(GRACO_SAMPLE_DIR  "@GRACO_ROOT_DIR@/samples")
+[-] set (GRACO_EXE         "@GRACO_BIN_BASE_DIR@/${CONFIGURATION}/graco")
+[+] set(GRACO_EXE         "@GRACO_BIN_BASE_DIR@/${CONFIGURATION}/graco")
+[-] set (
+[+] set(
+[-] include ("@GRACO_ROOT_DIR@/version.cmake")
+[+] include("@GRACO_ROOT_DIR@/version.cmake")
+[-] include ("@CMAKE_CURRENT_LIST_DIR@/graco_step.cmake")
+[+] include("@CMAKE_CURRENT_LIST_DIR@/graco_step.cmake")
+----------------------
+02/04/2019 15:42:25 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\cmake\graco_config_install.cmake.in
+----------------------
+[-] get_filename_component (GRACO_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/@GRACO_INSTALL_ROOT_SUBDIR@" ABSOLUTE)
+[+] get_filename_component(GRACO_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/@GRACO_INSTALL_ROOT_SUBDIR@" ABSOLUTE)
+[-] set (GRACO_INC_DIR     "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_INC_SUBDIR@")
+[+] set(GRACO_INC_DIR     "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_INC_SUBDIR@")
+[-] set (GRACO_FRAME_DIR   "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_FRAME_SUBDIR@")
+[+] set(GRACO_FRAME_DIR   "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_FRAME_SUBDIR@")
+[-] set (GRACO_SAMPLE_DIR  "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_SAMPLE_SUBDIR@")
+[+] set(GRACO_SAMPLE_DIR  "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_SAMPLE_SUBDIR@")
+[-] set (GRACO_EXE         "${GRACO_INSTALL_PREFIX}/bin/graco")
+[+] set(GRACO_EXE         "${GRACO_INSTALL_PREFIX}/bin/graco")
+[-] set (GRACO_CMAKE_DIR   "${CMAKE_CURRENT_LIST_DIR}")
+[+] set(GRACO_CMAKE_DIR   "${CMAKE_CURRENT_LIST_DIR}")
+[-] include ("${CMAKE_CURRENT_LIST_DIR}/graco_version.cmake")
+[+] include("${CMAKE_CURRENT_LIST_DIR}/graco_version.cmake")
+[-] include ("${CMAKE_CURRENT_LIST_DIR}/graco_step.cmake")
+[+] include("${CMAKE_CURRENT_LIST_DIR}/graco_step.cmake")
+----------------------
+02/04/2019 15:42:25 - C:\Projects\repos\ioninja\graco\cmake\graco_config_build.cmake.in
+----------------------
+[-] set (GRACO_INC_DIR     "@GRACO_ROOT_DIR@/include")
+[+] set(GRACO_INC_DIR     "@GRACO_ROOT_DIR@/include")
+[-] set (GRACO_FRAME_DIR   "@GRACO_ROOT_DIR@/frame")
+[+] set(GRACO_FRAME_DIR   "@GRACO_ROOT_DIR@/frame")
+[-] set (GRACO_SAMPLE_DIR  "@GRACO_ROOT_DIR@/samples")
+[+] set(GRACO_SAMPLE_DIR  "@GRACO_ROOT_DIR@/samples")
+[-] set (GRACO_EXE         "@GRACO_BIN_BASE_DIR@/${CONFIGURATION}/graco")
+[+] set(GRACO_EXE         "@GRACO_BIN_BASE_DIR@/${CONFIGURATION}/graco")
+[-] set (
+[+] set(
+[-] include ("@GRACO_ROOT_DIR@/version.cmake")
+[+] include("@GRACO_ROOT_DIR@/version.cmake")
+[-] include ("@CMAKE_CURRENT_LIST_DIR@/graco_step.cmake")
+[+] include("@CMAKE_CURRENT_LIST_DIR@/graco_step.cmake")
+----------------------
+02/04/2019 15:42:26 - C:\Projects\repos\ioninja\graco\cmake\graco_config_install.cmake.in
+----------------------
+[-] get_filename_component (GRACO_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/@GRACO_INSTALL_ROOT_SUBDIR@" ABSOLUTE)
+[+] get_filename_component(GRACO_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/@GRACO_INSTALL_ROOT_SUBDIR@" ABSOLUTE)
+[-] set (GRACO_INC_DIR     "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_INC_SUBDIR@")
+[+] set(GRACO_INC_DIR     "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_INC_SUBDIR@")
+[-] set (GRACO_FRAME_DIR   "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_FRAME_SUBDIR@")
+[+] set(GRACO_FRAME_DIR   "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_FRAME_SUBDIR@")
+[-] set (GRACO_SAMPLE_DIR  "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_SAMPLE_SUBDIR@")
+[+] set(GRACO_SAMPLE_DIR  "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_SAMPLE_SUBDIR@")
+[-] set (GRACO_EXE         "${GRACO_INSTALL_PREFIX}/bin/graco")
+[+] set(GRACO_EXE         "${GRACO_INSTALL_PREFIX}/bin/graco")
+[-] set (GRACO_CMAKE_DIR   "${CMAKE_CURRENT_LIST_DIR}")
+[+] set(GRACO_CMAKE_DIR   "${CMAKE_CURRENT_LIST_DIR}")
+[-] include ("${CMAKE_CURRENT_LIST_DIR}/graco_version.cmake")
+[+] include("${CMAKE_CURRENT_LIST_DIR}/graco_version.cmake")
+[-] include ("${CMAKE_CURRENT_LIST_DIR}/graco_step.cmake")
+[+] include("${CMAKE_CURRENT_LIST_DIR}/graco_step.cmake")
+----------------------
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\CMakeLists.txt
+----------------------
+[-] project (graco)
+[+] project(graco)
+[-] cmake_minimum_required (VERSION 3.3)
+[+] cmake_minimum_required(VERSION 3.3)
+[-] include (cmake/axl_cmake.cmake NO_POLICY_SCOPE)
+[+] include(cmake/axl_cmake.cmake NO_POLICY_SCOPE)
+[-] set (GRACO_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
+[+] set(GRACO_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
+[-] set (GRACO_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+[+] set(GRACO_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+[-] set (GRACO_DOC_DIR      ${CMAKE_CURRENT_BINARY_DIR}/doc)
+[+] set(GRACO_DOC_DIR      ${CMAKE_CURRENT_BINARY_DIR}/doc)
+[-] set (GRACO_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
+[+] set(GRACO_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
+[-] set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${GRACO_BIN_BASE_DIR}/${CONFIGURATION_SCG})
+[+] set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${GRACO_BIN_BASE_DIR}/${CONFIGURATION_SCG})
+[-] set (GRACO_INSTALL_BIN_SUBDIR bin)
+[+] set(GRACO_INSTALL_BIN_SUBDIR bin)
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	set (GRACO_INSTALL_INC_SUBDIR     include)
+[+] 	set(GRACO_INSTALL_INC_SUBDIR     include)
+[-] 	set (GRACO_INSTALL_CMAKE_SUBDIR   cmake)
+[+] 	set(GRACO_INSTALL_CMAKE_SUBDIR   cmake)
+[-] 	set (GRACO_INSTALL_FRAME_SUBDIR   frame)
+[+] 	set(GRACO_INSTALL_FRAME_SUBDIR   frame)
+[-] 	set (GRACO_INSTALL_SAMPLE_SUBDIR  samples)
+[+] 	set(GRACO_INSTALL_SAMPLE_SUBDIR  samples)
+[-] 	set (GRACO_INSTALL_DOC_SUBDIR     doc)
+[+] 	set(GRACO_INSTALL_DOC_SUBDIR     doc)
+[-] 	set (GRACO_INSTALL_LICENSE_SUBDIR license)
+[+] 	set(GRACO_INSTALL_LICENSE_SUBDIR license)
+[-] else ()
+[+] else()
+[-] 	set (GRACO_INSTALL_INC_SUBDIR     include/${CMAKE_PROJECT_NAME})
+[+] 	set(GRACO_INSTALL_INC_SUBDIR     include/${CMAKE_PROJECT_NAME})
+[-] 	set (GRACO_INSTALL_CMAKE_SUBDIR   lib/cmake/${CMAKE_PROJECT_NAME})
+[+] 	set(GRACO_INSTALL_CMAKE_SUBDIR   lib/cmake/${CMAKE_PROJECT_NAME})
+[-] 	set (GRACO_INSTALL_FRAME_SUBDIR   share/${CMAKE_PROJECT_NAME}/frame)
+[+] 	set(GRACO_INSTALL_FRAME_SUBDIR   share/${CMAKE_PROJECT_NAME}/frame)
+[-] 	set (GRACO_INSTALL_SAMPLE_SUBDIR  share/${CMAKE_PROJECT_NAME}/samples)
+[+] 	set(GRACO_INSTALL_SAMPLE_SUBDIR  share/${CMAKE_PROJECT_NAME}/samples)
+[-] 	set (GRACO_INSTALL_DOC_SUBDIR     share/${CMAKE_PROJECT_NAME}/doc)
+[+] 	set(GRACO_INSTALL_DOC_SUBDIR     share/${CMAKE_PROJECT_NAME}/doc)
+[-] 	set (GRACO_INSTALL_LICENSE_SUBDIR share/${CMAKE_PROJECT_NAME}/license)
+[+] 	set(GRACO_INSTALL_LICENSE_SUBDIR share/${CMAKE_PROJECT_NAME}/license)
+[-] endif ()
+[+] endif()
+[-] add_subdirectory (cmake)
+[+] add_subdirectory(cmake)
+[-] include (${CMAKE_CURRENT_BINARY_DIR}/cmake/graco_config.cmake)
+[+] include(${CMAKE_CURRENT_BINARY_DIR}/cmake/graco_config.cmake)
+[-] add_subdirectory (src)
+[+] add_subdirectory(src)
+[-] add_subdirectory (doc)
+[+] add_subdirectory(doc)
+[-] add_subdirectory (samples)
+[+] add_subdirectory(samples)
+[-] add_subdirectory (test)
+[+] add_subdirectory(test)
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] set (CPACK_PACKAGE_VERSION_MAJOR ${GRACO_VERSION_MAJOR})
+[+] set(CPACK_PACKAGE_VERSION_MAJOR ${GRACO_VERSION_MAJOR})
+[-] set (CPACK_PACKAGE_VERSION_MINOR ${GRACO_VERSION_MINOR})
+[+] set(CPACK_PACKAGE_VERSION_MINOR ${GRACO_VERSION_MINOR})
+[-] set (CPACK_PACKAGE_VERSION_PATCH ${GRACO_VERSION_REVISION})
+[+] set(CPACK_PACKAGE_VERSION_PATCH ${GRACO_VERSION_REVISION})
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	set (CPACK_SOURCE_GENERATOR 7Z)
+[+] 	set(CPACK_SOURCE_GENERATOR 7Z)
+[-] else ()
+[+] else()
+[-] 	set (CPACK_SOURCE_GENERATOR TXZ)
+[+] 	set(CPACK_SOURCE_GENERATOR TXZ)
+[-] endif ()
+[+] endif()
+[-] set (CPACK_SOURCE_IGNORE_FILES "/[.];[.]user$;/build/;/ci/;/paths.cmake$")
+[+] set(CPACK_SOURCE_IGNORE_FILES "/[.];[.]user$;/build/;/ci/;/paths.cmake$")
+[-] set (CPACK_SOURCE_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-src)
+[+] set(CPACK_SOURCE_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-src)
+[-] if (APPLE)
+[+] if(APPLE)
+[-] 	set (CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-mac)
+[+] 	set(CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-mac)
+[-] else ()
+[+] else()
+[-] 	string (TOLOWER ${CMAKE_SYSTEM_NAME} OS_NAME)
+[+] 	string(TOLOWER ${CMAKE_SYSTEM_NAME} OS_NAME)
+[-] 	set (CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-${OS_NAME}-${TARGET_CPU})
+[+] 	set(CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-${OS_NAME}-${TARGET_CPU})
+[-] endif ()
+[+] endif()
+[-] include (CPack)
+[+] include(CPack)
+----------------------
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32\7Z\graco-1.3.3-windows-x86\samples\CMakeLists.txt
+----------------------
+[-] option (
+[+] option(
+[-] if (BUILD_GRACO_SAMPLE_01_CALC)
+[+] if(BUILD_GRACO_SAMPLE_01_CALC)
+[-] 	add_subdirectory (graco_sample_01_calc)
+[+] 	add_subdirectory(graco_sample_01_calc)
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32\7Z\graco-1.3.3-windows-x86\samples\graco_sample_01_calc\CMakeLists.txt
 ----------------------
 [-] set (
 [+] set(
 [-] set (
 [+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[+] set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[-] file (MAKE_DIRECTORY ${GEN_DIR})
+[+] file(MAKE_DIRECTORY ${GEN_DIR})
+[-] axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[+] axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[-] add_ragel_step (
+[+] add_ragel_step(
+[-] add_graco_double_step (
+[+] add_graco_double_step(
+[-] axl_pop (CMAKE_CURRENT_BINARY_DIR)
+[+] axl_pop(CMAKE_CURRENT_BINARY_DIR)
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[+] axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[-] axl_exclude_from_build (${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[+] axl_exclude_from_build(${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[-] source_group (
+[+] source_group(
+[-] set (PCH_H   pch.h)
+[+] set(PCH_H   pch.h)
+[-] set (PCH_CPP pch.cpp)
+[+] set(PCH_CPP pch.cpp)
+[-] source_group (
+[+] source_group(
+[-] include_directories (
+[+] include_directories(
+[-] link_directories (${AXL_LIB_DIR})
+[+] link_directories(${AXL_LIB_DIR})
+[-] add_executable (
+[+] add_executable(
+[-] add_dependencies (
+[+] add_dependencies(
+[-] set_target_properties (
+[+] set_target_properties(
+[-] target_link_libraries (
+[+] target_link_libraries(
+[-] if (UNIX)
+[+] if(UNIX)
+[-] 	target_link_libraries (
+[+] 	target_link_libraries(
+[-] endif ()
+[+] endif()
+[-] axl_set_pch (
+[+] axl_set_pch(
 ----------------------
-27/02/2019 18:01:54 - C:\Projects\repos\ioninja\graco\version.cmake
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\CMakeLists.txt
 ----------------------
-[-] set (GRACO_VERSION_MAJOR     1)
-[+] set(GRACO_VERSION_MAJOR     1)
-[-] set (GRACO_VERSION_MINOR     3)
-[+] set(GRACO_VERSION_MINOR     3)
-[-] set (GRACO_VERSION_REVISION  3)
-[+] set(GRACO_VERSION_REVISION  3)
-[-] set (GRACO_VERSION_TAG)
-[+] set(GRACO_VERSION_TAG)
-[-] set (GRACO_VERSION_FULL "${GRACO_VERSION_MAJOR}.${GRACO_VERSION_MINOR}.${GRACO_VERSION_REVISION}")
-[+] set(GRACO_VERSION_FULL "${GRACO_VERSION_MAJOR}.${GRACO_VERSION_MINOR}.${GRACO_VERSION_REVISION}")
-[-] if (NOT "${GRACO_VERSION_TAG}" STREQUAL "")
-[+] if(NOT "${GRACO_VERSION_TAG}" STREQUAL "")
-[-] 	set (GRACO_VERSION_TAG_SUFFIX  " ${GRACO_VERSION_TAG}")
-[+] 	set(GRACO_VERSION_TAG_SUFFIX  " ${GRACO_VERSION_TAG}")
-[-] 	set (GRACO_VERSION_FILE_SUFFIX "${GRACO_VERSION_FULL}-${GRACO_VERSION_TAG}")
-[+] 	set(GRACO_VERSION_FILE_SUFFIX "${GRACO_VERSION_FULL}-${GRACO_VERSION_TAG}")
+[-] project (graco)
+[+] project(graco)
+[-] cmake_minimum_required (VERSION 3.3)
+[+] cmake_minimum_required(VERSION 3.3)
+[-] include (cmake/axl_cmake.cmake NO_POLICY_SCOPE)
+[+] include(cmake/axl_cmake.cmake NO_POLICY_SCOPE)
+[-] set (GRACO_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
+[+] set(GRACO_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
+[-] set (GRACO_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+[+] set(GRACO_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+[-] set (GRACO_DOC_DIR      ${CMAKE_CURRENT_BINARY_DIR}/doc)
+[+] set(GRACO_DOC_DIR      ${CMAKE_CURRENT_BINARY_DIR}/doc)
+[-] set (GRACO_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
+[+] set(GRACO_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
+[-] set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${GRACO_BIN_BASE_DIR}/${CONFIGURATION_SCG})
+[+] set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${GRACO_BIN_BASE_DIR}/${CONFIGURATION_SCG})
+[-] set (GRACO_INSTALL_BIN_SUBDIR bin)
+[+] set(GRACO_INSTALL_BIN_SUBDIR bin)
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	set (GRACO_INSTALL_INC_SUBDIR     include)
+[+] 	set(GRACO_INSTALL_INC_SUBDIR     include)
+[-] 	set (GRACO_INSTALL_CMAKE_SUBDIR   cmake)
+[+] 	set(GRACO_INSTALL_CMAKE_SUBDIR   cmake)
+[-] 	set (GRACO_INSTALL_FRAME_SUBDIR   frame)
+[+] 	set(GRACO_INSTALL_FRAME_SUBDIR   frame)
+[-] 	set (GRACO_INSTALL_SAMPLE_SUBDIR  samples)
+[+] 	set(GRACO_INSTALL_SAMPLE_SUBDIR  samples)
+[-] 	set (GRACO_INSTALL_DOC_SUBDIR     doc)
+[+] 	set(GRACO_INSTALL_DOC_SUBDIR     doc)
+[-] 	set (GRACO_INSTALL_LICENSE_SUBDIR license)
+[+] 	set(GRACO_INSTALL_LICENSE_SUBDIR license)
 [-] else ()
 [+] else()
-[-] 	set (GRACO_VERSION_TAG_SUFFIX)
-[+] 	set(GRACO_VERSION_TAG_SUFFIX)
-[-] 	set (GRACO_VERSION_FILE_SUFFIX "${GRACO_VERSION_FULL}")
-[+] 	set(GRACO_VERSION_FILE_SUFFIX "${GRACO_VERSION_FULL}")
+[-] 	set (GRACO_INSTALL_INC_SUBDIR     include/${CMAKE_PROJECT_NAME})
+[+] 	set(GRACO_INSTALL_INC_SUBDIR     include/${CMAKE_PROJECT_NAME})
+[-] 	set (GRACO_INSTALL_CMAKE_SUBDIR   lib/cmake/${CMAKE_PROJECT_NAME})
+[+] 	set(GRACO_INSTALL_CMAKE_SUBDIR   lib/cmake/${CMAKE_PROJECT_NAME})
+[-] 	set (GRACO_INSTALL_FRAME_SUBDIR   share/${CMAKE_PROJECT_NAME}/frame)
+[+] 	set(GRACO_INSTALL_FRAME_SUBDIR   share/${CMAKE_PROJECT_NAME}/frame)
+[-] 	set (GRACO_INSTALL_SAMPLE_SUBDIR  share/${CMAKE_PROJECT_NAME}/samples)
+[+] 	set(GRACO_INSTALL_SAMPLE_SUBDIR  share/${CMAKE_PROJECT_NAME}/samples)
+[-] 	set (GRACO_INSTALL_DOC_SUBDIR     share/${CMAKE_PROJECT_NAME}/doc)
+[+] 	set(GRACO_INSTALL_DOC_SUBDIR     share/${CMAKE_PROJECT_NAME}/doc)
+[-] 	set (GRACO_INSTALL_LICENSE_SUBDIR share/${CMAKE_PROJECT_NAME}/license)
+[+] 	set(GRACO_INSTALL_LICENSE_SUBDIR share/${CMAKE_PROJECT_NAME}/license)
 [-] endif ()
 [+] endif()
-[-] string (TIMESTAMP GRACO_VERSION_YEAR  "%Y")
-[+] string(TIMESTAMP GRACO_VERSION_YEAR  "%Y")
-[-] string (TIMESTAMP GRACO_VERSION_MONTH "%m")
-[+] string(TIMESTAMP GRACO_VERSION_MONTH "%m")
-[-] string (TIMESTAMP GRACO_VERSION_DAY   "%d")
-[+] string(TIMESTAMP GRACO_VERSION_DAY   "%d")
-[-] set (GRACO_VERSION_COMPANY "Tibbo Technology Inc")
-[+] set(GRACO_VERSION_COMPANY "Tibbo Technology Inc")
-[-] set (GRACO_VERSION_YEARS   "2012-${GRACO_VERSION_YEAR}")
-[+] set(GRACO_VERSION_YEARS   "2012-${GRACO_VERSION_YEAR}")
-----------------------
-27/02/2019 18:01:54 - C:\Projects\repos\ioninja\graco\cmake\axl_cmake.cmake
-----------------------
-[-] if (AXL_CMAKE_ONCE)
-[+] if(AXL_CMAKE_ONCE)
-[-] 	return ()
-[+] 	return()
-[-] endif ()
-[+] endif()
-[-] set (AXL_CMAKE_ONCE TRUE)
-[+] set(AXL_CMAKE_ONCE TRUE)
-[-] macro (
-[+] macro(
-[-] 	set (_DIR_LIST ${ARGN})
-[+] 	set(_DIR_LIST ${ARGN})
-[-] 	set (_FILE_PATH ${_FILE_NAME}-NOTFOUND)
-[+] 	set(_FILE_PATH ${_FILE_NAME}-NOTFOUND)
-[-] 	foreach (_DIR ${_DIR_LIST})
-[+] 	foreach(_DIR ${_DIR_LIST})
-[-] 		if (EXISTS ${_DIR}/${_FILE_NAME})
-[+] 		if(EXISTS ${_DIR}/${_FILE_NAME})
-[-] 			set (_FILE_PATH ${_DIR}/${_FILE_NAME})
-[+] 			set(_FILE_PATH ${_DIR}/${_FILE_NAME})
-[-] 			break ()
-[+] 			break()
-[-] 		endif ()
-[+] 		endif()
-[-] 	endforeach ()
-[+] 	endforeach()
-[-] 	set (${_RESULT} ${_FILE_PATH})
-[+] 	set(${_RESULT} ${_FILE_PATH})
-[-] endmacro ()
-[+] endmacro()
-[-] macro (
-[+] macro(
-[-] 	set (_DIR ${_START_DIR})
-[+] 	set(_DIR ${_START_DIR})
-[-] 	while (TRUE)
-[+] 	while(TRUE)
-[-] 		if (EXISTS ${_DIR}/${_FILE_NAME})
-[+] 		if(EXISTS ${_DIR}/${_FILE_NAME})
-[-] 			set (_FILE_PATH ${_DIR}/${_FILE_NAME})
-[+] 			set(_FILE_PATH ${_DIR}/${_FILE_NAME})
-[-] 			break ()
-[+] 			break()
-[-] 		endif ()
-[+] 		endif()
-[-] 		get_filename_component (_PARENT_DIR "${_DIR}/.." ABSOLUTE)
-[+] 		get_filename_component(_PARENT_DIR "${_DIR}/.." ABSOLUTE)
-[-] 		if (${_DIR} STREQUAL ${_PARENT_DIR})
-[+] 		if(${_DIR} STREQUAL ${_PARENT_DIR})
-[-] 			set (_FILE_PATH ${_FILE_NAME}-NOTFOUND)
-[+] 			set(_FILE_PATH ${_FILE_NAME}-NOTFOUND)
-[-] 			break ()
-[+] 			break()
-[-] 		endif ()
-[+] 		endif()
-[-] 		set (_DIR ${_PARENT_DIR})
-[+] 		set(_DIR ${_PARENT_DIR})
-[-] 	endwhile ()
-[+] 	endwhile()
-[-] 	set (${_RESULT} ${_FILE_PATH})
-[+] 	set(${_RESULT} ${_FILE_PATH})
-[-] endmacro ()
-[+] endmacro()
-[-] get_filename_component (AXL_CMAKE_ORIGIN_DIR ${CMAKE_PARENT_LIST_FILE} DIRECTORY)
-[+] get_filename_component(AXL_CMAKE_ORIGIN_DIR ${CMAKE_PARENT_LIST_FILE} DIRECTORY)
-[-] set (AXL_CMAKE_ORIGIN_FILE ${CMAKE_PARENT_LIST_FILE})
-[+] set(AXL_CMAKE_ORIGIN_FILE ${CMAKE_PARENT_LIST_FILE})
-[-] if (NOT EXISTS ${AXL_CMAKE_ORIGIN_DIR}/dependencies.cmake)
-[+] if(NOT EXISTS ${AXL_CMAKE_ORIGIN_DIR}/dependencies.cmake)
-[-] 	message (FATAL_ERROR "dependencies.cmake not found at: ${AXL_CMAKE_ORIGIN_DIR}")
-[+] 	message(FATAL_ERROR "dependencies.cmake not found at: ${AXL_CMAKE_ORIGIN_DIR}")
-[-] endif ()
-[+] endif()
-[-] if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/axl_init.cmake")
-[+] if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/axl_init.cmake")
-[-] 	set (_AXL_INIT_CMAKE "${CMAKE_CURRENT_LIST_DIR}/axl_init.cmake")
-[+] 	set(_AXL_INIT_CMAKE "${CMAKE_CURRENT_LIST_DIR}/axl_init.cmake")
+[-] add_subdirectory (cmake)
+[+] add_subdirectory(cmake)
+[-] include (${CMAKE_CURRENT_BINARY_DIR}/cmake/graco_config.cmake)
+[+] include(${CMAKE_CURRENT_BINARY_DIR}/cmake/graco_config.cmake)
+[-] add_subdirectory (src)
+[+] add_subdirectory(src)
+[-] add_subdirectory (doc)
+[+] add_subdirectory(doc)
+[-] add_subdirectory (samples)
+[+] add_subdirectory(samples)
+[-] add_subdirectory (test)
+[+] add_subdirectory(test)
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] set (CPACK_PACKAGE_VERSION_MAJOR ${GRACO_VERSION_MAJOR})
+[+] set(CPACK_PACKAGE_VERSION_MAJOR ${GRACO_VERSION_MAJOR})
+[-] set (CPACK_PACKAGE_VERSION_MINOR ${GRACO_VERSION_MINOR})
+[+] set(CPACK_PACKAGE_VERSION_MINOR ${GRACO_VERSION_MINOR})
+[-] set (CPACK_PACKAGE_VERSION_PATCH ${GRACO_VERSION_REVISION})
+[+] set(CPACK_PACKAGE_VERSION_PATCH ${GRACO_VERSION_REVISION})
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	set (CPACK_SOURCE_GENERATOR 7Z)
+[+] 	set(CPACK_SOURCE_GENERATOR 7Z)
 [-] else ()
 [+] else()
-[-] 	if (NOT AXL_CMAKE_DIR)
-[+] 	if(NOT AXL_CMAKE_DIR)
-[-] 		axl_find_file_recurse_parent_dirs (_PATHS_CMAKE paths.cmake ${AXL_CMAKE_ORIGIN_DIR})
-[+] 		axl_find_file_recurse_parent_dirs(_PATHS_CMAKE paths.cmake ${AXL_CMAKE_ORIGIN_DIR})
-[-] 		if (NOT _PATHS_CMAKE)
-[+] 		if(NOT _PATHS_CMAKE)
-[-] 			include (${AXL_CMAKE_ORIGIN_DIR}/dependencies.cmake)
-[+] 			include(${AXL_CMAKE_ORIGIN_DIR}/dependencies.cmake)
-[-] 			string (REPLACE ";" " " _PATH_LIST "${AXL_PATH_LIST}")
-[+] 			string(REPLACE ";" " " _PATH_LIST "${AXL_PATH_LIST}")
-[-] 			message (FATAL_ERROR "AXL_CMAKE_DIR not found, create paths.cmake and fill it with definitions for: ${_PATH_LIST}")
-[+] 			message(FATAL_ERROR "AXL_CMAKE_DIR not found, create paths.cmake and fill it with definitions for: ${_PATH_LIST}")
-[-] 		endif ()
-[+] 		endif()
-[-] 		include (${_PATHS_CMAKE})
-[+] 		include(${_PATHS_CMAKE})
-[-] 		if (NOT AXL_CMAKE_DIR)
-[+] 		if(NOT AXL_CMAKE_DIR)
-[-] 			message (FATAL_ERROR "AXL_CMAKE_DIR not found, check your path definitions at: ${_PATHS_CMAKE}")
-[+] 			message(FATAL_ERROR "AXL_CMAKE_DIR not found, check your path definitions at: ${_PATHS_CMAKE}")
-[-] 		endif ()
-[+] 		endif()
-[-] 	endif ()
-[+] 	endif()
-[-] 	axl_find_file (_AXL_INIT_CMAKE axl_init.cmake ${AXL_CMAKE_DIR})
-[+] 	axl_find_file(_AXL_INIT_CMAKE axl_init.cmake ${AXL_CMAKE_DIR})
-[-] 	if (NOT _AXL_INIT_CMAKE)
-[+] 	if(NOT _AXL_INIT_CMAKE)
-[-] 		message (FATAL_ERROR "axl_init.cmake not found at AXL_CMAKE_DIR: ${AXL_CMAKE_DIR}")
-[+] 		message(FATAL_ERROR "axl_init.cmake not found at AXL_CMAKE_DIR: ${AXL_CMAKE_DIR}")
+[-] 	set (CPACK_SOURCE_GENERATOR TXZ)
+[+] 	set(CPACK_SOURCE_GENERATOR TXZ)
+[-] endif ()
+[+] endif()
+[-] set (CPACK_SOURCE_IGNORE_FILES "/[.];[.]user$;/build/;/ci/;/paths.cmake$")
+[+] set(CPACK_SOURCE_IGNORE_FILES "/[.];[.]user$;/build/;/ci/;/paths.cmake$")
+[-] set (CPACK_SOURCE_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-src)
+[+] set(CPACK_SOURCE_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-src)
+[-] if (APPLE)
+[+] if(APPLE)
+[-] 	set (CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-mac)
+[+] 	set(CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-mac)
+[-] else ()
+[+] else()
+[-] 	string (TOLOWER ${CMAKE_SYSTEM_NAME} OS_NAME)
+[+] 	string(TOLOWER ${CMAKE_SYSTEM_NAME} OS_NAME)
+[-] 	set (CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-${OS_NAME}-${TARGET_CPU})
+[+] 	set(CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-${OS_NAME}-${TARGET_CPU})
+[-] endif ()
+[+] endif()
+[-] include (CPack)
+[+] include(CPack)
+----------------------
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\cmake\CMakeLists.txt
+----------------------
+[-] string (REGEX REPLACE "[a-z]+" ".." GRACO_INSTALL_ROOT_SUBDIR ${GRACO_INSTALL_CMAKE_SUBDIR})
+[+] string(REGEX REPLACE "[a-z]+" ".." GRACO_INSTALL_ROOT_SUBDIR ${GRACO_INSTALL_CMAKE_SUBDIR})
+[-] configure_file (
+[+] configure_file(
+[-] configure_file (
+[+] configure_file(
+[-] set (
+[+] set(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+----------------------
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\doc\CMakeLists.txt
+----------------------
+[-] if (SPHINX_FOUND)
+[+] if(SPHINX_FOUND)
+[-] 	add_subdirectory (index)
+[+] 	add_subdirectory(index)
+[-] 	add_subdirectory (build-guide)
+[+] 	add_subdirectory(build-guide)
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\doc\build-guide\CMakeLists.txt
+----------------------
+[-] set (DOC_NAME "Graco Build Guide")
+[+] set(DOC_NAME "Graco Build Guide")
+[-] set (TEX_BASE_NAME graco-build-guide-${GRACO_VERSION_FILE_SUFFIX})
+[+] set(TEX_BASE_NAME graco-build-guide-${GRACO_VERSION_FILE_SUFFIX})
+[-] set (TEX_FILE_NAME ${TEX_BASE_NAME}.tex)
+[+] set(TEX_FILE_NAME ${TEX_BASE_NAME}.tex)
+[-] set (PDF_FILE_NAME ${TEX_BASE_NAME}.pdf)
+[+] set(PDF_FILE_NAME ${TEX_BASE_NAME}.pdf)
+[-] set (RST_DIR  ${CMAKE_CURRENT_LIST_DIR}/rst)
+[+] set(RST_DIR  ${CMAKE_CURRENT_LIST_DIR}/rst)
+[-] set (TEX_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tex)
+[+] set(TEX_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tex)
+[-] set (TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[+] set(TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[-] set (HTML_DIR ${GRACO_DOC_DIR}/html/build-guide)
+[+] set(HTML_DIR ${GRACO_DOC_DIR}/html/build-guide)
+[-] set (PDF_DIR  ${GRACO_DOC_DIR}/pdf)
+[+] set(PDF_DIR  ${GRACO_DOC_DIR}/pdf)
+[-] set (SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[+] set(SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] foreach (_VAR ${CMD_LINE_VAR_LIST})
+[+] foreach(_VAR ${CMD_LINE_VAR_LIST})
+[-] 	string (
+[+] 	string(
+[-] endforeach ()
+[+] endforeach()
+[-] configure_file (
+[+] configure_file(
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	configure_file (
+[+] 	configure_file(
+[-] 	configure_file (
+[+] 	configure_file(
+[-] else ()
+[+] else()
+[-] 	axl_configure_file_w_permissions (
+[+] 	axl_configure_file_w_permissions(
+[-] 	axl_configure_file_w_permissions (
+[+] 	axl_configure_file_w_permissions(
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\doc\index\CMakeLists.txt
+----------------------
+[-] set (DOC_NAME "Graco Documentation Index")
+[+] set(DOC_NAME "Graco Documentation Index")
+[-] set (RST_DIR  ${CMAKE_CURRENT_LIST_DIR})
+[+] set(RST_DIR  ${CMAKE_CURRENT_LIST_DIR})
+[-] set (TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[+] set(TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[-] set (HTML_DIR ${GRACO_DOC_DIR}/html)
+[+] set(HTML_DIR ${GRACO_DOC_DIR}/html)
+[-] set (SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[+] set(SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[-] set (
+[+] set(
+[-] string (
+[+] string(
+[-] configure_file (
+[+] configure_file(
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	configure_file (
+[+] 	configure_file(
+[-] else ()
+[+] else()
+[-] 	axl_configure_file_w_permissions (
+[+] 	axl_configure_file_w_permissions(
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\samples\CMakeLists.txt
+----------------------
+[-] option (
+[+] option(
+[-] if (BUILD_GRACO_SAMPLE_01_CALC)
+[+] if(BUILD_GRACO_SAMPLE_01_CALC)
+[-] 	add_subdirectory (graco_sample_01_calc)
+[+] 	add_subdirectory(graco_sample_01_calc)
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:55 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\samples\graco_sample_01_calc\CMakeLists.txt
+----------------------
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[+] set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[-] file (MAKE_DIRECTORY ${GEN_DIR})
+[+] file(MAKE_DIRECTORY ${GEN_DIR})
+[-] axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[+] axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[-] add_ragel_step (
+[+] add_ragel_step(
+[-] add_graco_double_step (
+[+] add_graco_double_step(
+[-] axl_pop (CMAKE_CURRENT_BINARY_DIR)
+[+] axl_pop(CMAKE_CURRENT_BINARY_DIR)
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[+] axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[-] axl_exclude_from_build (${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[+] axl_exclude_from_build(${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[-] source_group (
+[+] source_group(
+[-] set (PCH_H   pch.h)
+[+] set(PCH_H   pch.h)
+[-] set (PCH_CPP pch.cpp)
+[+] set(PCH_CPP pch.cpp)
+[-] source_group (
+[+] source_group(
+[-] include_directories (
+[+] include_directories(
+[-] link_directories (${AXL_LIB_DIR})
+[+] link_directories(${AXL_LIB_DIR})
+[-] add_executable (
+[+] add_executable(
+[-] add_dependencies (
+[+] add_dependencies(
+[-] set_target_properties (
+[+] set_target_properties(
+[-] target_link_libraries (
+[+] target_link_libraries(
+[-] if (UNIX)
+[+] if(UNIX)
+[-] 	target_link_libraries (
+[+] 	target_link_libraries(
+[-] endif ()
+[+] endif()
+[-] axl_set_pch (
+[+] axl_set_pch(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\src\CMakeLists.txt
+----------------------
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] file (
+[+] file(
+[-] source_group (
+[+] source_group(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[+] set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[-] file (MAKE_DIRECTORY ${GEN_DIR})
+[+] file(MAKE_DIRECTORY ${GEN_DIR})
+[-] axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[+] axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[-] configure_file (
+[+] configure_file(
+[-] set (
+[+] set(
+[-] add_ragel_step (
+[+] add_ragel_step(
+[-] set (
+[+] set(
+[-] axl_pop (CMAKE_CURRENT_BINARY_DIR)
+[+] axl_pop(CMAKE_CURRENT_BINARY_DIR)
+[-] axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[+] axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[-] source_group (
+[+] source_group(
+[-] set (PCH_H   pch.h)
+[+] set(PCH_H   pch.h)
+[-] set (PCH_CPP pch.cpp)
+[+] set(PCH_CPP pch.cpp)
+[-] source_group (
+[+] source_group(
+[-] include_directories (
+[+] include_directories(
+[-] link_directories (
+[+] link_directories(
+[-] add_executable (
+[+] add_executable(
+[-] axl_set_pch (
+[+] axl_set_pch(
+[-] target_link_libraries (
+[+] target_link_libraries(
+[-] if (UNIX)
+[+] if(UNIX)
+[-] 	target_link_libraries (
+[+] 	target_link_libraries(
+[-] 	if (NOT APPLE)
+[+] 	if(NOT APPLE)
+[-] 		target_link_libraries (
+[+] 		target_link_libraries(
 [-] 	endif ()
 [+] 	endif()
 [-] endif ()
 [+] endif()
-[-] include (${_AXL_INIT_CMAKE} NO_POLICY_SCOPE)
-[+] include(${_AXL_INIT_CMAKE} NO_POLICY_SCOPE)
-----------------------
-27/02/2019 18:01:54 - C:\Projects\repos\ioninja\graco\cmake\graco_step.cmake
-----------------------
-[-] macro (
-[+] macro(
-[-] 	set (_INPUT_PATH  "${CMAKE_CURRENT_SOURCE_DIR}/${_INPUT_FILE_NAME}")
-[+] 	set(_INPUT_PATH  "${CMAKE_CURRENT_SOURCE_DIR}/${_INPUT_FILE_NAME}")
-[-] 	set (_FRAME_PATH  "${GRACO_FRAME_DIR}/${_FRAME_FILE_NAME}")
-[+] 	set(_FRAME_PATH  "${GRACO_FRAME_DIR}/${_FRAME_FILE_NAME}")
-[-] 	set (_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/${_OUTPUT_FILE_NAME}")
-[+] 	set(_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/${_OUTPUT_FILE_NAME}")
-[-] 	set (_DEPENDENCY_LIST ${ARGN})
-[+] 	set(_DEPENDENCY_LIST ${ARGN})
-[-] 	if (TARGET graco)
-[+] 	if(TARGET graco)
-[-] 		list (APPEND _DEPENDENCY_LIST graco)
-[+] 		list(APPEND _DEPENDENCY_LIST graco)
-[-] 	endif ()
-[+] 	endif()
+[-] if (WIN32 AND LUA_DLL_DIR)
+[+] if(WIN32 AND LUA_DLL_DIR)
 [-] 	add_custom_command (
 [+] 	add_custom_command(
-[-] endmacro ()
-[+] endmacro()
-[-] macro (
-[+] macro(
-[-] 	set (_INPUT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}/${_INPUT_FILE_NAME}")
-[+] 	set(_INPUT_PATH    "${CMAKE_CURRENT_SOURCE_DIR}/${_INPUT_FILE_NAME}")
-[-] 	set (_FRAME_PATH_1  "${GRACO_FRAME_DIR}/${_FRAME_FILE_NAME_1}")
-[+] 	set(_FRAME_PATH_1  "${GRACO_FRAME_DIR}/${_FRAME_FILE_NAME_1}")
-[-] 	set (_FRAME_PATH_2  "${GRACO_FRAME_DIR}/${_FRAME_FILE_NAME_2}")
-[+] 	set(_FRAME_PATH_2  "${GRACO_FRAME_DIR}/${_FRAME_FILE_NAME_2}")
-[-] 	set (_OUTPUT_PATH_1 "${CMAKE_CURRENT_BINARY_DIR}/${_OUTPUT_FILE_NAME_1}")
-[+] 	set(_OUTPUT_PATH_1 "${CMAKE_CURRENT_BINARY_DIR}/${_OUTPUT_FILE_NAME_1}")
-[-] 	set (_OUTPUT_PATH_2 "${CMAKE_CURRENT_BINARY_DIR}/${_OUTPUT_FILE_NAME_2}")
-[+] 	set(_OUTPUT_PATH_2 "${CMAKE_CURRENT_BINARY_DIR}/${_OUTPUT_FILE_NAME_2}")
-[-] 	set (_DEPENDENCY_LIST ${ARGN})
-[+] 	set(_DEPENDENCY_LIST ${ARGN})
-[-] 	if (TARGET graco)
-[+] 	if(TARGET graco)
-[-] 		list (APPEND _DEPENDENCY_LIST graco)
-[+] 		list(APPEND _DEPENDENCY_LIST graco)
-[-] 	endif ()
-[+] 	endif()
-[-] 	add_custom_command (
-[+] 	add_custom_command(
-[-] endmacro ()
-[+] endmacro()
-----------------------
-27/02/2019 18:01:54 - C:\Projects\repos\ioninja\graco\cmake\import_graco.cmake
-----------------------
-[-] axl_find_file (
-[+] axl_find_file(
-[-] if (_CONFIG_CMAKE)
-[+] if(_CONFIG_CMAKE)
-[-] 	include (${_CONFIG_CMAKE})
-[+] 	include(${_CONFIG_CMAKE})
-[-] 	axl_message ("Graco ${GRACO_VERSION_FULL} paths:")
-[+] 	axl_message("Graco ${GRACO_VERSION_FULL} paths:")
-[-] 	axl_message ("    CMake files:" "${GRACO_CMAKE_DIR}")
-[+] 	axl_message("    CMake files:" "${GRACO_CMAKE_DIR}")
-[-] 	axl_message ("    Includes:"    "${GRACO_INC_DIR}")
-[+] 	axl_message("    Includes:"    "${GRACO_INC_DIR}")
-[-] 	axl_message ("    Frames:"      "${GRACO_FRAME_DIR}")
-[+] 	axl_message("    Frames:"      "${GRACO_FRAME_DIR}")
-[-] 	axl_message ("    Executable:"  "${GRACO_EXE}")
-[+] 	axl_message("    Executable:"  "${GRACO_EXE}")
-[-] 	set (GRACO_FOUND TRUE)
-[+] 	set(GRACO_FOUND TRUE)
-[-] else ()
-[+] else()
-[-] 	set (GRACO_FOUND FALSE)
-[+] 	set(GRACO_FOUND FALSE)
 [-] endif ()
 [+] endif()
+[-] install (
+[+] install(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\test\CMakeLists.txt
+----------------------
+[-] add_subdirectory (llk)
+[+] add_subdirectory(llk)
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10\_CPack_Packages\win32-Source\7Z\graco-1.3.3-src\test\llk\CMakeLists.txt
+----------------------
+[-] add_test (
+[+] add_test(
+[-] add_test (
+[+] add_test(
+[-] add_test (
+[+] add_test(
+[-] add_test (
+[+] add_test(
+[-] set_tests_properties (
+[+] set_tests_properties(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64\7Z\graco-1.3.3-windows-amd64\samples\CMakeLists.txt
+----------------------
+[-] option (
+[+] option(
+[-] if (BUILD_GRACO_SAMPLE_01_CALC)
+[+] if(BUILD_GRACO_SAMPLE_01_CALC)
+[-] 	add_subdirectory (graco_sample_01_calc)
+[+] 	add_subdirectory(graco_sample_01_calc)
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64\7Z\graco-1.3.3-windows-amd64\samples\graco_sample_01_calc\CMakeLists.txt
+----------------------
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[+] set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[-] file (MAKE_DIRECTORY ${GEN_DIR})
+[+] file(MAKE_DIRECTORY ${GEN_DIR})
+[-] axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[+] axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[-] add_ragel_step (
+[+] add_ragel_step(
+[-] add_graco_double_step (
+[+] add_graco_double_step(
+[-] axl_pop (CMAKE_CURRENT_BINARY_DIR)
+[+] axl_pop(CMAKE_CURRENT_BINARY_DIR)
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[+] axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[-] axl_exclude_from_build (${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[+] axl_exclude_from_build(${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[-] source_group (
+[+] source_group(
+[-] set (PCH_H   pch.h)
+[+] set(PCH_H   pch.h)
+[-] set (PCH_CPP pch.cpp)
+[+] set(PCH_CPP pch.cpp)
+[-] source_group (
+[+] source_group(
+[-] include_directories (
+[+] include_directories(
+[-] link_directories (${AXL_LIB_DIR})
+[+] link_directories(${AXL_LIB_DIR})
+[-] add_executable (
+[+] add_executable(
+[-] add_dependencies (
+[+] add_dependencies(
+[-] set_target_properties (
+[+] set_target_properties(
+[-] target_link_libraries (
+[+] target_link_libraries(
+[-] if (UNIX)
+[+] if(UNIX)
+[-] 	target_link_libraries (
+[+] 	target_link_libraries(
+[-] endif ()
+[+] endif()
+[-] axl_set_pch (
+[+] axl_set_pch(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\CMakeLists.txt
+----------------------
+[-] project (graco)
+[+] project(graco)
+[-] cmake_minimum_required (VERSION 3.3)
+[+] cmake_minimum_required(VERSION 3.3)
+[-] include (cmake/axl_cmake.cmake NO_POLICY_SCOPE)
+[+] include(cmake/axl_cmake.cmake NO_POLICY_SCOPE)
+[-] set (GRACO_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
+[+] set(GRACO_ROOT_DIR     ${CMAKE_CURRENT_LIST_DIR})
+[-] set (GRACO_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+[+] set(GRACO_BIN_BASE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+[-] set (GRACO_DOC_DIR      ${CMAKE_CURRENT_BINARY_DIR}/doc)
+[+] set(GRACO_DOC_DIR      ${CMAKE_CURRENT_BINARY_DIR}/doc)
+[-] set (GRACO_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
+[+] set(GRACO_PACKAGE_DIR  ${CMAKE_CURRENT_BINARY_DIR}/package)
+[-] set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${GRACO_BIN_BASE_DIR}/${CONFIGURATION_SCG})
+[+] set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${GRACO_BIN_BASE_DIR}/${CONFIGURATION_SCG})
+[-] set (GRACO_INSTALL_BIN_SUBDIR bin)
+[+] set(GRACO_INSTALL_BIN_SUBDIR bin)
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	set (GRACO_INSTALL_INC_SUBDIR     include)
+[+] 	set(GRACO_INSTALL_INC_SUBDIR     include)
+[-] 	set (GRACO_INSTALL_CMAKE_SUBDIR   cmake)
+[+] 	set(GRACO_INSTALL_CMAKE_SUBDIR   cmake)
+[-] 	set (GRACO_INSTALL_FRAME_SUBDIR   frame)
+[+] 	set(GRACO_INSTALL_FRAME_SUBDIR   frame)
+[-] 	set (GRACO_INSTALL_SAMPLE_SUBDIR  samples)
+[+] 	set(GRACO_INSTALL_SAMPLE_SUBDIR  samples)
+[-] 	set (GRACO_INSTALL_DOC_SUBDIR     doc)
+[+] 	set(GRACO_INSTALL_DOC_SUBDIR     doc)
+[-] 	set (GRACO_INSTALL_LICENSE_SUBDIR license)
+[+] 	set(GRACO_INSTALL_LICENSE_SUBDIR license)
+[-] else ()
+[+] else()
+[-] 	set (GRACO_INSTALL_INC_SUBDIR     include/${CMAKE_PROJECT_NAME})
+[+] 	set(GRACO_INSTALL_INC_SUBDIR     include/${CMAKE_PROJECT_NAME})
+[-] 	set (GRACO_INSTALL_CMAKE_SUBDIR   lib/cmake/${CMAKE_PROJECT_NAME})
+[+] 	set(GRACO_INSTALL_CMAKE_SUBDIR   lib/cmake/${CMAKE_PROJECT_NAME})
+[-] 	set (GRACO_INSTALL_FRAME_SUBDIR   share/${CMAKE_PROJECT_NAME}/frame)
+[+] 	set(GRACO_INSTALL_FRAME_SUBDIR   share/${CMAKE_PROJECT_NAME}/frame)
+[-] 	set (GRACO_INSTALL_SAMPLE_SUBDIR  share/${CMAKE_PROJECT_NAME}/samples)
+[+] 	set(GRACO_INSTALL_SAMPLE_SUBDIR  share/${CMAKE_PROJECT_NAME}/samples)
+[-] 	set (GRACO_INSTALL_DOC_SUBDIR     share/${CMAKE_PROJECT_NAME}/doc)
+[+] 	set(GRACO_INSTALL_DOC_SUBDIR     share/${CMAKE_PROJECT_NAME}/doc)
+[-] 	set (GRACO_INSTALL_LICENSE_SUBDIR share/${CMAKE_PROJECT_NAME}/license)
+[+] 	set(GRACO_INSTALL_LICENSE_SUBDIR share/${CMAKE_PROJECT_NAME}/license)
+[-] endif ()
+[+] endif()
+[-] add_subdirectory (cmake)
+[+] add_subdirectory(cmake)
+[-] include (${CMAKE_CURRENT_BINARY_DIR}/cmake/graco_config.cmake)
+[+] include(${CMAKE_CURRENT_BINARY_DIR}/cmake/graco_config.cmake)
+[-] add_subdirectory (src)
+[+] add_subdirectory(src)
+[-] add_subdirectory (doc)
+[+] add_subdirectory(doc)
+[-] add_subdirectory (samples)
+[+] add_subdirectory(samples)
+[-] add_subdirectory (test)
+[+] add_subdirectory(test)
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] set (CPACK_PACKAGE_VERSION_MAJOR ${GRACO_VERSION_MAJOR})
+[+] set(CPACK_PACKAGE_VERSION_MAJOR ${GRACO_VERSION_MAJOR})
+[-] set (CPACK_PACKAGE_VERSION_MINOR ${GRACO_VERSION_MINOR})
+[+] set(CPACK_PACKAGE_VERSION_MINOR ${GRACO_VERSION_MINOR})
+[-] set (CPACK_PACKAGE_VERSION_PATCH ${GRACO_VERSION_REVISION})
+[+] set(CPACK_PACKAGE_VERSION_PATCH ${GRACO_VERSION_REVISION})
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	set (CPACK_SOURCE_GENERATOR 7Z)
+[+] 	set(CPACK_SOURCE_GENERATOR 7Z)
+[-] else ()
+[+] else()
+[-] 	set (CPACK_SOURCE_GENERATOR TXZ)
+[+] 	set(CPACK_SOURCE_GENERATOR TXZ)
+[-] endif ()
+[+] endif()
+[-] set (CPACK_SOURCE_IGNORE_FILES "/[.];[.]user$;/build/;/ci/;/paths.cmake$")
+[+] set(CPACK_SOURCE_IGNORE_FILES "/[.];[.]user$;/build/;/ci/;/paths.cmake$")
+[-] set (CPACK_SOURCE_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-src)
+[+] set(CPACK_SOURCE_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-src)
+[-] if (APPLE)
+[+] if(APPLE)
+[-] 	set (CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-mac)
+[+] 	set(CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-mac)
+[-] else ()
+[+] else()
+[-] 	string (TOLOWER ${CMAKE_SYSTEM_NAME} OS_NAME)
+[+] 	string(TOLOWER ${CMAKE_SYSTEM_NAME} OS_NAME)
+[-] 	set (CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-${OS_NAME}-${TARGET_CPU})
+[+] 	set(CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${GRACO_VERSION_FILE_SUFFIX}-${OS_NAME}-${TARGET_CPU})
+[-] endif ()
+[+] endif()
+[-] include (CPack)
+[+] include(CPack)
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\cmake\CMakeLists.txt
+----------------------
+[-] string (REGEX REPLACE "[a-z]+" ".." GRACO_INSTALL_ROOT_SUBDIR ${GRACO_INSTALL_CMAKE_SUBDIR})
+[+] string(REGEX REPLACE "[a-z]+" ".." GRACO_INSTALL_ROOT_SUBDIR ${GRACO_INSTALL_CMAKE_SUBDIR})
+[-] configure_file (
+[+] configure_file(
+[-] configure_file (
+[+] configure_file(
+[-] set (
+[+] set(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\doc\CMakeLists.txt
+----------------------
+[-] if (SPHINX_FOUND)
+[+] if(SPHINX_FOUND)
+[-] 	add_subdirectory (index)
+[+] 	add_subdirectory(index)
+[-] 	add_subdirectory (build-guide)
+[+] 	add_subdirectory(build-guide)
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\doc\build-guide\CMakeLists.txt
+----------------------
+[-] set (DOC_NAME "Graco Build Guide")
+[+] set(DOC_NAME "Graco Build Guide")
+[-] set (TEX_BASE_NAME graco-build-guide-${GRACO_VERSION_FILE_SUFFIX})
+[+] set(TEX_BASE_NAME graco-build-guide-${GRACO_VERSION_FILE_SUFFIX})
+[-] set (TEX_FILE_NAME ${TEX_BASE_NAME}.tex)
+[+] set(TEX_FILE_NAME ${TEX_BASE_NAME}.tex)
+[-] set (PDF_FILE_NAME ${TEX_BASE_NAME}.pdf)
+[+] set(PDF_FILE_NAME ${TEX_BASE_NAME}.pdf)
+[-] set (RST_DIR  ${CMAKE_CURRENT_LIST_DIR}/rst)
+[+] set(RST_DIR  ${CMAKE_CURRENT_LIST_DIR}/rst)
+[-] set (TEX_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tex)
+[+] set(TEX_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tex)
+[-] set (TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[+] set(TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[-] set (HTML_DIR ${GRACO_DOC_DIR}/html/build-guide)
+[+] set(HTML_DIR ${GRACO_DOC_DIR}/html/build-guide)
+[-] set (PDF_DIR  ${GRACO_DOC_DIR}/pdf)
+[+] set(PDF_DIR  ${GRACO_DOC_DIR}/pdf)
+[-] set (SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[+] set(SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] foreach (_VAR ${CMD_LINE_VAR_LIST})
+[+] foreach(_VAR ${CMD_LINE_VAR_LIST})
+[-] 	string (
+[+] 	string(
+[-] endforeach ()
+[+] endforeach()
+[-] configure_file (
+[+] configure_file(
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	configure_file (
+[+] 	configure_file(
+[-] 	configure_file (
+[+] 	configure_file(
+[-] else ()
+[+] else()
+[-] 	axl_configure_file_w_permissions (
+[+] 	axl_configure_file_w_permissions(
+[-] 	axl_configure_file_w_permissions (
+[+] 	axl_configure_file_w_permissions(
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\doc\index\CMakeLists.txt
+----------------------
+[-] set (DOC_NAME "Graco Documentation Index")
+[+] set(DOC_NAME "Graco Documentation Index")
+[-] set (RST_DIR  ${CMAKE_CURRENT_LIST_DIR})
+[+] set(RST_DIR  ${CMAKE_CURRENT_LIST_DIR})
+[-] set (TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[+] set(TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[-] set (HTML_DIR ${GRACO_DOC_DIR}/html)
+[+] set(HTML_DIR ${GRACO_DOC_DIR}/html)
+[-] set (SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[+] set(SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[-] set (
+[+] set(
+[-] string (
+[+] string(
+[-] configure_file (
+[+] configure_file(
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	configure_file (
+[+] 	configure_file(
+[-] else ()
+[+] else()
+[-] 	axl_configure_file_w_permissions (
+[+] 	axl_configure_file_w_permissions(
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\samples\CMakeLists.txt
+----------------------
+[-] option (
+[+] option(
+[-] if (BUILD_GRACO_SAMPLE_01_CALC)
+[+] if(BUILD_GRACO_SAMPLE_01_CALC)
+[-] 	add_subdirectory (graco_sample_01_calc)
+[+] 	add_subdirectory(graco_sample_01_calc)
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\samples\graco_sample_01_calc\CMakeLists.txt
+----------------------
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[+] set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[-] file (MAKE_DIRECTORY ${GEN_DIR})
+[+] file(MAKE_DIRECTORY ${GEN_DIR})
+[-] axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[+] axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[-] add_ragel_step (
+[+] add_ragel_step(
+[-] add_graco_double_step (
+[+] add_graco_double_step(
+[-] axl_pop (CMAKE_CURRENT_BINARY_DIR)
+[+] axl_pop(CMAKE_CURRENT_BINARY_DIR)
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[+] axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[-] axl_exclude_from_build (${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[+] axl_exclude_from_build(${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[-] source_group (
+[+] source_group(
+[-] set (PCH_H   pch.h)
+[+] set(PCH_H   pch.h)
+[-] set (PCH_CPP pch.cpp)
+[+] set(PCH_CPP pch.cpp)
+[-] source_group (
+[+] source_group(
+[-] include_directories (
+[+] include_directories(
+[-] link_directories (${AXL_LIB_DIR})
+[+] link_directories(${AXL_LIB_DIR})
+[-] add_executable (
+[+] add_executable(
+[-] add_dependencies (
+[+] add_dependencies(
+[-] set_target_properties (
+[+] set_target_properties(
+[-] target_link_libraries (
+[+] target_link_libraries(
+[-] if (UNIX)
+[+] if(UNIX)
+[-] 	target_link_libraries (
+[+] 	target_link_libraries(
+[-] endif ()
+[+] endif()
+[-] axl_set_pch (
+[+] axl_set_pch(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\src\CMakeLists.txt
+----------------------
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] file (
+[+] file(
+[-] source_group (
+[+] source_group(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[+] set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[-] file (MAKE_DIRECTORY ${GEN_DIR})
+[+] file(MAKE_DIRECTORY ${GEN_DIR})
+[-] axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[+] axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[-] configure_file (
+[+] configure_file(
+[-] set (
+[+] set(
+[-] add_ragel_step (
+[+] add_ragel_step(
+[-] set (
+[+] set(
+[-] axl_pop (CMAKE_CURRENT_BINARY_DIR)
+[+] axl_pop(CMAKE_CURRENT_BINARY_DIR)
+[-] axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[+] axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[-] source_group (
+[+] source_group(
+[-] set (PCH_H   pch.h)
+[+] set(PCH_H   pch.h)
+[-] set (PCH_CPP pch.cpp)
+[+] set(PCH_CPP pch.cpp)
+[-] source_group (
+[+] source_group(
+[-] include_directories (
+[+] include_directories(
+[-] link_directories (
+[+] link_directories(
+[-] add_executable (
+[+] add_executable(
+[-] axl_set_pch (
+[+] axl_set_pch(
+[-] target_link_libraries (
+[+] target_link_libraries(
+[-] if (UNIX)
+[+] if(UNIX)
+[-] 	target_link_libraries (
+[+] 	target_link_libraries(
+[-] 	if (NOT APPLE)
+[+] 	if(NOT APPLE)
+[-] 		target_link_libraries (
+[+] 		target_link_libraries(
+[-] 	endif ()
+[+] 	endif()
+[-] endif ()
+[+] endif()
+[-] if (WIN32 AND LUA_DLL_DIR)
+[+] if(WIN32 AND LUA_DLL_DIR)
+[-] 	add_custom_command (
+[+] 	add_custom_command(
+[-] endif ()
+[+] endif()
+[-] install (
+[+] install(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\test\CMakeLists.txt
+----------------------
+[-] add_subdirectory (llk)
+[+] add_subdirectory(llk)
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\build\msvc10-amd64\_CPack_Packages\win64-Source\7Z\graco-1.3.3-src\test\llk\CMakeLists.txt
+----------------------
+[-] add_test (
+[+] add_test(
+[-] add_test (
+[+] add_test(
+[-] add_test (
+[+] add_test(
+[-] add_test (
+[+] add_test(
+[-] set_tests_properties (
+[+] set_tests_properties(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\cmake\CMakeLists.txt
+----------------------
+[-] string (REGEX REPLACE "[a-z]+" ".." GRACO_INSTALL_ROOT_SUBDIR ${GRACO_INSTALL_CMAKE_SUBDIR})
+[+] string(REGEX REPLACE "[a-z]+" ".." GRACO_INSTALL_ROOT_SUBDIR ${GRACO_INSTALL_CMAKE_SUBDIR})
+[-] configure_file (
+[+] configure_file(
+[-] configure_file (
+[+] configure_file(
+[-] set (
+[+] set(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+[-] install (
+[+] install(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\doc\CMakeLists.txt
+----------------------
+[-] if (SPHINX_FOUND)
+[+] if(SPHINX_FOUND)
+[-] 	add_subdirectory (index)
+[+] 	add_subdirectory(index)
+[-] 	add_subdirectory (build-guide)
+[+] 	add_subdirectory(build-guide)
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\doc\build-guide\CMakeLists.txt
+----------------------
+[-] set (DOC_NAME "Graco Build Guide")
+[+] set(DOC_NAME "Graco Build Guide")
+[-] set (TEX_BASE_NAME graco-build-guide-${GRACO_VERSION_FILE_SUFFIX})
+[+] set(TEX_BASE_NAME graco-build-guide-${GRACO_VERSION_FILE_SUFFIX})
+[-] set (TEX_FILE_NAME ${TEX_BASE_NAME}.tex)
+[+] set(TEX_FILE_NAME ${TEX_BASE_NAME}.tex)
+[-] set (PDF_FILE_NAME ${TEX_BASE_NAME}.pdf)
+[+] set(PDF_FILE_NAME ${TEX_BASE_NAME}.pdf)
+[-] set (RST_DIR  ${CMAKE_CURRENT_LIST_DIR}/rst)
+[+] set(RST_DIR  ${CMAKE_CURRENT_LIST_DIR}/rst)
+[-] set (TEX_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tex)
+[+] set(TEX_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tex)
+[-] set (TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[+] set(TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[-] set (HTML_DIR ${GRACO_DOC_DIR}/html/build-guide)
+[+] set(HTML_DIR ${GRACO_DOC_DIR}/html/build-guide)
+[-] set (PDF_DIR  ${GRACO_DOC_DIR}/pdf)
+[+] set(PDF_DIR  ${GRACO_DOC_DIR}/pdf)
+[-] set (SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[+] set(SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] foreach (_VAR ${CMD_LINE_VAR_LIST})
+[+] foreach(_VAR ${CMD_LINE_VAR_LIST})
+[-] 	string (
+[+] 	string(
+[-] endforeach ()
+[+] endforeach()
+[-] configure_file (
+[+] configure_file(
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	configure_file (
+[+] 	configure_file(
+[-] 	configure_file (
+[+] 	configure_file(
+[-] else ()
+[+] else()
+[-] 	axl_configure_file_w_permissions (
+[+] 	axl_configure_file_w_permissions(
+[-] 	axl_configure_file_w_permissions (
+[+] 	axl_configure_file_w_permissions(
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\doc\index\CMakeLists.txt
+----------------------
+[-] set (DOC_NAME "Graco Documentation Index")
+[+] set(DOC_NAME "Graco Documentation Index")
+[-] set (RST_DIR  ${CMAKE_CURRENT_LIST_DIR})
+[+] set(RST_DIR  ${CMAKE_CURRENT_LIST_DIR})
+[-] set (TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[+] set(TMP_DIR  ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+[-] set (HTML_DIR ${GRACO_DOC_DIR}/html)
+[+] set(HTML_DIR ${GRACO_DOC_DIR}/html)
+[-] set (SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[+] set(SPHINX_HTML_THEME ${AXL_SPHINX_HTML_THEME})
+[-] set (
+[+] set(
+[-] string (
+[+] string(
+[-] configure_file (
+[+] configure_file(
+[-] if (WIN32)
+[+] if(WIN32)
+[-] 	configure_file (
+[+] 	configure_file(
+[-] else ()
+[+] else()
+[-] 	axl_configure_file_w_permissions (
+[+] 	axl_configure_file_w_permissions(
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\samples\CMakeLists.txt
+----------------------
+[-] option (
+[+] option(
+[-] if (BUILD_GRACO_SAMPLE_01_CALC)
+[+] if(BUILD_GRACO_SAMPLE_01_CALC)
+[-] 	add_subdirectory (graco_sample_01_calc)
+[+] 	add_subdirectory(graco_sample_01_calc)
+[-] endif ()
+[+] endif()
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\samples\graco_sample_01_calc\CMakeLists.txt
+----------------------
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[+] set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[-] file (MAKE_DIRECTORY ${GEN_DIR})
+[+] file(MAKE_DIRECTORY ${GEN_DIR})
+[-] axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[+] axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[-] add_ragel_step (
+[+] add_ragel_step(
+[-] add_graco_double_step (
+[+] add_graco_double_step(
+[-] axl_pop (CMAKE_CURRENT_BINARY_DIR)
+[+] axl_pop(CMAKE_CURRENT_BINARY_DIR)
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[+] axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[-] axl_exclude_from_build (${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[+] axl_exclude_from_build(${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
+[-] source_group (
+[+] source_group(
+[-] set (PCH_H   pch.h)
+[+] set(PCH_H   pch.h)
+[-] set (PCH_CPP pch.cpp)
+[+] set(PCH_CPP pch.cpp)
+[-] source_group (
+[+] source_group(
+[-] include_directories (
+[+] include_directories(
+[-] link_directories (${AXL_LIB_DIR})
+[+] link_directories(${AXL_LIB_DIR})
+[-] add_executable (
+[+] add_executable(
+[-] add_dependencies (
+[+] add_dependencies(
+[-] set_target_properties (
+[+] set_target_properties(
+[-] target_link_libraries (
+[+] target_link_libraries(
+[-] if (UNIX)
+[+] if(UNIX)
+[-] 	target_link_libraries (
+[+] 	target_link_libraries(
+[-] endif ()
+[+] endif()
+[-] axl_set_pch (
+[+] axl_set_pch(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\src\CMakeLists.txt
+----------------------
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] file (
+[+] file(
+[-] source_group (
+[+] source_group(
+[-] set (
+[+] set(
+[-] source_group (
+[+] source_group(
+[-] set (GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[+] set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+[-] file (MAKE_DIRECTORY ${GEN_DIR})
+[+] file(MAKE_DIRECTORY ${GEN_DIR})
+[-] axl_push_and_set (CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[+] axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
+[-] configure_file (
+[+] configure_file(
+[-] set (
+[+] set(
+[-] add_ragel_step (
+[+] add_ragel_step(
+[-] set (
+[+] set(
+[-] axl_pop (CMAKE_CURRENT_BINARY_DIR)
+[+] axl_pop(CMAKE_CURRENT_BINARY_DIR)
+[-] axl_exclude_from_build (${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[+] axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
+[-] source_group (
+[+] source_group(
+[-] set (PCH_H   pch.h)
+[+] set(PCH_H   pch.h)
+[-] set (PCH_CPP pch.cpp)
+[+] set(PCH_CPP pch.cpp)
+[-] source_group (
+[+] source_group(
+[-] include_directories (
+[+] include_directories(
+[-] link_directories (
+[+] link_directories(
+[-] add_executable (
+[+] add_executable(
+[-] axl_set_pch (
+[+] axl_set_pch(
+[-] target_link_libraries (
+[+] target_link_libraries(
+[-] if (UNIX)
+[+] if(UNIX)
+[-] 	target_link_libraries (
+[+] 	target_link_libraries(
+[-] 	if (NOT APPLE)
+[+] 	if(NOT APPLE)
+[-] 		target_link_libraries (
+[+] 		target_link_libraries(
+[-] 	endif ()
+[+] 	endif()
+[-] endif ()
+[+] endif()
+[-] if (WIN32 AND LUA_DLL_DIR)
+[+] if(WIN32 AND LUA_DLL_DIR)
+[-] 	add_custom_command (
+[+] 	add_custom_command(
+[-] endif ()
+[+] endif()
+[-] install (
+[+] install(
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\test\CMakeLists.txt
+----------------------
+[-] add_subdirectory (llk)
+[+] add_subdirectory(llk)
+----------------------
+02/04/2019 15:43:56 - C:\Projects\repos\ioninja\graco\test\llk\CMakeLists.txt
+----------------------
+[-] add_test (
+[+] add_test(
+[-] add_test (
+[+] add_test(
+[-] add_test (
+[+] add_test(
+[-] add_test (
+[+] add_test(
+[-] set_tests_properties (
+[+] set_tests_properties(

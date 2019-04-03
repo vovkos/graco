@@ -9,15 +9,15 @@
 #
 #...............................................................................
 
-get_filename_component (GRACO_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/@GRACO_INSTALL_ROOT_SUBDIR@" ABSOLUTE)
+get_filename_component(GRACO_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/@GRACO_INSTALL_ROOT_SUBDIR@" ABSOLUTE)
 
-set (GRACO_INC_DIR     "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_INC_SUBDIR@")
-set (GRACO_FRAME_DIR   "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_FRAME_SUBDIR@")
-set (GRACO_SAMPLE_DIR  "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_SAMPLE_SUBDIR@")
-set (GRACO_EXE         "${GRACO_INSTALL_PREFIX}/bin/graco")
-set (GRACO_CMAKE_DIR   "${CMAKE_CURRENT_LIST_DIR}")
+set(GRACO_INC_DIR     "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_INC_SUBDIR@")
+set(GRACO_FRAME_DIR   "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_FRAME_SUBDIR@")
+set(GRACO_SAMPLE_DIR  "${GRACO_INSTALL_PREFIX}/@GRACO_INSTALL_SAMPLE_SUBDIR@")
+set(GRACO_EXE         "${GRACO_INSTALL_PREFIX}/bin/graco")
+set(GRACO_CMAKE_DIR   "${CMAKE_CURRENT_LIST_DIR}")
 
-include ("${CMAKE_CURRENT_LIST_DIR}/graco_version.cmake")
-include ("${CMAKE_CURRENT_LIST_DIR}/graco_step.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/graco_version.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/graco_step.cmake")
 
 #...............................................................................

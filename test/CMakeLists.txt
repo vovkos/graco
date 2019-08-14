@@ -9,6 +9,16 @@
 #
 #...............................................................................
 
+option(
+	BUILD_GRACO_TESTS
+	"Build Graco tests"
+	ON
+	)
+
+if(NOT BUILD_GRACO_TESTS)
+	return()
+endif()
+
 add_subdirectory(llk)
 
 #...............................................................................

@@ -157,6 +157,13 @@ if(UNIX)
 		graco_sample_01_calc
 		pthread
 		)
+
+	if(NOT APPLE)
+		target_link_libraries(
+			graco_sample_01_calc
+			rt
+			)
+	endif()
 endif()
 
 axl_set_pch(

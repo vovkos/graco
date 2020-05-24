@@ -30,16 +30,16 @@ ProductionBuilder::build(
 	)
 {
 	bool result;
-	size_t formalArgCount;
+	size_t paramCount;
 
-	switch (production->m_kind)
+	switch (production->m_nodeKind)
 	{
 	case NodeKind_Epsilon:
 	case NodeKind_Token:
 		return production;
 
 	case NodeKind_Symbol:
-		if (production->m_flags & SymbolNodeFlag_Named)
+		if (production->m_flags & SymbolNodeFlag_User)
 			return production;
 
 		// else fall through
@@ -50,16 +50,15 @@ ProductionBuilder::build(
 
 	case NodeKind_Beacon:
 		BeaconNode* beacon;
-
 		beacon = (BeaconNode*)production;
 
-		formalArgCount = beacon->m_target->m_argNameList.getCount();
-		if (formalArgCount)
+		paramCount = beacon->m_target->m_paramNameList.getCount();
+		if (paramCount)
 		{
 			err::setFormatStringError(
-				"'%s' takes %d arguments, passed none",
+				"'%s' takes %d parameters, passed none",
 				beacon->m_target->m_name.sz(),
-				formalArgCount
+				paramCount
 				);
 			lex::pushSrcPosError(beacon->m_srcPos);
 			return NULL;
@@ -96,7 +95,7 @@ ProductionBuilder::build(
 		return NULL;
 	}
 
-	findAndReplaceUnusedBeacons(production);
+	findAndReplaceUnusedBeacons(&production);
 
 	size_t count = m_beaconDeleteArray.getCount();
 	for (size_t i = 0; i < count; i++)
@@ -162,14 +161,14 @@ ProductionBuilder::scan(GrammarNode* node)
 
 	size_t childrenCount;
 
-	switch (node->m_kind)
+	switch (node->m_nodeKind)
 	{
 	case NodeKind_Epsilon:
 	case NodeKind_Token:
 		break;
 
 	case NodeKind_Symbol:
-		if (node->m_flags & SymbolNodeFlag_Named)
+		if (node->m_flags & SymbolNodeFlag_User)
 			break;
 
 		symbol = (SymbolNode*)node;
@@ -256,18 +255,18 @@ ProductionBuilder::addBeacon(BeaconNode* beacon)
 			it->m_value = beacon;
 	}
 
-	if (beacon->m_target->m_kind == NodeKind_Symbol)
+	if (beacon->m_target->m_nodeKind == NodeKind_Symbol)
 	{
 		SymbolNode* node = (SymbolNode*)beacon->m_target;
-		size_t formalArgCount = node->m_argNameList.getCount();
+		size_t paramCount = node->m_paramNameList.getCount();
 		size_t actualArgCount = beacon->m_argument ? beacon->m_argument->m_argValueList.getCount() : 0;
 
-		if (formalArgCount != actualArgCount)
+		if (paramCount != actualArgCount)
 		{
 			err::setFormatStringError(
-				"'%s' takes %d arguments, passed %d",
+				"'%s' takes %d parameters, passed %d",
 				node->m_name.sz(),
-				formalArgCount,
+				paramCount,
 				actualArgCount
 				);
 			lex::pushSrcPosError(beacon->m_srcPos);
@@ -282,8 +281,10 @@ ProductionBuilder::addBeacon(BeaconNode* beacon)
 }
 
 void
-ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode*& node)
+ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode** node0)
 {
+	GrammarNode* node = *node0;
+
 	if (node->m_flags & NodeFlag_RecursionStopper)
 		return;
 
@@ -293,7 +294,7 @@ ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode*& node)
 
 	size_t count;
 
-	switch (node->m_kind)
+	switch (node->m_nodeKind)
 	{
 	case NodeKind_Epsilon:
 	case NodeKind_Token:
@@ -312,22 +313,25 @@ ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode*& node)
 			beacon->m_flags |= BeaconNodeFlag_Deleted;
 		}
 
-		node = beacon->m_target; // replace
+		*node0 = beacon->m_target; // replace
 		break;
 
 	case NodeKind_Symbol:
-		if (node->m_flags & SymbolNodeFlag_Named)
+		if (node->m_flags & SymbolNodeFlag_User)
 			break;
 
 		symbol = (SymbolNode*)node;
 		symbol->m_flags |= NodeFlag_RecursionStopper;
 
+		if (symbol->m_synchronizer)
+			findAndReplaceUnusedBeacons(&symbol->m_synchronizer);
+
 		if (symbol->m_resolver)
-			findAndReplaceUnusedBeacons(symbol->m_resolver);
+			findAndReplaceUnusedBeacons(&symbol->m_resolver);
 
 		count = symbol->m_productionArray.getCount();
 		for (size_t i = 0; i < count; i++)
-			findAndReplaceUnusedBeacons(symbol->m_productionArray[i]);
+			findAndReplaceUnusedBeacons(&symbol->m_productionArray[i]);
 
 		symbol->m_flags &= ~NodeFlag_RecursionStopper;
 		break;
@@ -338,7 +342,7 @@ ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode*& node)
 
 		count = sequence->m_sequence.getCount();
 		for (size_t i = 0; i < count; i++)
-			findAndReplaceUnusedBeacons(sequence->m_sequence[i]);
+			findAndReplaceUnusedBeacons(&sequence->m_sequence[i]);
 
 		sequence->m_flags &= ~NodeFlag_RecursionStopper;
 		break;
@@ -368,7 +372,7 @@ ProductionBuilder::findVariable(
 
 	BeaconNode* beacon = m_beaconArray[beaconIndex];
 	*beacon_o = beacon;
-	return beacon->m_target->m_kind == NodeKind_Token ?
+	return beacon->m_target->m_nodeKind == NodeKind_Token ?
 		VariableKind_TokenBeacon :
 		VariableKind_SymbolBeacon;
 }
@@ -384,7 +388,7 @@ ProductionBuilder::findVariable(
 	{
 		BeaconNode* beacon = it->m_value;
 		*beacon_o = beacon;
-		return beacon->m_target->m_kind == NodeKind_Token ?
+		return beacon->m_target->m_nodeKind == NodeKind_Token ?
 			VariableKind_TokenBeacon :
 			VariableKind_SymbolBeacon;
 	}
@@ -393,9 +397,9 @@ ProductionBuilder::findVariable(
 	if (it2)
 		return VariableKind_Local;
 
-	it2 = m_symbol->m_argNameSet.find(name);
+	it2 = m_symbol->m_paramNameSet.find(name);
 	if (it2)
-		return VariableKind_Arg;
+		return VariableKind_Param;
 
 	err::setFormatStringError("locator '$%s' not found", name.sz());
 	return VariableKind_Undefined;
@@ -420,7 +424,7 @@ ProductionBuilder::processUserCode(
 
 	setLineCol(srcPos);
 
-	const char* p = *userCode;
+	const char* p = userCode->cp();
 
 	VariableKind variableKind;
 	BeaconNode* beacon;
@@ -454,17 +458,6 @@ ProductionBuilder::processUserCode(
 		switch (variableKind)
 		{
 		case VariableKind_SymbolBeacon:
-			if (beacon->m_target->m_flags & SymbolNodeFlag_NoAst)
-			{
-				err::setFormatStringError(
-					"'%s' is declared as 'noast' and cannot be referenced from user actions",
-					beacon->m_target->m_name.sz()
-					);
-				return false;
-			}
-
-			// and fall through
-
 		case VariableKind_TokenBeacon:
 			if (beacon->m_resolver != resolver)
 			{
@@ -497,15 +490,15 @@ ProductionBuilder::processUserCode(
 			resultString.append('$');
 			break;
 
-		case VariableKind_Arg:
+		case VariableKind_Param:
 			if (resolver)
 			{
-				err::setFormatStringError("resolvers cannot reference arguments");
+				err::setFormatStringError("resolvers cannot reference parameters");
 				return false;
 			}
 
 			resultString.appendFormat(
-				"$arg.%s",
+				"$param.%s",
 				token->m_data.m_string.sz()
 				);
 			break;

@@ -62,11 +62,11 @@ user_code := |*
 
 lit_sq         ;
 lit_dq         ;
-[{}()<>]       { createToken (ts [0]); };
-'{.'           { createToken (TokenKind_OpenBrace); };
-'.}'           { createToken (TokenKind_CloseBrace); };
-'<.'           { createToken (TokenKind_OpenChevron); };
-'.>'           { createToken (TokenKind_CloseChevron); };
+[{}()<>]       { createToken(ts[0]); };
+'{.'           { createToken(TokenKind_OpenBrace); };
+'.}'           { createToken(TokenKind_CloseBrace); };
+'<.'           { createToken(TokenKind_OpenChevron); };
+'.>'           { createToken(TokenKind_CloseChevron); };
 nl             ;
 any            ;
 
@@ -80,16 +80,14 @@ user_code_2nd_pass := |*
 
 lit_sq         ;
 lit_dq         ;
-'$' dec+       { createIntegerToken (10, 1); };
-'$' 'arg'      { createToken (TokenKind_Arg); };
-'$' 'local'    { createToken (TokenKind_Local); };
-'$' id         { createStringToken (TokenKind_Identifier, 1); };
-'$'            { createConstIntegerToken (0); };
-[{}()<>,;]     { createToken (ts [0]); };
-'{.'           { createToken (TokenKind_OpenBrace); };
-'.}'           { createToken (TokenKind_CloseBrace); };
-'<.'           { createToken (TokenKind_OpenChevron); };
-'.>'           { createToken (TokenKind_CloseChevron); };
+'$' dec+       { createIntegerToken(10, 1); };
+'$' id         { createStringToken(TokenKind_Identifier, 1); };
+'$'            { createConstIntegerToken(0); };
+[{}()<>,;]     { createToken(ts[0]); };
+'{.'           { createToken(TokenKind_OpenBrace); };
+'.}'           { createToken(TokenKind_CloseBrace); };
+'<.'           { createToken(TokenKind_OpenChevron); };
+'.>'           { createToken(TokenKind_CloseChevron); };
 nl             ;
 any            ;
 
@@ -102,35 +100,37 @@ any            ;
 
 main := |*
 
-'lookahead'    { createToken (TokenKind_Lookahead); };
-'import'       { createToken (TokenKind_Import); };
-'using'        { createToken (TokenKind_Using); };
-'class'        { createToken (TokenKind_Class); };
-'noast'        { createToken (TokenKind_NoAst); };
-'default'      { createToken (TokenKind_Default); };
-'local'        { createToken (TokenKind_Local); };
-'enter'        { createToken (TokenKind_Enter); };
-'leave'        { createToken (TokenKind_Leave); };
-'start'        { createToken (TokenKind_Start); };
-'pragma'       { createToken (TokenKind_Pragma); };
-'resolver'     { createToken (TokenKind_Resolver); };
-'priority'     { createToken (TokenKind_Priority); };
-'any'          { createToken (TokenKind_Any); };
-'epsilon'      { createToken (TokenKind_Epsilon); };
-'nullable'     { createToken (TokenKind_Nullable); };
+'import'       { createToken(TokenKind_Import); };
+'struct'       { createToken(TokenKind_Struct); };
+'class'        { createToken(TokenKind_Struct); };
+'default'      { createToken(TokenKind_Default); };
+'local'        { createToken(TokenKind_Local); };
+'enter'        { createToken(TokenKind_Enter); };
+'leave'        { createToken(TokenKind_Leave); };
+'start'        { createToken(TokenKind_Start); };
+'pragma'       { createToken(TokenKind_Pragma); };
+'catch'        { createToken(TokenKind_Catch); };
+'lookahead'    { createToken(TokenKind_Lookahead); };
+'resolve'      { createToken(TokenKind_Resolve); };
+'priority'     { createToken(TokenKind_Priority); };
+'any'          { createToken(TokenKind_Any); };
+'epsilon'      { createToken(TokenKind_Epsilon); };
+'nullable'     { createToken(TokenKind_Nullable); };
+'true'         { createToken(TokenKind_True); };
+'false'        { createToken(TokenKind_False); };
 
-lit_sq         { createCharToken (TokenKind_Integer); };
-lit_dq         { createStringToken (TokenKind_Literal, 1, 1); };
-id             { createStringToken (TokenKind_Identifier); };
-dec+           { createIntegerToken (10); };
-'0' [xx] hex+  { createIntegerToken (16, 2); };
+lit_sq         { createCharToken(TokenKind_Integer); };
+lit_dq         { createStringToken(TokenKind_Literal, 1, 1); };
+id             { createStringToken(TokenKind_Identifier); };
+dec+           { createIntegerToken(10); };
+'0' [xx] hex+  { createIntegerToken(16, 2); };
 
 '//' [^\n]*    ;
 '/*' (any | nl)* :>> '*/' ;
 
 ws | nl        ;
-print          { createToken (ts [0]); };
-any            { createErrorToken (ts [0]); };
+print          { createToken(ts[0]); };
+any            { createErrorToken(ts[0]); };
 
 *|;
 

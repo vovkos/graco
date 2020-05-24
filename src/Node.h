@@ -15,7 +15,6 @@
 
 // forwards
 
-class Class;
 class GrammarNode;
 class SymbolNode;
 class BeaconNode;
@@ -52,12 +51,12 @@ enum NodeFlag
 class Node: public sl::ListLink
 {
 public:
-	NodeKind m_kind;
+	NodeKind m_nodeKind;
+	uint_t m_flags;
 	size_t m_index;
 	size_t m_masterIndex;
 
 	sl::String m_name;
-	int m_flags;
 
 public:
 	Node();
@@ -75,12 +74,6 @@ public:
 	void
 	luaExport(lua::LuaState* luaState)
 	{
-	}
-
-	bool
-	isReachable()
-	{
-		return (m_flags & NodeFlag_Reachable) != 0;
 	}
 
 	virtual
@@ -106,8 +99,9 @@ public:
 
 enum GrammarNodeFlag
 {
-	GrammarNodeFlag_Nullable = 0x0010,
-	GrammarNodeFlag_Final    = 0x0020,
+	GrammarNodeFlag_Nullable        = 0x0010,
+	GrammarNodeFlag_Final           = 0x0020,
+	GrammarNodeFlag_WeaklyReachable = 0x0040, // remove from the grammar, but don't delete
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -116,6 +110,7 @@ class GrammarNode: public Node
 {
 public:
 	lex::SrcPos m_srcPos;
+	size_t m_lookaheadLimit;
 
 	int m_quantifierKind; // '?' '*' '+'
 	GrammarNode* m_quantifiedNode;
@@ -127,10 +122,7 @@ public:
 	sl::BitMap m_followSet;
 
 public:
-	GrammarNode()
-	{
-		m_quantifierKind = 0;
-	}
+	GrammarNode();
 
 	virtual
 	void
@@ -154,6 +146,26 @@ public:
 	bool
 	markFinal();
 
+	virtual
+	bool
+	markWeaklyReachable();
+
+	bool
+	initializeFirstFollowSets(size_t tokenCount)
+	{
+		return m_firstSet.setBitCount(tokenCount) && m_followSet.setBitCount(tokenCount);
+	}
+
+	void
+	buildFirstFollowArrays(const sl::ArrayRef<SymbolNode*>& tokenArray);
+
+	virtual
+	bool
+	propagateGrammarProps()
+	{
+		return false;
+	}
+
 	GrammarNode*
 	stripBeacon();
 
@@ -162,6 +174,9 @@ public:
 	getBnfString();
 
 protected:
+	bool
+	propagateChildGrammarProps(GrammarNode* child);
+
 	void
 	luaExportSrcPos(
 		lua::LuaState* luaState,
@@ -173,12 +188,12 @@ protected:
 
 enum SymbolNodeFlag
 {
-	SymbolNodeFlag_Named        = 0x0100,
+	SymbolNodeFlag_User         = 0x0100,
 	SymbolNodeFlag_EofToken     = 0x0200,
 	SymbolNodeFlag_AnyToken     = 0x0400,
 	SymbolNodeFlag_Pragma       = 0x0800,
 	SymbolNodeFlag_Start        = 0x1000,
-	SymbolNodeFlag_NoAst        = 0x2000,
+	SymbolNodeFlag_Lookahead    = 0x2000,
 	SymbolNodeFlag_ResolverUsed = 0x4000,
 	SymbolNodeFlag_Nullable     = 0x8000,
 };
@@ -190,31 +205,33 @@ class SymbolNode: public GrammarNode
 public:
 	int m_charToken;
 
-	Class* m_class;
+	GrammarNode* m_synchronizer;
 	GrammarNode* m_resolver;
 	size_t m_resolverPriority;
+
 	sl::Array<GrammarNode*> m_productionArray;
 
-	sl::String m_arg;
-	sl::String m_local;
-	sl::String m_enter;
-	sl::String m_leave;
+	sl::StringRef m_valueBlock;
+	lex::LineCol m_valueLineCol;
 
-	lex::LineCol m_argLineCol;
+	sl::StringRef m_paramBlock;
+	lex::LineCol m_paramLineCol;
+	sl::BoxList<sl::StringRef> m_paramNameList;
+	sl::StringHashTable<bool> m_paramNameSet;
+
+	sl::StringRef m_localBlock;
 	lex::LineCol m_localLineCol;
-	lex::LineCol m_enterLineCol;
-	lex::LineCol m_leaveLineCol;
-
-	sl::BoxList<sl::String> m_argNameList;
-	sl::BoxList<sl::String> m_localNameList;
-	sl::StringHashTable<bool> m_argNameSet;
+	sl::BoxList<sl::StringRef> m_localNameList;
 	sl::StringHashTable<bool> m_localNameSet;
+
+	sl::StringRef m_enterBlock;
+	lex::LineCol m_enterLineCol;
+
+	sl::StringRef m_leaveBlock;
+	lex::LineCol m_leaveLineCol;
 
 public:
 	SymbolNode();
-
-	sl::String
-	getArgName(size_t index);
 
 	void
 	addProduction(GrammarNode* node);
@@ -222,6 +239,10 @@ public:
 	virtual
 	bool
 	markReachable();
+
+	virtual
+	bool
+	markWeaklyReachable();
 
 	virtual
 	void
@@ -234,6 +255,10 @@ public:
 	virtual
 	sl::String
 	getBnfString();
+
+	virtual
+	bool
+	propagateGrammarProps();
 };
 
 //..............................................................................
@@ -244,7 +269,10 @@ public:
 	sl::Array<GrammarNode*> m_sequence;
 
 public:
-	SequenceNode();
+	SequenceNode()
+	{
+		m_nodeKind = NodeKind_Sequence;
+	}
 
 	void
 	append(GrammarNode* node);
@@ -252,6 +280,10 @@ public:
 	virtual
 	bool
 	markReachable();
+
+	virtual
+	bool
+	markWeaklyReachable();
 
 	virtual
 	void
@@ -268,6 +300,10 @@ public:
 	virtual
 	sl::String
 	getBnfString();
+
+	virtual
+	bool
+	propagateGrammarProps();
 };
 
 //..............................................................................
@@ -297,7 +333,10 @@ public:
 	sl::String m_userCode;
 
 public:
-	ActionNode();
+	ActionNode()
+	{
+		m_nodeKind = NodeKind_Action;
+	}
 
 	virtual
 	void
@@ -355,7 +394,7 @@ enum BeaconNodeFlag
 class BeaconNode: public GrammarNode
 {
 public:
-	sl::String m_label;
+	sl::StringRef m_label;
 	size_t m_slotIndex;
 	SymbolNode* m_target;
 	ArgumentNode* m_argument;
@@ -367,6 +406,10 @@ public:
 	virtual
 	bool
 	markReachable();
+
+	virtual
+	bool
+	markWeaklyReachable();
 
 	virtual
 	void
@@ -382,6 +425,10 @@ public:
 	{
 		return m_target ? m_target->getBnfString() : m_name;
 	}
+
+	virtual
+	bool
+	propagateGrammarProps();
 };
 
 //..............................................................................
@@ -393,10 +440,7 @@ public:
 	sl::Array<BeaconNode*> m_beaconArray;
 
 public:
-	DispatcherNode()
-	{
-		m_kind = NodeKind_Dispatcher;
-	}
+	DispatcherNode();
 
 	virtual
 	void
@@ -416,6 +460,7 @@ public:
 	SymbolNode* m_token;
 	Node* m_resultNode; // lookahead DFA or immediate production
 	sl::Array<GrammarNode*> m_productionArray;
+	size_t m_lookaheadLimit;
 
 public:
 	ConflictNode();

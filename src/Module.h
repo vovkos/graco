@@ -13,7 +13,6 @@
 
 #include "NodeMgr.h"
 #include "DefineMgr.h"
-#include "ClassMgr.h"
 #include "CmdLine.h"
 
 //..............................................................................
@@ -23,10 +22,9 @@ class Module
 	friend class Parser;
 
 protected:
+	sl::BoxList<sl::String> m_sourceCache;
 	sl::Array<Node*> m_parseTable;
-	size_t m_lookaheadLimit;
-	size_t m_lookahead;
-	ClassMgr m_classMgr;
+	size_t m_maxUsedLookahead;
 	DefineMgr m_defineMgr;
 	NodeMgr m_nodeMgr;
 
@@ -39,8 +37,20 @@ public:
 	void
 	clear();
 
+	const sl::String&
+	cacheSource(const sl::StringRef& source)
+	{
+		return *m_sourceCache.insertTail(source);
+	}
+
+	size_t
+	getMaxUsedLookahead()
+	{
+		return m_maxUsedLookahead;
+	}
+
 	bool
-	build(CmdLine* cmdLine);
+	build(const CmdLine* cmdLine);
 
 	void
 	luaExport(lua::LuaState* luaState);
@@ -55,12 +65,6 @@ public:
 	writeBnfFile(const sl::StringRef& fileName);
 
 protected:
-	void
-	luaExportDefines(lua::LuaState* luaState);
-
-	void
-	luaExportClassTable(lua::LuaState* luaState);
-
 	void
 	luaExportParseTable(lua::LuaState* luaState);
 };

@@ -15,11 +15,7 @@
 //..............................................................................
 
 bool
-Parser::parseFile(
-	Module* module,
-	CmdLine* cmdLine,
-	const sl::StringRef& filePath
-	)
+Parser::parseFile(const sl::StringRef& filePath)
 {
 	bool result;
 
@@ -48,28 +44,22 @@ Parser::parseFile(
 		return false;
 	}
 
-	return parse(module, cmdLine, filePath, sl::StringRef(p, size));
+	return parse(filePath, sl::StringRef(p, size));
 }
 
 bool
 Parser::parse(
-	Module* module,
-	const CmdLine* cmdLine,
 	const sl::StringRef& filePath,
 	const sl::StringRef& source
 	)
 {
-	bool result;
+	const sl::String& cachedSource = m_module->cacheSource(source);
+	Lexer::create(filePath, cachedSource);
 
-	m_module = module;
-	m_cmdLine = cmdLine;
 	m_dir = io::getDir(filePath);
+	m_module->m_nodeMgr.m_lookaheadLimit = m_cmdLine->m_lookaheadLimit;
 
-	m_defaultProductionSpecifiers.reset();
-
-	Lexer::create(filePath, source);
-
-	result = program();
+	bool result = program();
 	if (!result)
 	{
 		ensureSrcPosError();
@@ -82,41 +72,28 @@ Parser::parse(
 bool
 Parser::program()
 {
-	bool result;
-
 	for (;;)
 	{
 		const Token* token = getToken();
-		const Token* laToken;
-
 		if (!token->m_token)
 			break;
 
+		const Token* laToken;
+		size_t lookaheadLimit = 0;
+		bool result = true;
+
 		switch (token->m_token)
 		{
-		case TokenKind_Lookahead:
-			result = lookaheadStatement();
-			if (!result)
-				return false;
-
+		case ';':
+			nextToken();
 			break;
 
 		case TokenKind_Import:
 			result = importStatement();
-			if (!result)
-				return false;
-
 			break;
 
-		case TokenKind_Using:
-			result = usingStatement();
-			if (!result)
-				return false;
-
-			break;
-
-		case ';':
-			nextToken();
+		case TokenKind_Lookahead:
+			result = lookaheadStatement();
 			break;
 
 		case TokenKind_Identifier:
@@ -124,9 +101,6 @@ Parser::program()
 			if (laToken->m_token == '{' || laToken->m_token == '=')
 			{
 				result = defineStatement();
-				if (!result)
-					return false;
-
 				break;
 			}
 
@@ -134,9 +108,10 @@ Parser::program()
 
 		default:
 			result = declarationStatement();
-			if (!result)
-				return false;
 		}
+
+		if (!result)
+			return false;
 	}
 
 	return true;
@@ -145,36 +120,16 @@ Parser::program()
 bool
 Parser::lookaheadStatement()
 {
-	const Token* token = getToken();
-	ASSERT(token->m_token == TokenKind_Lookahead);
+	size_t lookaheadLimit;
+	bool result = sizeSpecifier(TokenKind_Lookahead, &lookaheadLimit);
+	if (!result)
+		return false;
 
-	nextToken();
-
-	token = expectToken('=');
+	const Token* token = expectToken(';');
 	if (!token)
 		return false;
 
-	nextToken();
-
-	token = expectToken(TokenKind_Integer);
-	if (!token)
-		return false;
-
-	if (m_module->m_lookaheadLimit && m_module->m_lookaheadLimit != token->m_data.m_integer)
-	{
-		err::setFormatStringError("redefinition of lookahead limit (previously seen as %d)", m_module->m_lookaheadLimit);
-		return false;
-	}
-
-	m_module->m_lookaheadLimit = token->m_data.m_integer;
-
-	nextToken();
-
-	token = expectToken(';');
-	if (!token)
-		return false;
-
-	nextToken();
+	m_module->m_nodeMgr.m_lookaheadLimit = lookaheadLimit;
 	return true;
 }
 
@@ -207,13 +162,6 @@ Parser::importStatement()
 	}
 
 	m_module->m_importList.insertTail(filePath);
-
-	nextToken();
-
-	token = expectToken(';');
-	if (!token)
-		return false;
-
 	nextToken();
 	return true;
 }
@@ -223,7 +171,7 @@ Parser::declarationStatement()
 {
 	bool result;
 
-	ProductionSpecifiers specifiers = m_defaultProductionSpecifiers;
+	ProductionSpecifiers specifiers;
 	result = productionSpecifiers(&specifiers);
 	if (!result)
 		return false;
@@ -247,119 +195,61 @@ Parser::declarationStatement()
 bool
 Parser::productionSpecifiers(ProductionSpecifiers* specifiers)
 {
-	Class* cls = NULL;
-	uint_t symbolFlags = 0;
-
-	bool isClassSpecified = false;
+	bool result;
+	bool isValueSpecified = false;
 	bool noMoreSpecifiers = false;
 
 	do
 	{
 		const Token* token = getToken();
-		const Token* laToken;
-
 		switch (token->m_token)
 		{
-		case TokenKind_Class:
-			if (isClassSpecified)
+		case TokenKind_Struct:
+			if (isValueSpecified)
 			{
-				err::setError("multiple class specifiers");
-				return false;
-			}
-
-			cls = classSpecifier();
-			if (!cls)
-				return false;
-
-			isClassSpecified = true;
-			break;
-
-		case TokenKind_Default:
-			if (isClassSpecified)
-			{
-				err::setError("multiple class specifiers");
+				err::setError("multiple value specifiers");
 				return false;
 			}
 
 			nextToken();
-
-			cls = NULL;
-			isClassSpecified = true;
-			break;
-
-		case TokenKind_NoAst:
-			if (isClassSpecified)
-			{
-				err::setError("multiple class specifiers");
+			result = userCode('{', &specifiers->m_valueBlock, &specifiers->m_valueLineCol);
+			if (!result)
 				return false;
-			}
 
-			nextToken();
-
-			symbolFlags |= SymbolNodeFlag_NoAst;
-			isClassSpecified = true;
+			isValueSpecified = true;
 			break;
 
 		case TokenKind_Pragma:
-			if (symbolFlags & SymbolNodeFlag_Pragma)
+			if (specifiers->m_flags & SymbolNodeFlag_Pragma)
 			{
 				err::setError("multiple 'pragma' specifiers");
 				return false;
 			}
 
 			nextToken();
-
-			symbolFlags |= SymbolNodeFlag_Pragma;
+			specifiers->m_flags |= SymbolNodeFlag_Pragma;
 			break;
 
 		case TokenKind_Start:
-			if (symbolFlags & SymbolNodeFlag_Start)
+			if (specifiers->m_flags & SymbolNodeFlag_Start)
 			{
 				err::setError("multiple 'start' specifiers");
 				return false;
 			}
 
 			nextToken();
-
-			symbolFlags |= SymbolNodeFlag_Start;
+			specifiers->m_flags |= SymbolNodeFlag_Start;
 			break;
 
 		case TokenKind_Nullable:
-			if (symbolFlags & SymbolNodeFlag_Nullable)
+			if (specifiers->m_flags & SymbolNodeFlag_Nullable)
 			{
 				err::setError("multiple 'nullable' specifiers");
 				return false;
 			}
 
 			nextToken();
-
-			symbolFlags |= SymbolNodeFlag_Nullable;
-			break;
-
-		case TokenKind_Identifier:
-			laToken = getToken(1);
-			switch (laToken->m_token)
-			{
-			case TokenKind_Class:
-			case TokenKind_Default:
-			case TokenKind_NoAst:
-			case TokenKind_Pragma:
-			case TokenKind_Identifier:
-				if (isClassSpecified)
-				{
-					err::setError("multiple class specifiers");
-					return false;
-				}
-
-				cls = m_module->m_classMgr.getClass(token->m_data.m_string);
-				nextToken();
-				isClassSpecified = true;
-				break;
-
-			default:
-				noMoreSpecifiers = true;
-			}
-
+			specifiers->m_flags |= SymbolNodeFlag_Nullable;
 			break;
 
 		default:
@@ -367,71 +257,80 @@ Parser::productionSpecifiers(ProductionSpecifiers* specifiers)
 		}
 	} while (!noMoreSpecifiers);
 
-	specifiers->m_symbolFlags = symbolFlags;
-
-	if (isClassSpecified)
-		specifiers->m_class = cls;
-
 	return true;
 }
 
-Class*
-Parser::classSpecifier()
+bool
+Parser::sizeSpecifier(
+	TokenKind tokenKind,
+	size_t* size
+	)
 {
-	bool result;
-
 	const Token* token = getToken();
-	ASSERT(token->m_token == TokenKind_Class);
+	ASSERT(token->m_token == tokenKind);
 
 	nextToken();
 
-	Class* cls;
-
-	token = getToken();
-
-	if (token->m_token != TokenKind_Identifier)
-	{
-		cls = m_module->m_classMgr.createUnnamedClass();
-	}
-	else
-	{
-		cls = m_module->m_classMgr.getClass(token->m_data.m_string);
-		nextToken();
-
-		token = getToken();
-		if (token->m_token != '{' && token->m_token != ':')
-			return cls;
-
-		if (cls->m_flags & ClassFlag_Defined)
-		{
-			err::setFormatStringError(
-				"redefinition of class '%s'",
-				cls->m_name.sz()
-				);
-			return NULL;
-		}
-	}
-
-	if (token->m_token == ':')
-	{
-		nextToken();
-
-		token = expectToken(TokenKind_Identifier);
-		if (!token)
-			return NULL;
-
-		cls->m_baseClass = m_module->m_classMgr.getClass(token->m_data.m_string);
-		cls->m_baseClass->m_flags |= ClassFlag_Used;
-
-		nextToken();
-	}
-
-	result = userCode('{', &cls->m_members, &cls->m_srcPos);
-	if (!result)
+	token = expectToken('(');
+	if (!token)
 		return NULL;
 
-	cls->m_flags |= ClassFlag_Defined;
-	return cls;
+	nextToken();
+
+	token = getToken();
+	switch (token->m_tokenKind)
+	{
+	case TokenKind_Default:
+		*size = 0;
+		break;
+
+	case TokenKind_Integer:
+		*size = token->m_data.m_integer;
+		break;
+
+	default:
+		err::setFormatStringError("invalid %s specifier", Token::getName(tokenKind));
+	}
+
+	nextToken();
+
+	token = expectToken(')');
+	if (!token)
+		return NULL;
+
+	nextToken();
+	return true;
+}
+
+bool
+Parser::nodeSpecifier(
+	TokenKind tokenKind,
+	GrammarNode** resultNode
+	)
+{
+	const Token* token = getToken();
+	ASSERT(token->m_token == tokenKind);
+
+	nextToken();
+
+	token = expectToken('(');
+	if (!token)
+		return NULL;
+
+	nextToken();
+
+	GrammarNode* node = alternative();
+	if (!node)
+		return NULL;
+
+	*resultNode = node;
+
+	token = expectToken(')');
+	if (!token)
+		return NULL;
+
+	nextToken();
+	return true;
 }
 
 bool
@@ -461,15 +360,17 @@ Parser::defineStatement()
 		case TokenKind_Identifier:
 		case TokenKind_Literal:
 			define->m_stringValue = token->m_data.m_string;
-			define->m_srcPos = token->m_pos;
-			nextToken();
 			break;
 
 		case TokenKind_Integer:
-			define->m_kind = DefineKind_Integer;
+			define->m_defineKind = DefineKind_Integer;
 			define->m_integerValue = token->m_data.m_integer;
-			define->m_srcPos = token->m_pos;
-			nextToken();
+			break;
+
+		case TokenKind_True:
+		case TokenKind_False:
+			define->m_defineKind = DefineKind_Bool;
+			define->m_integerValue = token->m_tokenKind == TokenKind_True;
 			break;
 
 		case '{':
@@ -483,6 +384,8 @@ Parser::defineStatement()
 			return false;
 		}
 
+		define->m_srcPos = token->m_pos;
+		nextToken();
 		break;
 
 	default:
@@ -502,23 +405,6 @@ Parser::defineStatement()
 }
 
 bool
-Parser::usingStatement()
-{
-	bool result;
-
-	const Token* token = getToken();
-	ASSERT(token->m_token == TokenKind_Using);
-
-	nextToken();
-
-	result = productionSpecifiers(&m_defaultProductionSpecifiers);
-	if (!result)
-		return false;
-
-	return true;
-}
-
-bool
 Parser::customizeSymbol(SymbolNode* node)
 {
 	bool result;
@@ -526,7 +412,7 @@ Parser::customizeSymbol(SymbolNode* node)
 	const Token* token = getToken();
 	if (token->m_token == '<')
 	{
-		result = userCode('<', &node->m_arg, &node->m_argLineCol);
+		result = userCode('<', &node->m_paramBlock, &node->m_paramLineCol);
 		if (!result)
 			return false;
 	}
@@ -535,23 +421,23 @@ Parser::customizeSymbol(SymbolNode* node)
 	{
 		token = getToken();
 
-		sl::String* string = NULL;
+		sl::StringRef* string = NULL;
 		lex::LineCol* lineCol = NULL;
 
 		switch (token->m_token)
 		{
 		case TokenKind_Local:
-			string = &node->m_local;
+			string = &node->m_localBlock;
 			lineCol = &node->m_localLineCol;
 			break;
 
 		case TokenKind_Enter:
-			string = &node->m_enter;
+			string = &node->m_enterBlock;
 			lineCol = &node->m_enterLineCol;
 			break;
 
 		case TokenKind_Leave:
-			string = &node->m_leave;
+			string = &node->m_leaveBlock;
 			lineCol = &node->m_leaveLineCol;
 			break;
 		}
@@ -575,30 +461,30 @@ Parser::customizeSymbol(SymbolNode* node)
 			return false;
 	}
 
-	if (!node->m_arg.isEmpty())
+	if (!node->m_paramBlock.isEmpty())
 	{
-		result = processFormalArgList(node);
+		result = processParamBlock(node);
 		if (!result)
 			return false;
 	}
 
-	if (!node->m_local.isEmpty())
+	if (!node->m_localBlock.isEmpty())
 	{
-		result = processLocalList(node);
+		result = processLocalBlock(node);
 		if (!result)
 			return false;
 	}
 
-	if (!node->m_enter.isEmpty())
+	if (!node->m_enterBlock.isEmpty())
 	{
-		result = processSymbolEventHandler(node, &node->m_enter);
+		result = processEnterLeaveBlock(node, &node->m_enterBlock);
 		if (!result)
 			return false;
 	}
 
-	if (!node->m_leave.isEmpty())
+	if (!node->m_leaveBlock.isEmpty())
 	{
-		result = processSymbolEventHandler(node, &node->m_leave);
+		result = processEnterLeaveBlock(node, &node->m_leaveBlock);
 		if (!result)
 			return false;
 	}
@@ -607,16 +493,13 @@ Parser::customizeSymbol(SymbolNode* node)
 }
 
 bool
-Parser::processFormalArgList(SymbolNode* node)
+Parser::processParamBlock(SymbolNode* node)
 {
-	const Token* token;
-
-	sl::String resultString;
-
 	Lexer lexer;
-	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), "formal-arg-list", node->m_arg);
-
-	const char* p = node->m_arg;
+	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), "param-list", node->m_paramBlock);
+	const char* p = node->m_paramBlock.cp();
+	const Token* token;
+	sl::String resultString;
 
 	for (;;)
 	{
@@ -645,8 +528,8 @@ Parser::processFormalArgList(SymbolNode* node)
 
 		lexer.nextToken();
 
-		node->m_argNameList.insertTail(name);
-		node->m_argNameSet.visit(name);
+		node->m_paramNameList.insertTail(name);
+		node->m_paramNameSet.visit(name);
 
 		token = lexer.getToken();
 		if (!token->m_token)
@@ -661,22 +544,18 @@ Parser::processFormalArgList(SymbolNode* node)
 
 	ASSERT(!token->m_token);
 	resultString.append(p, token->m_pos.m_p - p);
-
-	node->m_arg = resultString;
+	node->m_paramBlock = resultString;
 	return true;
 }
 
 bool
-Parser::processLocalList(SymbolNode* node)
+Parser::processLocalBlock(SymbolNode* node)
 {
-	const Token* token;
-
-	sl::String resultString;
-
 	Lexer lexer;
-	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), "local-list", node->m_local);
-
-	const char* p = node->m_local;
+	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), "local-list", node->m_localBlock);
+	const char* p = node->m_localBlock.cp();
+	const Token* token;
+	sl::String resultString;
 
 	for (;;)
 	{
@@ -704,25 +583,21 @@ Parser::processLocalList(SymbolNode* node)
 
 	ASSERT(!token->m_token);
 	resultString.append(p, token->m_pos.m_p - p);
-
-	node->m_local = resultString;
+	node->m_localBlock = resultString;
 	return true;
 }
 
 bool
-Parser::processSymbolEventHandler(
+Parser::processEnterLeaveBlock(
 	SymbolNode* node,
-	sl::String* string
+	sl::StringRef* string
 	)
 {
-	const Token* token;
-
-	sl::String resultString;
-
 	Lexer lexer;
 	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), "event-handler", *string);
-
-	const char* p = *string;
+	const char* p = string->cp();
+	const Token* token;
+	sl::String resultString;
 
 	for (;;)
 	{
@@ -746,12 +621,12 @@ Parser::processSymbolEventHandler(
 				break;
 			}
 
-			it = node->m_argNameSet.find(token->m_data.m_string);
+			it = node->m_paramNameSet.find(token->m_data.m_string);
 			if (it)
 			{
 				resultString.append(p, token->m_pos.m_p - p);
 				resultString.appendFormat(
-					"$arg.%s",
+					"$param.%s",
 					token->m_data.m_string.sz()
 					);
 				break;
@@ -782,7 +657,6 @@ Parser::processSymbolEventHandler(
 
 	ASSERT(!token->m_token);
 	resultString.append(p, token->m_pos.m_p - p);
-
 	*string = resultString;
 	return true;
 }
@@ -875,14 +749,12 @@ Parser::production(const ProductionSpecifiers* specifiers)
 
 	nextToken();
 
-	symbol->m_class = specifiers->m_class;
-	symbol->m_flags |= specifiers->m_symbolFlags;
-
-	if (symbol->m_class)
-		symbol->m_class->m_flags |= ClassFlag_Used;
+	symbol->m_valueBlock = specifiers->m_valueBlock;
+	symbol->m_valueLineCol = specifiers->m_valueLineCol;
+	symbol->m_flags |= specifiers->m_flags;
 
 	if (symbol->m_flags & SymbolNodeFlag_Pragma)
-		m_module->m_nodeMgr.m_startPragmaSymbol.m_productionArray.append(symbol);
+		m_module->m_nodeMgr.m_pragmaStartSymbol.m_productionArray.append(symbol);
 
 	if ((symbol->m_flags & SymbolNodeFlag_Start) && !m_module->m_nodeMgr.m_primaryStartSymbol)
 		m_module->m_nodeMgr.m_primaryStartSymbol = symbol;
@@ -927,7 +799,7 @@ Parser::alternative()
 			return NULL;
 
 		if (!temp)
-			if (node->m_kind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Named))
+			if (node->m_nodeKind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_User))
 			{
 				temp = (SymbolNode*)node;
 			}
@@ -956,7 +828,9 @@ isFirstOfPrimary(int token)
 	case TokenKind_Identifier:
 	case TokenKind_Integer:
 	case TokenKind_Any:
-	case TokenKind_Resolver:
+	case TokenKind_Catch:
+	case TokenKind_Lookahead:
+	case TokenKind_Resolve:
 	case '{':
 	case '(':
 	case '.':
@@ -988,7 +862,7 @@ Parser::sequence()
 			return NULL;
 
 		if (!temp)
-			if (node->m_kind == NodeKind_Sequence)
+			if (node->m_nodeKind == NodeKind_Sequence)
 			{
 				temp = (SequenceNode*)node;
 			}
@@ -1045,9 +919,6 @@ Parser::primary()
 	case TokenKind_Any:
 	case TokenKind_Integer:
 		node = beacon();
-		if (!node)
-			return NULL;
-
 		break;
 
 	case TokenKind_Epsilon:
@@ -1075,7 +946,7 @@ Parser::primary()
 
 			setGrammarNodeSrcPos(sequence, node->m_srcPos);
 
-			sl::String string;
+			sl::StringRef string;
 			result = userCode('<', &string, &argument->m_srcPos);
 			if (!result)
 				return NULL;
@@ -1104,20 +975,21 @@ Parser::primary()
 		node = actionNode;
 		break;
 
-	case TokenKind_Resolver:
-		node = resolver();
-		if (!node)
-			return NULL;
+	case TokenKind_Catch:
+		node = catcher();
+		break;
 
+	case TokenKind_Lookahead:
+		node = lookahead();
+		break;
+
+	case TokenKind_Resolve:
+		node = resolver();
 		break;
 
 	case '(':
 		nextToken();
-
 		node = alternative();
-		if (!node)
-			return NULL;
-
 		token = expectToken(')');
 		if (!token)
 			return NULL;
@@ -1185,56 +1057,70 @@ Parser::beacon()
 }
 
 SymbolNode*
+Parser::catcher()
+{
+	GrammarNode* synchronizer;
+	bool result = nodeSpecifier(TokenKind_Catch, &synchronizer);
+	if (!result)
+		return NULL;
+
+	GrammarNode* production = sequence();
+	if (!production)
+		return NULL;
+
+	SymbolNode* temp = m_module->m_nodeMgr.createCatchSymbolNode();
+	temp->m_synchronizer = synchronizer;
+	temp->m_productionArray.copy(production);
+	setGrammarNodeSrcPos(temp, production->m_srcPos);
+	return temp;
+}
+
+GrammarNode*
+Parser::lookahead()
+{
+	size_t lookaheadLimit;
+	bool result = sizeSpecifier(TokenKind_Lookahead, &lookaheadLimit);
+	if (!result)
+		return NULL;
+
+	GrammarNode* production = sequence();
+	if (!production)
+		return NULL;
+
+	if (!lookaheadLimit || lookaheadLimit == m_module->m_nodeMgr.m_lookaheadLimit)
+		return production;
+
+	if (production->m_nodeKind >= NodeKind_Symbol &&
+		!(production->m_flags & SymbolNodeFlag_User)) // only used in this production, can adjust directly
+	{
+		production->m_lookaheadLimit = lookaheadLimit;
+		return production;
+	}
+
+	SymbolNode* temp = m_module->m_nodeMgr.createTempSymbolNode();
+	temp->m_flags |= SymbolNodeFlag_Lookahead; // prevent temp symbol production merging
+	temp->m_lookaheadLimit = lookaheadLimit ? lookaheadLimit : m_cmdLine->m_lookaheadLimit;
+	temp->addProduction(production);
+	setGrammarNodeSrcPos(temp, production->m_srcPos);
+	return temp;
+}
+
+SymbolNode*
 Parser::resolver()
 {
-	const Token* token = getToken();
-	ASSERT(token->m_token == TokenKind_Resolver);
-
-	lex::RagelTokenPos pos = token->m_pos;
-
-	nextToken();
-
-	token = expectToken('(');
-	if (!token)
+	GrammarNode* resolver;
+	bool result = nodeSpecifier(TokenKind_Resolve, &resolver);
+	if (!result)
 		return NULL;
-
-	nextToken();
-
-	GrammarNode* resolver = alternative();
-	if (!resolver)
-		return NULL;
-
-	token = expectToken(')');
-	if (!token)
-		return NULL;
-
-	nextToken();
 
 	size_t priority = 0;
 
-	token = getToken();
+	const Token* token = getToken();
 	if (token->m_token == TokenKind_Priority)
 	{
-		nextToken();
-
-		token = expectToken('(');
-		if (!token)
+		result = sizeSpecifier(TokenKind_Priority, &priority);
+		if (!result)
 			return NULL;
-
-		nextToken();
-
-		token = expectToken(TokenKind_Integer);
-		if (!token)
-			return NULL;
-
-		priority = token->m_data.m_integer;
-		nextToken();
-
-		token = expectToken(')');
-		if (!token)
-			return NULL;
-
-		nextToken();
 	}
 
 	GrammarNode* production = sequence();
@@ -1245,16 +1131,14 @@ Parser::resolver()
 	temp->m_resolver = resolver;
 	temp->m_resolverPriority = priority;
 	temp->addProduction(production);
-
-	setGrammarNodeSrcPos(temp, pos);
-
+	setGrammarNodeSrcPos(temp, production->m_srcPos);
 	return temp;
 }
 
 bool
 Parser::userCode(
 	int openBracket,
-	sl::String* string,
+	sl::StringRef* string,
 	lex::SrcPos* srcPos
 	)
 {
@@ -1269,7 +1153,7 @@ Parser::userCode(
 bool
 Parser::userCode(
 	int openBracket,
-	sl::String* string,
+	sl::StringRef* string,
 	lex::LineCol* lineCol
 	)
 {
@@ -1315,6 +1199,7 @@ Parser::userCode(
 	}
 
 	const char* begin = token->m_pos.m_p + token->m_pos.m_length;
+
 	*lineCol = token->m_pos;
 
 	nextToken();
@@ -1350,12 +1235,42 @@ Parser::userCode(
 		nextToken();
 	}
 
-	size_t end = token->m_pos.m_offset;
+	const char* end = token->m_pos.m_p;
+
+	// skip the first and the last empty lines
+
+	for (const char* p = begin; p < end; p++)
+	{
+		uchar_t c = *p;
+		if (c == '\n')
+		{
+			begin = p + 1;
+			lineCol->m_line++;
+			lineCol->m_col = 0;
+			break;
+		}
+
+		if (!isspace(c))
+			break;
+	}
+
+	for (const char* p = end - 1; p > begin; p--)
+	{
+		uchar_t c = *p;
+		if (c == '\n')
+		{
+			end = p;
+			break;
+		}
+
+		if (!isspace(c))
+			break;
+	}
 
 	token = getToken();
 	ASSERT(token->m_token == closeBracket);
 
-	*string = sl::String(begin, token->m_pos.m_p - begin);
+	*string = sl::StringRef(begin, end - begin).getRightTimmedString();
 
 	gotoState(getMachineState(LexerMachine_Main), token, GotoStateKind_EatToken);
 

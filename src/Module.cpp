@@ -19,24 +19,22 @@
 
 Module::Module()
 {
-	m_lookaheadLimit = 0;
-	m_lookahead = 1;
+	m_maxUsedLookahead = 1;
 }
 
 void
 Module::clear()
 {
+	m_sourceCache.clear();
 	m_parseTable.clear();
-	m_classMgr.clear();
 	m_defineMgr.clear();
 	m_nodeMgr.clear();
 	m_importList.clear();
-	m_lookahead = 1;
-	m_lookaheadLimit = 0;
+	m_maxUsedLookahead = 1;
 }
 
 bool
-Module::build(CmdLine* cmdLine)
+Module::build(const CmdLine* cmdLine)
 {
 	bool result;
 
@@ -48,14 +46,10 @@ Module::build(CmdLine* cmdLine)
 		return false;
 	}
 
-	if (!m_classMgr.verify())
-		return false;
-
 	// check reachability from start symbols
 
 	m_nodeMgr.markReachableNodes();
 	m_nodeMgr.deleteUnreachableNodes();
-	m_classMgr.deleteUnreachableClasses();
 
 	// after marking we can assign default start symbol
 
@@ -101,42 +95,32 @@ Module::build(CmdLine* cmdLine)
 
 	// resolve conflicts
 
-	LaDfaBuilder builder(
-		&m_nodeMgr,
-		&m_parseTable,
-		m_lookaheadLimit ? m_lookaheadLimit : cmdLine->m_lookaheadLimit,
-		cmdLine->m_conflictDepthLimit
-		);
-
-	size_t tokenCount = m_nodeMgr.m_tokenArray.getCount();
-
+	LaDfaBuilder builder(cmdLine, &m_nodeMgr, &m_parseTable);
 	sl::Iterator<ConflictNode> conflictIt = m_nodeMgr.m_conflictList.getHead();
 	for (; conflictIt; conflictIt++)
 	{
 		ConflictNode* conflict = *conflictIt;
 
-		conflict->m_resultNode = builder.build(cmdLine, conflict);
+		conflict->m_resultNode = builder.build(conflict);
 		if (!conflict->m_resultNode)
 			return false;
 	}
 
 	// replace conflicts with dfas or with direct productions (could happen in conflicts with epsilon productions or with anytoken)
 
+	size_t tokenCount = m_nodeMgr.m_tokenArray.getCount();
 	conflictIt = m_nodeMgr.m_conflictList.getHead();
 	for (; conflictIt; conflictIt++)
 	{
 		ConflictNode* conflict = *conflictIt;
 		Node** production = &m_parseTable[conflict->m_symbol->m_index * tokenCount + conflict->m_token->m_index];
-
 		ASSERT(*production == conflict);
 
 		*production = conflict->m_resultNode;
 	}
 
-	m_lookahead = builder.getLookahead();
-
 	m_nodeMgr.indexLaDfaNodes();
-
+	m_maxUsedLookahead = builder.getMaxUsedLookahead();
 	return true;
 }
 
@@ -145,7 +129,7 @@ Module::build(CmdLine* cmdLine)
 void
 Module::trace()
 {
-	printf("lookahead = %d\n", m_lookahead);
+	printf("LOOKAHEAD: %d\n", m_maxUsedLookahead);
 	m_nodeMgr.trace();
 }
 
@@ -172,8 +156,6 @@ Module::generateBnfString()
 {
 	sl::String string;
 	sl::String sequenceString;
-
-	string.format("lookahead = %d;\n\n", m_lookaheadLimit);
 
 	sl::Iterator<SymbolNode> node = m_nodeMgr.m_namedSymbolList.getHead();
 	for (; node; node++)
@@ -220,50 +202,9 @@ Module::generateBnfString()
 void
 Module::luaExport(lua::LuaState* luaState)
 {
-	luaExportDefines(luaState);
-	luaExportClassTable(luaState);
-	luaExportParseTable(luaState);
-	luaState->setGlobalInteger("Lookahead", m_lookahead);
+	m_defineMgr.luaExport(luaState);
 	m_nodeMgr.luaExport(luaState);
-}
-
-void
-Module::luaExportDefines(lua::LuaState* luaState)
-{
-	sl::Iterator<Define> defineIt = m_defineMgr.getHead();
-	for (; defineIt; defineIt++)
-	{
-		Define* define = *defineIt;
-
-		switch (define->m_kind)
-		{
-		case DefineKind_String:
-			luaState->setGlobalString(define->m_name, define->m_stringValue);
-			break;
-
-		case DefineKind_Integer:
-			luaState->setGlobalInteger(define->m_name, define->m_integerValue);
-			break;
-		}
-	}
-}
-
-void
-Module::luaExportClassTable(lua::LuaState* luaState)
-{
-	size_t count = m_classMgr.getCount();
-
-	luaState->createTable(count);
-
-	sl::Iterator<Class> it = m_classMgr.getHead();
-	for (size_t i = 1; it; it++, i++)
-	{
-		Class* cls = *it;
-		cls->luaExport(luaState);
-		luaState->setArrayElement(i);
-	}
-
-	luaState->setGlobal("ClassTable");
+	luaExportParseTable(luaState);
 }
 
 void

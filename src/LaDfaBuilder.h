@@ -110,35 +110,29 @@ public:
 class LaDfaBuilder
 {
 protected:
-	sl::List<LaDfaState> m_stateList;
+	const CmdLine* m_cmdLine;
 	NodeMgr* m_nodeMgr;
+	sl::List<LaDfaState> m_stateList;
 	sl::Array<Node*>* m_parseTable;
-	size_t m_lookeaheadLimit;
-	size_t m_lookeahead;
-	size_t m_conflictDepthLimit;
+	size_t m_maxUsedLookahead;
 
 public:
 	LaDfaBuilder(
+		const CmdLine* cmdLine,
 		NodeMgr* nodeMgr,
-		sl::Array<Node*>* parseTable,
-		size_t lookeaheadLimit,
-		size_t conflictDepthLimit
+		sl::Array<Node*>* parseTable
 		);
 
 	Node*
-	build(
-		CmdLine* cmdLine,
-		ConflictNode* conflict,
-		size_t* lookahead = NULL
-		); // returns DFA or immediate production
+	build(ConflictNode* conflict); // returns DFA or immediate production
 
 	void
 	trace();
 
 	size_t
-	getLookahead()
+	getMaxUsedLookahead()
 	{
-		return m_lookeahead;
+		return m_maxUsedLookahead;
 	}
 
 protected:

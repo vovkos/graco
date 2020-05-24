@@ -17,7 +17,7 @@
 bool
 ParseTableBuilder::build()
 {
-	calcFirstFollow();
+	calcGrammarProps();
 
 	// build parse table
 
@@ -32,7 +32,19 @@ ParseTableBuilder::build()
 	{
 		SymbolNode* node = m_nodeMgr->m_symbolArray[i];
 
-		if (node->m_flags & SymbolNodeFlag_Named)
+		if (node->m_synchronizer)
+		{
+			ASSERT(node->m_productionArray.getCount() == 1);
+			GrammarNode* production = node->m_productionArray[0];
+			if (!production->isNullable())
+			{
+				err::setError("'synchronize' applied to a non-nullable production");
+				lex::pushSrcPosError(node->m_srcPos);
+				return false;
+			}
+		}
+
+		if (node->m_flags & SymbolNodeFlag_User)
 		{
 			if (node->isNullable() && !(node->m_flags & SymbolNodeFlag_Nullable))
 			{
@@ -47,7 +59,7 @@ ParseTableBuilder::build()
 			if (!node->isNullable() && (node->m_flags & SymbolNodeFlag_Nullable))
 			{
 				err::setFormatStringError(
-					"'%s': marked as 'nullable' but is not nullable",
+					"'%s': not nullable but marked as 'nullable'",
 					node->m_name.sz()
 					);
 				lex::pushSrcPosError(node->m_srcPos);
@@ -180,15 +192,18 @@ ParseTableBuilder::addParseTableEntry(
 		return 0;
 
 	ConflictNode* conflict;
-	if (oldProduction->m_kind != NodeKind_Conflict)
+	if (oldProduction->m_nodeKind != NodeKind_Conflict)
 	{
+		GrammarNode* firstProduction = (GrammarNode*)oldProduction;
+
 		conflict = m_nodeMgr->createConflictNode();
 		conflict->m_symbol = symbol;
 		conflict->m_token = token;
 
 		conflict->m_productionArray.setCount(2);
-		conflict->m_productionArray[0] = (GrammarNode*)oldProduction;
+		conflict->m_productionArray[0] = firstProduction;
 		conflict->m_productionArray[1] = production;
+		conflict->m_lookaheadLimit = AXL_MAX(firstProduction->m_lookaheadLimit, production->m_lookaheadLimit);
 
 		*productionSlot = conflict; // later will be replaced with lookahead DFA
 	}
@@ -203,39 +218,18 @@ ParseTableBuilder::addParseTableEntry(
 				break;
 
 		if (i >= count) // not found
+		{
 			conflict->m_productionArray.append(production);
+			if (conflict->m_lookaheadLimit < production->m_lookaheadLimit)
+				conflict->m_lookaheadLimit = production->m_lookaheadLimit;
+		}
 	}
 
 	return conflict->m_productionArray.getCount();
 }
 
-bool
-propagateParentChild(
-	GrammarNode* parent,
-	GrammarNode* child
-	)
-{
-	bool hasChanged = false;
-
-	if (parent->m_firstSet.merge(child->m_firstSet, sl::BitOpKind_Or))
-		hasChanged = true;
-
-	if (child->m_followSet.merge(parent->m_followSet, sl::BitOpKind_Or))
-		hasChanged = true;
-
-	if (child->isNullable())
-		if (parent->markNullable())
-			hasChanged = true;
-
-	if (parent->isFinal())
-		if (child->markFinal())
-			hasChanged = true;
-
-	return hasChanged;
-}
-
 void
-ParseTableBuilder::calcFirstFollow()
+ParseTableBuilder::calcGrammarProps()
 {
 	bool hasChanged;
 
@@ -254,8 +248,7 @@ ParseTableBuilder::calcFirstFollow()
 	for (size_t i = 0; i < symbolCount; i++)
 	{
 		SymbolNode* node = m_nodeMgr->m_symbolArray[i];
-		node->m_firstSet.setBitCount(tokenCount);
-		node->m_followSet.setBitCount(tokenCount);
+		node->initializeFirstFollowSets(tokenCount);
 
 		if (node->m_resolver)
 			node->m_resolver->m_followSet.setBitResize(1); // set anytoken FOLLOW for resolver
@@ -264,154 +257,62 @@ ParseTableBuilder::calcFirstFollow()
 			node->markFinal();
 	}
 
-	sl::Iterator<SequenceNode> sequence = m_nodeMgr->m_sequenceList.getHead();
-	for (; sequence; sequence++)
-	{
-		sequence->m_firstSet.setBitCount(tokenCount);
-		sequence->m_followSet.setBitCount(tokenCount);
-	}
+	sl::Iterator<SequenceNode> sequenceIt = m_nodeMgr->m_sequenceList.getHead();
+	for (; sequenceIt; sequenceIt++)
+		sequenceIt->initializeFirstFollowSets(tokenCount);
 
-	sl::Iterator<BeaconNode> beacon = m_nodeMgr->m_beaconList.getHead();
-	for (; beacon; beacon++)
-	{
-		beacon->m_firstSet.setBitCount(tokenCount);
-		beacon->m_followSet.setBitCount(tokenCount);
-	}
+	sl::Iterator<BeaconNode> beaconIt = m_nodeMgr->m_beaconList.getHead();
+	for (; beaconIt; beaconIt++)
+		beaconIt->initializeFirstFollowSets(tokenCount);
+
+	sl::Iterator<GrammarNode> wrNodeIt = m_nodeMgr->m_weaklyReachableNodeList.getHead();
+	for (; wrNodeIt; wrNodeIt++)
+		wrNodeIt->initializeFirstFollowSets(tokenCount);
 
 	do
 	{
 		hasChanged = false;
 
 		for (size_t i = 0; i < symbolCount; i++)
-		{
-			SymbolNode* node = m_nodeMgr->m_symbolArray[i];
-			size_t childrenCount = node->m_productionArray.getCount();
-
-			for (size_t j = 0; j < childrenCount; j++)
-			{
-				GrammarNode* production = node->m_productionArray[j];
-				if (propagateParentChild(node, production))
-					hasChanged = true;
-			}
-		}
-
-		sequence = m_nodeMgr->m_sequenceList.getHead();
-		for (; sequence; sequence++)
-		{
-			SequenceNode* node = *sequence;
-			size_t childrenCount = node->m_sequence.getCount();
-
-			// FIRST between parent-child
-
-			bool isNullable = true;
-			for (size_t j = 0; j < childrenCount; j++)
-			{
-				GrammarNode* child = node->m_sequence[j];
-				if (node->m_firstSet.merge(child->m_firstSet, sl::BitOpKind_Or))
-					hasChanged = true;
-
-				if (!child->isNullable())
-				{
-					isNullable = false;
-					break;
-				}
-			}
-
-			if (isNullable) // all nullable
-				if (node->markNullable())
-					hasChanged = true;
-
-			// FOLLOW between parent-child
-
-			for (intptr_t j = childrenCount - 1; j >= 0; j--)
-			{
-				GrammarNode* child = node->m_sequence[j];
-				if (child->m_followSet.merge(node->m_followSet, sl::BitOpKind_Or))
-					hasChanged = true;
-
-				if (node->isFinal())
-					if (child->markFinal())
-						hasChanged = true;
-
-				if (!child->isNullable())
-					break;
-			}
-
-			// FOLLOW between child-child
-
-			if (childrenCount >= 2)
-				for (size_t j = 0; j < childrenCount - 1; j++)
-				{
-					GrammarNode* child = node->m_sequence[j];
-					for (size_t k = j + 1; k < childrenCount; k++)
-					{
-						GrammarNode* next = node->m_sequence[k];
-						if (child->m_followSet.merge(next->m_firstSet, sl::BitOpKind_Or))
-							hasChanged = true;
-
-						if (!next->isNullable())
-							break;
-					}
-				}
-		}
-
-		beacon = m_nodeMgr->m_beaconList.getHead();
-		for (; beacon; beacon++)
-		{
-			if (propagateParentChild(*beacon, beacon->m_target))
+			if (m_nodeMgr->m_symbolArray[i]->propagateGrammarProps())
 				hasChanged = true;
-		}
+
+		sequenceIt = m_nodeMgr->m_sequenceList.getHead();
+		for (; sequenceIt; sequenceIt++)
+			if (sequenceIt->propagateGrammarProps())
+				hasChanged = true;
+
+		beaconIt = m_nodeMgr->m_beaconList.getHead();
+		for (; beaconIt; beaconIt++)
+			if (beaconIt->propagateGrammarProps())
+				hasChanged = true;
+
+		wrNodeIt = m_nodeMgr->m_weaklyReachableNodeList.getHead();
+		for (; wrNodeIt; wrNodeIt++)
+			if (wrNodeIt->propagateGrammarProps())
+				hasChanged = true;
 
 	} while (hasChanged);
 
-	buildFirstFollowArrays(&m_nodeMgr->m_anyTokenNode);
+	m_nodeMgr->m_anyTokenNode.buildFirstFollowArrays(m_nodeMgr->m_tokenArray);
 
 	for (size_t i = 2; i < tokenCount; i++)
-	{
-		SymbolNode* node = m_nodeMgr->m_tokenArray[i];
-		buildFirstFollowArrays(node);
-	}
+		m_nodeMgr->m_tokenArray[i]->buildFirstFollowArrays(m_nodeMgr->m_tokenArray);
 
 	for (size_t i = 0; i < symbolCount; i++)
-	{
-		SymbolNode* node = m_nodeMgr->m_symbolArray[i];
-		buildFirstFollowArrays(node);
-	}
+		m_nodeMgr->m_symbolArray[i]->buildFirstFollowArrays(m_nodeMgr->m_tokenArray);
 
-	sequence = m_nodeMgr->m_sequenceList.getHead();
-	for (; sequence; sequence++)
-		buildFirstFollowArrays(*sequence);
+	sequenceIt = m_nodeMgr->m_sequenceList.getHead();
+	for (; sequenceIt; sequenceIt++)
+		sequenceIt->buildFirstFollowArrays(m_nodeMgr->m_tokenArray);
 
-	beacon = m_nodeMgr->m_beaconList.getHead();
-	for (; beacon; beacon++)
-		buildFirstFollowArrays(*beacon);
-}
+	beaconIt = m_nodeMgr->m_beaconList.getHead();
+	for (; beaconIt; beaconIt++)
+		beaconIt->buildFirstFollowArrays(m_nodeMgr->m_tokenArray);
 
-void
-ParseTableBuilder::buildFirstFollowArrays(GrammarNode* node)
-{
-	node->m_firstArray.clear();
-	node->m_followArray.clear();
-
-	for (
-		size_t i = node->m_firstSet.findBit(0);
-		i != -1;
-		i = node->m_firstSet.findBit(i + 1)
-		)
-	{
-		SymbolNode* token = m_nodeMgr->m_tokenArray[i];
-		node->m_firstArray.append(token);
-	}
-
-	for (
-		size_t i = node->m_followSet.findBit(0);
-		i != -1;
-		i = node->m_followSet.findBit(i + 1)
-		)
-	{
-		SymbolNode* token = m_nodeMgr->m_tokenArray[i];
-		node->m_followArray.append(token);
-	}
+	wrNodeIt = m_nodeMgr->m_weaklyReachableNodeList.getHead();
+	for (; wrNodeIt; wrNodeIt++)
+		wrNodeIt->buildFirstFollowArrays(m_nodeMgr->m_tokenArray);
 }
 
 //..............................................................................

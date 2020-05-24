@@ -18,21 +18,21 @@ enum TokenKind
 	TokenKind_Eof = 0,
 	TokenKind_Error = -1,
 	TokenKind_Identifier = 256,
+	TokenKind_True,
+	TokenKind_False,
 	TokenKind_Integer,
 	TokenKind_Literal,
-	TokenKind_Lookahead,
 	TokenKind_Import,
-	TokenKind_Using,
-	TokenKind_Class,
-	TokenKind_NoAst,
+	TokenKind_Struct,
 	TokenKind_Default,
-	TokenKind_Arg,
 	TokenKind_Local,
 	TokenKind_Enter,
 	TokenKind_Leave,
 	TokenKind_Start,
 	TokenKind_Pragma,
-	TokenKind_Resolver,
+	TokenKind_Catch,
+	TokenKind_Lookahead,
+	TokenKind_Resolve,
 	TokenKind_Priority,
 	TokenKind_Any,
 	TokenKind_Epsilon,
@@ -49,21 +49,21 @@ AXL_LEX_BEGIN_TOKEN_NAME_MAP(TokenName)
 	AXL_LEX_TOKEN_NAME(TokenKind_Eof,          "eof")
 	AXL_LEX_TOKEN_NAME(TokenKind_Error,        "error")
 	AXL_LEX_TOKEN_NAME(TokenKind_Identifier,   "identifier")
+	AXL_LEX_TOKEN_NAME(TokenKind_True,         "true")
+	AXL_LEX_TOKEN_NAME(TokenKind_False,        "false")
 	AXL_LEX_TOKEN_NAME(TokenKind_Integer,      "integer-constant")
 	AXL_LEX_TOKEN_NAME(TokenKind_Literal,      "string-literal")
-	AXL_LEX_TOKEN_NAME(TokenKind_Lookahead,    "lookahead")
 	AXL_LEX_TOKEN_NAME(TokenKind_Import,       "import")
-	AXL_LEX_TOKEN_NAME(TokenKind_Using,        "using")
-	AXL_LEX_TOKEN_NAME(TokenKind_Class,        "class")
-	AXL_LEX_TOKEN_NAME(TokenKind_NoAst,        "noast")
+	AXL_LEX_TOKEN_NAME(TokenKind_Struct,       "struct")
 	AXL_LEX_TOKEN_NAME(TokenKind_Default,      "default")
-	AXL_LEX_TOKEN_NAME(TokenKind_Arg,          "arg")
 	AXL_LEX_TOKEN_NAME(TokenKind_Local,        "local")
 	AXL_LEX_TOKEN_NAME(TokenKind_Enter,        "enter")
 	AXL_LEX_TOKEN_NAME(TokenKind_Leave,        "leave")
 	AXL_LEX_TOKEN_NAME(TokenKind_Start,        "start")
 	AXL_LEX_TOKEN_NAME(TokenKind_Pragma,       "pragma")
-	AXL_LEX_TOKEN_NAME(TokenKind_Resolver,     "resolver")
+	AXL_LEX_TOKEN_NAME(TokenKind_Catch,        "catch")
+	AXL_LEX_TOKEN_NAME(TokenKind_Lookahead,    "lookahead")
+	AXL_LEX_TOKEN_NAME(TokenKind_Resolve,      "resolve")
 	AXL_LEX_TOKEN_NAME(TokenKind_Priority,     "priority")
 	AXL_LEX_TOKEN_NAME(TokenKind_Any,          "any")
 	AXL_LEX_TOKEN_NAME(TokenKind_Epsilon,      "epsilon")

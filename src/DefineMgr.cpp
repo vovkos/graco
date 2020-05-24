@@ -28,4 +28,29 @@ DefineMgr::getDefine(const sl::StringRef& name)
 	return define;
 }
 
+void
+DefineMgr::luaExport(lua::LuaState* luaState)
+{
+	sl::Iterator<Define> it = m_defineList.getHead();
+	for (; it; it++)
+	{
+		Define* define = *it;
+
+		switch (define->m_defineKind)
+		{
+		case DefineKind_String:
+			luaState->setGlobalString(define->m_name, define->m_stringValue);
+			break;
+
+		case DefineKind_Integer:
+			luaState->setGlobalInteger(define->m_name, define->m_integerValue);
+			break;
+
+		case DefineKind_Bool:
+			luaState->setGlobalBoolean(define->m_name, define->m_integerValue != 0);
+			break;
+		}
+	}
+}
+
 //..............................................................................

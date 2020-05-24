@@ -29,12 +29,13 @@ protected:
 	GrammarNode m_epsilonNode;
 	SymbolNode m_eofTokenNode;
 	SymbolNode m_anyTokenNode;
-	SymbolNode m_startPragmaSymbol;
+	SymbolNode m_pragmaStartSymbol;
 	SymbolNode* m_primaryStartSymbol;
 
 	sl::List<SymbolNode> m_charTokenList;
 	sl::List<SymbolNode> m_namedTokenList;
 	sl::List<SymbolNode> m_namedSymbolList;
+	sl::List<SymbolNode> m_catchSymbolList;
 	sl::List<SymbolNode> m_tempSymbolList;
 	sl::List<SequenceNode> m_sequenceList;
 	sl::List<BeaconNode> m_beaconList;
@@ -43,10 +44,12 @@ protected:
 	sl::List<ArgumentNode> m_argumentList;
 	sl::List<ConflictNode> m_conflictList;
 	sl::List<LaDfaNode> m_laDfaList;
+	sl::List<GrammarNode> m_weaklyReachableNodeList;
 
-	sl::Array<SymbolNode*> m_tokenArray;  // char tokens + named tokens
-	sl::Array<SymbolNode*> m_symbolArray; // named symbols + temp symbols
+	sl::Array<SymbolNode*> m_tokenArray;        // char tokens + named tokens
+	sl::Array<SymbolNode*> m_symbolArray;       // named symbols + temp symbols
 
+	size_t m_lookaheadLimit;
 	size_t m_masterCount;
 
 public:
@@ -69,6 +72,9 @@ public:
 
 	SymbolNode*
 	getSymbolNode(const sl::StringRef& name);
+
+	SymbolNode*
+	createCatchSymbolNode();
 
 	SymbolNode*
 	createTempSymbolNode();
@@ -119,9 +125,6 @@ public:
 	trace();
 
 	void
-	luaExport();
-
-	void
 	markReachableNodes();
 
 	void
@@ -152,14 +155,9 @@ public:
 	indexLaDfaNodes();
 
 protected:
+	template <typename T>
 	void
-	luaExportTokenTable(lua::LuaState* luaState);
-
-	void
-	luaExportSymbolTable(lua::LuaState* luaState);
-
-	void
-	luaExportSequenceTable(lua::LuaState* luaState);
+	deleteUnreachableNodes(sl::List<T>* list);
 
 	void
 	luaExportLaDfaTable(lua::LuaState* luaState);

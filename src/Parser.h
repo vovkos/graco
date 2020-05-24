@@ -20,52 +20,41 @@
 class Parser: protected Lexer
 {
 protected:
-	class ProductionSpecifiers
+	struct ProductionSpecifiers
 	{
-	public:
-		Class* m_class;
-		int m_symbolFlags;
+		sl::StringRef m_valueBlock;
+		lex::LineCol m_valueLineCol;
+		uint_t m_flags;
 
-	public:
 		ProductionSpecifiers()
 		{
-			reset();
-		}
-
-		void reset()
-		{
-			m_class = NULL;
-			m_symbolFlags = 0;
+			m_flags = 0;
 		}
 	};
 
 protected:
-	sl::String m_dir;
-	Module* m_module;
 	const CmdLine* m_cmdLine;
-	ProductionSpecifiers m_defaultProductionSpecifiers;
+	Module* m_module;
+	sl::String m_dir;
 
 public:
-	Parser()
+	Parser(
+		const CmdLine* cmdLine,
+		Module* module
+		)
 	{
-		m_module = NULL;
-		m_cmdLine = NULL;
+		m_cmdLine = cmdLine;
+		m_module = module;
 	}
 
 	bool
 	parse(
-		Module* module,
-		const CmdLine* cmdLine,
 		const sl::StringRef& filePath,
 		const sl::StringRef& source
 		);
 
 	bool
-	parseFile(
-		Module* module,
-		CmdLine* cmdLine,
-		const sl::StringRef& filePath
-		);
+	parseFile(const sl::StringRef& filePath);
 
 protected:
 	// grammar
@@ -86,19 +75,22 @@ protected:
 	productionSpecifiers(ProductionSpecifiers* specifiers);
 
 	bool
-	classStatement();
+	sizeSpecifier(
+		TokenKind tokenKind,
+		size_t* size
+		);
 
 	bool
-	usingStatement();
+	nodeSpecifier(
+		TokenKind tokenKind,
+		GrammarNode** node
+		);
 
 	bool
 	defineStatement();
 
 	bool
 	production(const ProductionSpecifiers* specifiers);
-
-	Class*
-	classSpecifier();
 
 	GrammarNode*
 	alternative();
@@ -113,6 +105,12 @@ protected:
 	primary();
 
 	SymbolNode*
+	catcher();
+
+	GrammarNode*
+	lookahead();
+
+	SymbolNode*
 	resolver();
 
 	BeaconNode*
@@ -121,14 +119,14 @@ protected:
 	bool
 	userCode(
 		int openBracket,
-		sl::String* string,
+		sl::StringRef* string,
 		lex::SrcPos* srcPos
 		);
 
 	bool
 	userCode(
 		int openBracket,
-		sl::String* string,
+		sl::StringRef* string,
 		lex::LineCol* lineCol
 		);
 
@@ -136,21 +134,21 @@ protected:
 	customizeSymbol(SymbolNode* node);
 
 	bool
-	processLocalList(SymbolNode* node);
+	processParamBlock(SymbolNode* node);
 
 	bool
-	processFormalArgList(SymbolNode* node);
+	processLocalBlock(SymbolNode* node);
+
+	bool
+	processEnterLeaveBlock(
+		SymbolNode* node,
+		sl::StringRef* string
+		);
 
 	bool
 	processActualArgList(
 		ArgumentNode* node,
 		const sl::StringRef& string
-		);
-
-	bool
-	processSymbolEventHandler(
-		SymbolNode* node,
-		sl::String* string
 		);
 
 	void

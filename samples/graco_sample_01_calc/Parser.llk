@@ -9,38 +9,45 @@
 //
 //..............................................................................
 
-ParserClassName = Parser;
-
-Includes
+HeaderFileBegin
 {
+	#pragma once
+
 	#include "Lexer.h"
 	#include "Value.h"
 }
 
+NoPpLine = true;
+
 Members
 {
-	sl::List <Variable> m_variableList;
-	sl::StringHashTable <Variable*> m_variableMap;
+protected:
+	sl::List<Variable> m_variableList;
+	sl::StringHashTable<Variable*> m_variableMap;
 
+protected:
 	Variable*
-	createVariable (
+	createVariable(
 		const sl::String& name,
 		const Value& initializer,
 		bool isConst = false
 		);
 
 	bool
-	lookupIdentifier (
+	lookupIdentifier(
 		const sl::StringRef& name,
 		Value* value
 		);
 
 	bool
-	assertionCheck (
+	assertionCheck(
 		const Value& value,
 		const Token::Pos& openPos,
 		const Token::Pos& closePos
 		);
+
+	RecoverAction
+	processError(ErrorKind errorKind);
 }
 
 //..............................................................................
@@ -48,7 +55,7 @@ Members
 start
 nullable
 program
-	:	declaration*
+	:	catch(declaration_sync) declaration*
 	;
 
 declaration
@@ -56,37 +63,44 @@ declaration
 	|	TokenKind_Const const_declarator (',' const_declarator)* ';'
 	|	expression ';'
 			{
-				printf ("%s\n", $1.m_value.getString ().sz ());
+				printf("%s\n", $1.m_value.getString().sz());
 			}
 	|	TokenKind_Assert '(' expression ')' ';'
 			{
-				return assertionCheck ($3.m_value, $2.m_pos, $4.m_pos);
+				return assertionCheck($3.m_value, $2.m_pos, $4.m_pos);
 			}
 	|	';'
+	;
+
+declaration_sync
+	:	';'
+	|	TokenKind_Var
+	|	TokenKind_Const
+	|	TokenKind_Assert
 	;
 
 variable_declarator
 	:	TokenKind_Identifier ('=' expression)?
 			{
-				return createVariable ($1.m_data.m_string, &$3 ? $3.m_value : Value ()) != NULL;
+				return createVariable($1.m_data.m_string, &$3 ? $3.m_value : Value()) != NULL;
 			}
 	;
 
 const_declarator
 	:	TokenKind_Identifier '=' expression
 			{
-				return createVariable ($1.m_data.m_string, $3.m_value, true) != NULL;
+				return createVariable($1.m_data.m_string, $3.m_value, true) != NULL;
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
 primary_expression
 	:	TokenKind_Identifier
 			{
-				return lookupIdentifier ($1.m_data.m_string, &$.m_value);
+				return lookupIdentifier($1.m_data.m_string, &$.m_value);
 			}
 	|	TokenKind_Integer
 			{
@@ -98,7 +112,7 @@ primary_expression
 			}
 	|	TokenKind_Null
 			{
-				$.m_value = Value ();
+				$.m_value = Value();
 			}
 	|	'(' expression ')'
 			{
@@ -106,7 +120,7 @@ primary_expression
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -118,13 +132,13 @@ postfix_expression
 		(postfix_inc_operator
 			{
 				return
-					$.m_value.lvalueCheck () &&
-					$.m_value.m_variable->m_value.binaryOperator ($2.m_opKind, 1);
+					$.m_value.lvalueCheck() &&
+					$.m_value.m_variable->m_value.binaryOperator($2.m_opKind, 1);
 			}
 		)*
 	;
 
-class
+struct
 {
 	BinOpKind m_opKind;
 }
@@ -139,7 +153,7 @@ postfix_inc_operator
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -154,23 +168,23 @@ unary_expression
 			}
 	|	'!' unary_expression
 			{
-				$.m_value = !$2.m_value.isTrue ();
+				$.m_value = !$2.m_value.isTrue();
 			}
 	|	unary_operator unary_expression
 			{
-				return $2.m_value.unaryOperator ($1.m_opKind);
+				return $2.m_value.unaryOperator($1.m_opKind);
 			}
 	|	prefix_inc_operator unary_expression
 			{
-				if (!$2.m_value.lvalueCheck () ||
-					!$2.m_value.m_variable->m_value.binaryOperator ($1.m_opKind, 1))
+				if (!$2.m_value.lvalueCheck() ||
+					!$2.m_value.m_variable->m_value.binaryOperator($1.m_opKind, 1))
 					return false;
 
 				$.m_value = $2.m_value.m_variable; // reload variable
 			}
 	;
 
-class
+struct
 {
 	UnOpKind m_opKind;
 }
@@ -185,7 +199,7 @@ unary_operator
 			}
 	;
 
-class
+struct
 {
 	BinOpKind m_opKind;
 }
@@ -200,7 +214,7 @@ prefix_inc_operator
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -215,7 +229,7 @@ assignment_expression
 assign <Value* $target>
 	enter
 	{
-		return $target->lvalueCheck ();
+		return $target->lvalueCheck();
 	}
 	leave
 	{
@@ -227,11 +241,11 @@ assign <Value* $target>
 			}
 	|	op_assignment_operator assignment_expression
 			{
-				return $target->m_variable->m_value.binaryOperator ($1.m_opKind, $2.m_value);
+				return $target->m_variable->m_value.binaryOperator($1.m_opKind, $2.m_value);
 			}
 	;
 
-class
+struct
 {
 	BinOpKind m_opKind;
 }
@@ -278,7 +292,7 @@ op_assignment_operator
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -289,12 +303,12 @@ multiplicative_expression
 			}
 		(multiplicative_operator assignment_expression
 			{
-				return $.m_value.binaryOperator ($2.m_opKind, $3.m_value);
+				return $.m_value.binaryOperator($2.m_opKind, $3.m_value);
 			}
 		)*
 	;
 
-class
+struct
 {
 	BinOpKind m_opKind;
 }
@@ -313,7 +327,7 @@ multiplicative_operator
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -324,12 +338,12 @@ additive_expression
 			}
 		(additive_operator multiplicative_expression
 			{
-				return $.m_value.binaryOperator ($2.m_opKind, $3.m_value);
+				return $.m_value.binaryOperator($2.m_opKind, $3.m_value);
 			}
 		)*
 	;
 
-class
+struct
 {
 	BinOpKind m_opKind;
 }
@@ -344,7 +358,7 @@ additive_operator
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -355,12 +369,12 @@ shift_expression
 			}
 		(shift_operator additive_expression
 			{
-				return $.m_value.binaryOperator ($2.m_opKind, $3.m_value);
+				return $.m_value.binaryOperator($2.m_opKind, $3.m_value);
 			}
 		)*
 	;
 
-class
+struct
 {
 	BinOpKind m_opKind;
 }
@@ -375,7 +389,7 @@ shift_operator
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -386,12 +400,12 @@ relational_expression
 			}
 		(relational_operator shift_expression
 			{
-				return $.m_value.relationalOperator ($2.m_opKind, $3.m_value);
+				return $.m_value.relationalOperator($2.m_opKind, $3.m_value);
 			}
 		)*
 	;
 
-class
+struct
 {
 	RelOpKind m_opKind;
 }
@@ -414,7 +428,7 @@ relational_operator
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -425,12 +439,12 @@ equality_expression
 			}
 		(equality_operator relational_expression
 			{
-				return $.m_value.relationalOperator ($2.m_opKind, $3.m_value);
+				return $.m_value.relationalOperator($2.m_opKind, $3.m_value);
 			}
 		)*
 	;
 
-class
+struct
 {
 	RelOpKind m_opKind;
 }
@@ -445,7 +459,7 @@ equality_operator
 			}
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -456,12 +470,12 @@ and_expression
 			}
 		('&' equality_expression
 			{
-				return $.m_value.binaryOperator (BinOpKind_And, $3.m_value);
+				return $.m_value.binaryOperator(BinOpKind_And, $3.m_value);
 			}
 		)*
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -472,12 +486,12 @@ exclusive_or_expression
 			}
 		('^' and_expression
 			{
-				return $.m_value.binaryOperator (BinOpKind_Xor, $3.m_value);
+				return $.m_value.binaryOperator(BinOpKind_Xor, $3.m_value);
 			}
 		)*
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -488,14 +502,14 @@ inclusive_or_expression
 			}
 		('|' exclusive_or_expression
 			{
-				return $.m_value.binaryOperator (BinOpKind_Or, $3.m_value);
+				return $.m_value.binaryOperator(BinOpKind_Or, $3.m_value);
 			}
 		)*
 	;
 
 // for short-circuit-evaluation, control-flow-graph needs to be implemented
 
-class
+struct
 {
 	Value m_value;
 }
@@ -506,12 +520,12 @@ logical_and_expression
 			}
 		(TokenKind_LogicalAnd inclusive_or_expression
 			{
-				$.m_value = $.m_value.isTrue () && $3.m_value.isTrue ();
+				$.m_value = $.m_value.isTrue() && $3.m_value.isTrue();
 			}
 		)*
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -522,12 +536,12 @@ logical_or_expression
 			}
 		(TokenKind_LogicalOr logical_and_expression
 			{
-				$.m_value = $.m_value.isTrue () || $3.m_value.isTrue ();
+				$.m_value = $.m_value.isTrue() || $3.m_value.isTrue();
 			}
 		)*
 	;
 
-class
+struct
 {
 	Value m_value;
 }
@@ -538,7 +552,7 @@ expression
 			}
 		('?' logical_or_expression $t ':' expression $f
 			{
-				$.m_value = $.m_value.isTrue () ? $t.m_value : $f.m_value;
+				$.m_value = $.m_value.isTrue() ? $t.m_value : $f.m_value;
 			}
 		)?
 	;

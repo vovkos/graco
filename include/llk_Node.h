@@ -13,9 +13,9 @@
 
 #define _LLK_NODE_H
 
-#include "llk_Ast.h"
-
 namespace llk {
+
+// these are run-time nodes (as opposed to compile-time nodes in src/Node.h)
 
 //..............................................................................
 
@@ -58,23 +58,21 @@ getNodeKindString(NodeKind nodeKind)
 
 enum NodeFlag
 {
-	NodeFlag_Locator = 0x01, // used to locate AST / token from actions (applies to token & symbol nodes)
-	NodeFlag_Matched = 0x02, // applies to token & symbol & argument nodes
+	NodeFlag_Locator = 0x0001, // used to locate token/value from actions (applies to token & symbol nodes)
+	NodeFlag_Matched = 0x0002, // applies to token & symbol & argument nodes
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Node: public axl::sl::ListLink
+struct Node: axl::sl::ListLink
 {
-public:
-	NodeKind m_kind;
+	NodeKind m_nodeKind;
 	uint_t m_flags;
 	size_t m_index;
 
-public:
 	Node()
 	{
-		m_kind = NodeKind_Undefined;
+		m_nodeKind = NodeKind_Undefined;
 		m_flags = 0;
 		m_index = -1;
 	}
@@ -87,25 +85,20 @@ public:
 	const char*
 	getNodeKindString()
 	{
-		return llk::getNodeKindString(m_kind);
+		return llk::getNodeKindString(m_nodeKind);
 	}
 };
 
 //..............................................................................
 
-template <class Token_0>
-class TokenNode: public Node
+template <class Token>
+struct TokenNode: Node
 {
-public:
-	typedef Token_0 Token;
-
-public:
 	Token m_token;
 
-public:
 	TokenNode()
 	{
-		m_kind = NodeKind_Token;
+		m_nodeKind = NodeKind_Token;
 	}
 };
 
@@ -113,42 +106,54 @@ public:
 
 enum SymbolNodeFlag
 {
-	SymbolNodeFlag_Stacked = 0x0010,
-	SymbolNodeFlag_Named   = 0x0020,
-	SymbolNodeFlag_Pragma  = 0x0040,
-	SymbolNodeFlag_HasEnter  = 0x0100,
-	SymbolNodeFlag_HasLeave  = 0x0200,
-	SymbolNodeFlag_KeepAst   = 0x0400,
+	SymbolNodeFlag_Stacked  = 0x0010,
+	SymbolNodeFlag_HasEnter = 0x0020,
+	SymbolNodeFlag_HasLeave = 0x0040,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-template <class AstNode_0>
-class SymbolNode: public Node
+struct SymbolNodeValue
 {
-public:
-	typedef AstNode_0 AstNode;
+	axl::lex::LineCol m_firstTokenPos;
+	axl::lex::LineCol m_lastTokenPos;
+};
 
-public:
-	AstNode* m_astNode;
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
+struct SymbolNode: Node
+{
 	axl::sl::List<Node> m_locatorList;
 	axl::sl::Array<Node*> m_locatorArray;
 
-public:
 	SymbolNode()
 	{
-		m_kind = NodeKind_Symbol;
-		m_astNode = NULL;
+		m_nodeKind = NodeKind_Symbol;
 	}
 
-	virtual
-	~SymbolNode()
+	SymbolNodeValue*
+	getValue()
 	{
-		if (m_astNode && !(m_flags & SymbolNodeFlag_KeepAst))
-			AXL_MEM_DELETE(m_astNode);
+		return (SymbolNodeValue*)(this + 1);
 	}
 };
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+template <typename Value>
+struct SymbolNodeImpl: SymbolNode
+{
+	Value m_value;
+
+	SymbolNodeImpl()
+	{
+		ASSERT(getValue() == &m_value);
+	}
+};
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+typedef SymbolNodeImpl<SymbolNodeValue> StdSymbolNode;
 
 //..............................................................................
 
@@ -160,23 +165,17 @@ enum LaDfaNodeFlag
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-template <class Token_0>
-class LaDfaNode: public Node
+template <class Token>
+struct LaDfaNode: Node
 {
-public:
-	typedef Token_0 Token;
-
-public:
 	size_t m_resolverThenIndex;
 	size_t m_resolverElseIndex;
-
 	axl::sl::BoxIterator<Token> m_reparseLaDfaTokenCursor;
 	axl::sl::BoxIterator<Token> m_reparseResolverTokenCursor;
 
-public:
 	LaDfaNode()
 	{
-		m_kind = NodeKind_LaDfa;
+		m_nodeKind = NodeKind_LaDfa;
 		m_resolverThenIndex = -1;
 		m_resolverElseIndex = -1;
 	}

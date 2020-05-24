@@ -29,7 +29,7 @@ protected:
 		VariableKind_TokenBeacon,
 		VariableKind_SymbolBeacon,
 		VariableKind_This,
-		VariableKind_Arg,
+		VariableKind_Param,
 		VariableKind_Local,
 	};
 
@@ -64,7 +64,7 @@ protected:
 	addBeacon(BeaconNode* beacon);
 
 	void
-	findAndReplaceUnusedBeacons(GrammarNode*& node);
+	findAndReplaceUnusedBeacons(GrammarNode** node);
 
 	bool
 	processAllUserCode();

@@ -36,10 +36,7 @@ public:
 
 protected:
 	void
-	calcFirstFollow();
-
-	void
-	buildFirstFollowArrays(GrammarNode* node);
+	calcGrammarProps();
 
 	void
 	addProductionToParseTable(

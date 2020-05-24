@@ -16,7 +16,9 @@
 enum DefineKind
 {
 	DefineKind_String,
-	DefineKind_Integer
+	DefineKind_Integer,
+	DefineKind_Bool,
+	DefineKind_Default = DefineKind_String,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -24,15 +26,15 @@ enum DefineKind
 class Define: public sl::ListLink
 {
 public:
-	DefineKind m_kind;
+	DefineKind m_defineKind;
 	lex::SrcPos m_srcPos;
-	sl::String m_name;
-	sl::String m_stringValue;
+	sl::StringRef m_name;
+	sl::StringRef m_stringValue;
 	int m_integerValue;
 
 	Define()
 	{
-		m_kind = DefineKind_String;
+		m_defineKind = DefineKind_Default;
 		m_integerValue = 0;
 	}
 };
@@ -64,6 +66,9 @@ public:
 		m_defineList.clear();
 		m_defineMap.clear();
 	}
+
+	void
+	luaExport(lua::LuaState* luaState);
 
 	sl::Iterator<Define>
 	getHead()

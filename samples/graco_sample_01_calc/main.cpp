@@ -67,9 +67,13 @@ main(
 	g::getModule()->setTag("graco_test_cpp");
 
 	bool result = parse(
-		"const pi = 3.14159265358979323846; var r = 100; 2 * pi * r;"
-		"var x, y, z; x = y = z = 10; assert (x == 11);"
+		"const pi = 3.14159265358979323846;\n"
+  		"var r = 100;\n"
+		"2 * pi * r;\n"
+		"var x, y, ; z = 15; x = y = 10;\n"
+  		"assert(x == 10);\n"
 		);
+
 	if (!result)
 	{
 		printf("error: %s\n", err::getLastErrorDescription().sz());

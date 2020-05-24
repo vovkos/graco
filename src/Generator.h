@@ -18,16 +18,14 @@ struct CmdLine;
 class Generator
 {
 protected:
+	const CmdLine* m_cmdLine;
 	st::LuaStringTemplate m_stringTemplate;
 	sl::String m_buffer;
 
 public:
-	const CmdLine* m_cmdLine;
-
-public:
-	Generator()
+	Generator(const CmdLine* cmdLine)
 	{
-		m_cmdLine = NULL;
+		m_cmdLine = cmdLine;
 	}
 
 	void

@@ -21,24 +21,36 @@ namespace llk {
 
 template <
 	typename T,
-	typename Token_0
+	typename Token0
 	>
 class Parser
 {
 public:
-	typedef Token_0 Token;
+	typedef Token0 Token;
 	typedef typename Token::TokenKind TokenKind;
-	typedef llk::AstNode<Token> AstNode;
-	typedef llk::Ast<AstNode> Ast;
 	typedef llk::TokenNode<Token> TokenNode;
-	typedef llk::SymbolNode<AstNode> SymbolNode;
+	typedef llk::SymbolNode SymbolNode;
 	typedef llk::LaDfaNode<Token> LaDfaNode;
 
 protected:
 	enum Flag
 	{
-		Flag_BuildingAst = 1,
-		Flag_TokenMatch  = 2,
+		Flag_Synchronize     = 0x01,
+		Flag_PostSynchronize = 0x02,
+		Flag_TokenMatch      = 0x04,
+	};
+
+	enum ErrorKind
+	{
+		ErrorKind_Syntax,
+		ErrorKind_Semantic,
+	};
+
+	enum RecoverAction
+	{
+		RecoverAction_Fail,
+		RecoverAction_Synchronize,
+		RecoverAction_Continue,
 	};
 
 	enum MatchResult
@@ -66,8 +78,6 @@ protected:
 
 protected:
 	axl::sl::List<Node> m_nodeList;
-	axl::ref::Buf<Ast> m_ast;
-
 	axl::sl::Array<Node*> m_predictionStack;
 	axl::sl::Array<SymbolNode*> m_symbolStack;
 	axl::sl::Array<LaDfaNode*> m_resolverStack;
@@ -78,6 +88,7 @@ protected:
 	Token m_currentToken;
 	Token m_lastMatchedToken;
 
+	size_t m_errorCount;
 	uint_t m_flags;
 
 public:
@@ -87,23 +98,16 @@ public:
 	}
 
 	SymbolNode*
-	create(
-		int symbol = T::StartSymbol,
-		bool isBuildingAst = false
-		)
+	create(int symbol = T::StartSymbol)
 	{
 		clear();
-
-		if (isBuildingAst)
-			m_flags |= Flag_BuildingAst;
-
 		return (SymbolNode*)pushPrediction(T::SymbolFirst + symbol);
 	}
 
-	axl::ref::Buf<Ast>
-	getAst()
+	size_t
+	getErrorCount()
 	{
-		return m_ast;
+		return m_errorCount;
 	}
 
 	void
@@ -115,8 +119,8 @@ public:
 		m_resolverStack.clear();
 		m_tokenList.clear();
 		m_tokenCursor = NULL;
-		m_ast.release();
 		m_flags = 0;
+		m_errorCount = 0;
 	}
 
 	bool
@@ -124,18 +128,27 @@ public:
 	{
 		bool result;
 
+		if (m_flags & Flag_Synchronize)
+		{
+			MatchResult matchResult = synchronize(token);
+			if (matchResult == MatchResult_NextToken)
+				return true;
+			else if (matchResult == MatchResult_Fail)
+				return false;
+		}
+
 		m_tokenCursor = m_tokenList.insertTail(*token);
 		m_currentToken = *token;
 
-		size_t* parseTable = static_cast<T*> (this)->getParseTable();
-		size_t tokenIndex = static_cast<T*> (this)->getTokenIndex(token->m_token);
+		const size_t* parseTable = static_cast<T*>(this)->getParseTable();
+		size_t tokenIndex = static_cast<T*>(this)->getTokenIndex(token->m_token);
 		ASSERT(tokenIndex < T::TokenCount);
 
 		// first check for pragma productions out of band
 
-		if (T::StartPragmaSymbol != -1)
+		if (T::PragmaStartSymbol != -1)
 		{
-			size_t productionIndex = parseTable[T::StartPragmaSymbol * T::TokenCount + tokenIndex];
+			size_t productionIndex = parseTable[T::PragmaStartSymbol * T::TokenCount + tokenIndex];
 			if (productionIndex != -1 && productionIndex != 0)
 				pushPrediction(productionIndex);
 		}
@@ -144,6 +157,15 @@ public:
 
 		for (;;)
 		{
+			if (m_flags & Flag_Synchronize)
+			{
+				MatchResult matchResult = synchronize(&m_currentToken);
+				if (matchResult == MatchResult_NextToken)
+					return true;
+				else if (matchResult == MatchResult_Fail)
+					return false;
+			}
+
 			MatchResult matchResult;
 
 			Node* node = getPredictionTop();
@@ -153,7 +175,7 @@ public:
 			}
 			else
 			{
-				switch (node->m_kind)
+				switch (node->m_nodeKind)
 				{
 				case NodeKind_Token:
 					matchResult = matchTokenNode((TokenNode*)node, tokenIndex);
@@ -172,7 +194,7 @@ public:
 					break;
 
 				case NodeKind_Argument:
-					ASSERT(node->m_flags & NodeFlag_Matched); // was handled during matching ENode_Symbol
+					ASSERT(node->m_flags & NodeFlag_Matched); // was handled during matching NodeKind_Symbol
 					popPrediction();
 					matchResult = MatchResult_Continue;
 					break;
@@ -185,6 +207,8 @@ public:
 					ASSERT(false);
 				}
 			}
+
+			m_flags &= ~Flag_PostSynchronize;
 
 			if (matchResult == MatchResult_Fail)
 			{
@@ -209,7 +233,7 @@ public:
 
 			case MatchResult_NextTokenNoAdvance:
 				m_currentToken = *m_tokenCursor;
-				tokenIndex = static_cast<T*> (this)->getTokenIndex(m_currentToken.m_token);
+				tokenIndex = static_cast<T*>(this)->getTokenIndex(m_currentToken.m_token);
 				ASSERT(tokenIndex < T::TokenCount);
 				m_flags &= ~Flag_TokenMatch;
 				break;
@@ -231,11 +255,9 @@ public:
 		for (intptr_t i = 0; i < count; i++)
 		{
 			SymbolNode* node = m_symbolStack[i];
+			SymbolNodeValue* value = node->getValue();
 			TRACE("%s", static_cast <T*> (this)->getSymbolName (node->m_index));
-
-			if (node->m_astNode)
-				TRACE(" (%d:%d)", node->m_astNode->m_firstToken.m_pos.m_line + 1, node->m_astNode->m_firstToken.m_pos.m_col + 1);
-
+			TRACE(" (%d:%d)", value->m_firstTokenPos.m_line + 1, value->m_firstTokenPos.m_col + 1);
 			TRACE("\n");
 		}
 	}
@@ -249,7 +271,7 @@ public:
 		for (intptr_t i = 0; i < count; i++)
 		{
 			Node* node = m_predictionStack[i];
-			TRACE("%s (%d)\n", getNodeKindString(node->m_kind), node->m_index);
+			TRACE("%s (%d)\n", getNodeKindString(node->m_nodeKind), node->m_index);
 		}
 	}
 
@@ -300,15 +322,101 @@ public:
 	}
 
 protected:
+	// default recover action: fail on semantic error, synchronize on syntax error
+
+	RecoverAction
+	processError(ErrorKind errorKind)
+	{
+		if (errorKind != ErrorKind_Syntax)
+			return RecoverAction_Fail;
+
+		fprintf(stderr, "syntax error: %s\n", axl::err::getLastErrorDescription().sz());
+		return RecoverAction_Synchronize;
+	}
+
+	bool
+	isCatchSymbolIndex(size_t index)
+	{
+		return index >= T::NamedSymbolCount && index < T::NamedSymbolCount + T::CatchSymbolCount;
+	}
+
+	RecoverAction
+	recover(ErrorKind errorKind)
+	{
+		m_errorCount++;
+
+		if (errorKind == ErrorKind_Syntax && (m_flags & Flag_PostSynchronize))
+		{
+			axl::err::setFormatStringError(
+				"synchronizer token '%s' didn't match (adjust the 'catch' clause)",
+				m_currentToken.getName()
+				);
+
+			return RecoverAction_Fail;
+		}
+
+		RecoverAction action = static_cast<T*>(this)->processError(errorKind);
+		ASSERT(action != RecoverAction_Continue || errorKind != ErrorKind_Syntax); // can't continue on syntax errors
+
+		if (action != RecoverAction_Synchronize)
+			return action;
+
+		SymbolNode* catcher = NULL;
+		size_t count = m_symbolStack.getCount();
+		for (intptr_t i = count - 1; i >= 0; i--)
+			if (isCatchSymbolIndex(m_symbolStack[i]->m_index))
+			{
+				catcher = m_symbolStack[i];
+				m_symbolStack.setCount(i); // take it off symbol stack
+				break;
+			}
+
+		if (!catcher)
+		{
+			axl::err::setError("no catchers on stack (consider adding a 'catch' clause)");
+			return RecoverAction_Fail;
+		}
+
+		ASSERT(catcher->m_flags & SymbolNodeFlag_Stacked);
+		catcher->m_flags &= ~SymbolNodeFlag_Stacked;
+
+		size_t i = findInPredictionStack(catcher);
+		ASSERT(i != -1);
+
+		m_predictionStack.setCount(i + 1); // keep it on prediction stack
+		m_resolverStack.clear();
+		m_tokenList.clear();
+		m_tokenCursor = NULL;
+		m_flags |= Flag_Synchronize;
+		return RecoverAction_Synchronize;
+	}
+
+	MatchResult
+	synchronize(const Token* token)
+	{
+		ASSERT(m_flags & Flag_Synchronize);
+
+		Node* catcher = getPredictionTop();
+		ASSERT(catcher && catcher->m_nodeKind == NodeKind_Symbol && isCatchSymbolIndex(catcher->m_index));
+
+		bool canSync = static_cast<T*>(this)->isSyncToken(catcher->m_index, token->m_token);
+		if (!canSync)
+			return MatchResult_NextToken;
+
+		m_flags &= ~Flag_Synchronize;
+		m_flags |= Flag_PostSynchronize; // synchronizer token must match (otherwise, a bad choice of sync tokens)
+		return MatchResult_Continue;
+	}
+
 	bool
 	advanceTokenCursor()
 	{
 		m_tokenCursor++;
 
 		Node* node = getPredictionTop();
-		if (m_resolverStack.isEmpty() && (!node || node->m_kind != NodeKind_LaDfa))
+		if (m_resolverStack.isEmpty() && (!node || node->m_nodeKind != NodeKind_LaDfa))
 		{
-			m_tokenList.removeHead(); // nobody gonna reparse you
+			m_tokenList.removeHead(); // nobody gonna reparse this token
 			ASSERT(m_tokenCursor == m_tokenList.getHead());
 		}
 
@@ -316,6 +424,17 @@ protected:
 			return false;
 
 		return true;
+	}
+
+	size_t
+	findInPredictionStack(Node* node)
+	{
+		size_t count = m_predictionStack.getCount();
+		for (intptr_t i = count - 1; i >= 0; i--)
+			if (m_predictionStack[i] == node)
+				return i;
+
+		return -1;
 	}
 
 	// match against different kinds of nodes on top of prediction stack
@@ -341,13 +460,12 @@ protected:
 
 		if (node->m_index != T::AnyToken && node->m_index != tokenIndex)
 		{
-			if (m_resolverStack.isEmpty()) // can't rollback so set error
-			{
-				int expectedToken = static_cast<T*> (this)->getTokenFromIndex(node->m_index);
-				axl::lex::setExpectedTokenError(Token::getName(expectedToken), m_currentToken.getName());
-			}
+			if (!m_resolverStack.isEmpty())
+				return MatchResult_Fail; // rollback resolver
 
-			return MatchResult_Fail;
+			int expectedToken = static_cast<T*>(this)->getTokenFromIndex(node->m_index);
+			axl::lex::setExpectedTokenError(Token::getName(expectedToken), m_currentToken.getName());
+			return recover(ErrorKind_Syntax) ? MatchResult_Continue : MatchResult_Fail;
 		}
 
 		if (node->m_flags & NodeFlag_Locator)
@@ -366,7 +484,7 @@ protected:
 	MatchResult
 	matchSymbolNode(
 		SymbolNode* node,
-		size_t* parseTable,
+		const size_t* parseTable,
 		size_t tokenIndex
 		)
 	{
@@ -374,20 +492,30 @@ protected:
 
 		if (node->m_flags & SymbolNodeFlag_Stacked)
 		{
-			SymbolNode* top = getSymbolTop();
+			if (getSymbolTop() != node)
+			{
+				traceSymbolStack();
+				tracePredictionStack();
+			}
 
 			ASSERT(getSymbolTop() == node);
-
-			if (node->m_astNode)
-				node->m_astNode->m_lastToken = m_lastMatchedToken;
-
+			node->getValue()->m_lastTokenPos = m_lastMatchedToken.m_pos;
 			node->m_flags |= NodeFlag_Matched;
 
 			if (node->m_flags & SymbolNodeFlag_HasLeave)
 			{
-				result = static_cast<T*> (this)->leave(node->m_index);
+				result = static_cast<T*>(this)->leave(node->m_index);
 				if (!result)
-					return MatchResult_Fail;
+				{
+					if (!m_resolverStack.isEmpty())
+						return MatchResult_Fail; // rollback resolver
+
+					RecoverAction action = recover(ErrorKind_Semantic);
+					if (action == RecoverAction_Fail)
+						return MatchResult_Fail;
+					else if (action == RecoverAction_Synchronize)
+						return MatchResult_Continue;
+				}
 			}
 
 			popSymbol();
@@ -398,19 +526,12 @@ protected:
 		if (m_flags & Flag_TokenMatch)
 			return MatchResult_NextToken;
 
-		if (node->m_flags & SymbolNodeFlag_Named)
+		if (node->m_index < T::NamedSymbolCount)
 		{
-			if (node->m_astNode)
-			{
-				node->m_astNode->m_firstToken = m_currentToken;
-				node->m_astNode->m_lastToken = m_currentToken;
-				m_lastMatchedToken = m_currentToken;
-			}
-
 			Node* argument = getArgument();
 			if (argument)
 			{
-				static_cast<T*> (this)->argument(argument->m_index, node);
+				static_cast<T*>(this)->argument(argument->m_index, node);
 				argument->m_flags |= NodeFlag_Matched;
 			}
 
@@ -418,32 +539,45 @@ protected:
 
 			if (node->m_flags & SymbolNodeFlag_HasEnter)
 			{
-				result = static_cast<T*> (this)->enter(node->m_index);
+				result = static_cast<T*>(this)->enter(node->m_index);
 				if (!result)
-					return MatchResult_Fail;
+				{
+					if (!m_resolverStack.isEmpty())
+						return MatchResult_Fail; // rollback resolver
+
+					RecoverAction action = recover(ErrorKind_Semantic);
+					if (action == RecoverAction_Fail)
+						return MatchResult_Fail;
+					else if (action == RecoverAction_Synchronize)
+						return MatchResult_Continue;
+				}
 			}
+		}
+		else if (node->m_index < T::NamedSymbolCount + T::CatchSymbolCount)
+		{
+			pushSymbol(node); // keep catch on symbol stack, too
 		}
 
 		size_t productionIndex = parseTable[node->m_index * T::TokenCount + tokenIndex];
 		if (productionIndex == -1)
 		{
-			if (m_resolverStack.isEmpty()) // can't rollback so set error
-			{
-				SymbolNode* symbol = getSymbolTop();
-				ASSERT(symbol);
-				axl::err::setFormatStringError(
-					"unexpected token '%s' in '%s'",
-					m_currentToken.getName(),
-					static_cast<T*> (this)->getSymbolName(symbol->m_index)
-					);
-			}
+			if (!m_resolverStack.isEmpty())
+				return MatchResult_Fail; // rollback resolver
 
-			return MatchResult_Fail;
+			SymbolNode* symbol = getSymbolTop();
+			ASSERT(symbol);
+			axl::err::setFormatStringError(
+				"unexpected '%s' in '%s'",
+				m_currentToken.getName(),
+				static_cast<T*>(this)->getSymbolName(symbol->m_index)
+				);
+
+			return recover(ErrorKind_Syntax) ? MatchResult_Continue : MatchResult_Fail;
 		}
 
 		ASSERT(productionIndex < T::TotalCount);
 
-		if (!(node->m_flags & SymbolNodeFlag_Named))
+		if (node->m_index >= T::NamedSymbolCount + T::CatchSymbolCount)
 			popPrediction();
 
 		pushPrediction(productionIndex);
@@ -456,7 +590,7 @@ protected:
 		if (m_flags & Flag_TokenMatch)
 			return MatchResult_NextToken;
 
-		size_t* p = static_cast<T*> (this)->getSequence(node->m_index);
+		const size_t* p = static_cast<T*>(this)->getSequence(node->m_index);
 
 		popPrediction();
 		for (; *p != -1; p++)
@@ -468,9 +602,18 @@ protected:
 	MatchResult
 	matchActionNode(Node* node)
 	{
-		bool result = static_cast<T*> (this)->action(node->m_index);
+		bool result = static_cast<T*>(this)->action(node->m_index);
 		if (!result)
-			return MatchResult_Fail;
+		{
+			if (!m_resolverStack.isEmpty())
+				return MatchResult_Fail; // rollback resolver
+
+			RecoverAction action = recover(ErrorKind_Semantic);
+			if (action == RecoverAction_Fail)
+				return MatchResult_Fail;
+			else if (action == RecoverAction_Synchronize)
+				return MatchResult_Continue;
+		}
 
 		popPrediction();
 		return MatchResult_Continue;
@@ -502,7 +645,7 @@ protected:
 
 		LaDfaTransition transition = { 0 };
 
-		LaDfaResult laDfaResult = static_cast<T*> (this)->laDfa(
+		LaDfaResult laDfaResult = static_cast<T*>(this)->laDfa(
 			node->m_index,
 			m_currentToken.m_token,
 			&transition
@@ -548,9 +691,9 @@ protected:
 				SymbolNode* symbol = getSymbolTop();
 				ASSERT(symbol);
 				axl::err::setFormatStringError(
-					"unexpected token '%s' while trying to resolve conflict in '%s'",
+					"unexpected '%s' while trying to resolve a conflict in '%s'",
 					m_currentToken.getName(),
-					static_cast<T*> (this)->getSymbolName(symbol->m_index)
+					static_cast<T*>(this)->getSymbolName(symbol->m_index)
 					);
 			}
 
@@ -573,12 +716,12 @@ protected:
 		{
 			Node* node = getPredictionTop();
 
-			if (node->m_kind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Stacked))
+			if (node->m_nodeKind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Stacked))
 			{
 				ASSERT(getSymbolTop() == node);
 
-				// do NOT call OnLeave () during resolver unwinding
-				// cause OnLeave () assumes parsing of the symbol is complete
+				// do NOT call leave() during resolver unwinding
+				// cause leave() assumes parsing of the symbol is complete
 
 				popSymbol();
 			}
@@ -618,17 +761,6 @@ protected:
 
 	// create nodes
 
-	static
-	SymbolNode*
-	createStdSymbolNode(size_t index)
-	{
-		SymbolNode* node = AXL_MEM_NEW(SymbolNode);
-		node->m_kind = NodeKind_Symbol;
-		node->m_flags |= SymbolNodeFlag_Named;
-		node->m_index = index;
-		return node;
-	}
-
 	Node*
 	createNode(size_t masterIndex)
 	{
@@ -641,20 +773,16 @@ protected:
 			node = AXL_MEM_NEW(TokenNode);
 			node->m_index = masterIndex;
 		}
-		else if (masterIndex < T::NamedSymbolEnd)
+		else if (masterIndex < T::TokenEnd + T::NamedSymbolCount)
 		{
 			size_t index = masterIndex - T::SymbolFirst;
-			SymbolNode* symbolNode = static_cast<T*> (this)->createSymbolNode(index);
-			if (symbolNode->m_astNode && (m_flags & Flag_BuildingAst))
-			{
-				if (!m_ast)
-					m_ast.createBuffer();
-
-				m_ast->add(symbolNode->m_astNode);
-				symbolNode->m_flags |= SymbolNodeFlag_KeepAst;
-			}
-
+			SymbolNode* symbolNode = static_cast<T*>(this)->createSymbolNode(index);
 			node = symbolNode;
+		}
+		else if (masterIndex < T::TokenEnd + T::NamedSymbolCount + T::CatchSymbolCount)
+		{
+			node = AXL_MEM_NEW(StdSymbolNode);
+			node->m_index = masterIndex - T::SymbolFirst;
 		}
 		else if (masterIndex < T::SymbolEnd)
 		{
@@ -664,29 +792,29 @@ protected:
 		else if (masterIndex < T::SequenceEnd)
 		{
 			node = AXL_MEM_NEW(Node);
-			node->m_kind = NodeKind_Sequence;
+			node->m_nodeKind = NodeKind_Sequence;
 			node->m_index = masterIndex - T::SequenceFirst;
 		}
 		else if (masterIndex < T::ActionEnd)
 		{
 			node = AXL_MEM_NEW(Node);
-			node->m_kind = NodeKind_Action;
+			node->m_nodeKind = NodeKind_Action;
 			node->m_index = masterIndex - T::ActionFirst;
 		}
 		else if (masterIndex < T::ArgumentEnd)
 		{
 			node = AXL_MEM_NEW(Node);
-			node->m_kind = NodeKind_Argument;
+			node->m_nodeKind = NodeKind_Argument;
 			node->m_index = masterIndex - T::ArgumentFirst;
 		}
 		else if (masterIndex < T::BeaconEnd)
 		{
-			size_t* p = static_cast<T*> (this)->getBeacon(masterIndex - T::BeaconFirst);
+			const size_t* p = static_cast<T*>(this)->getBeacon(masterIndex - T::BeaconFirst);
 			size_t slotIndex = p[0];
 			size_t targetIndex = p[1];
 
 			node = createNode(targetIndex);
-			ASSERT(node->m_kind == NodeKind_Token || node->m_kind == NodeKind_Symbol);
+			ASSERT(node->m_nodeKind == NodeKind_Token || node->m_nodeKind == NodeKind_Symbol);
 
 			node->m_flags |= NodeFlag_Locator;
 
@@ -718,7 +846,7 @@ protected:
 			return NULL;
 
 		Node* node = m_predictionStack[count - 2];
-		return node->m_kind == NodeKind_Argument ? node : NULL;
+		return node->m_nodeKind == NodeKind_Argument ? node : NULL;
 	}
 
 	Node*
@@ -730,6 +858,7 @@ protected:
 		Node* node = createNode(masterIndex);
 		if (!(node->m_flags & NodeFlag_Locator))
 			m_nodeList.insertTail(node);
+
 		m_predictionStack.append(node);
 		return node;
 	}
@@ -745,6 +874,8 @@ protected:
 		}
 
 		Node* node = m_predictionStack[count - 1];
+		ASSERT(!(node->m_flags & SymbolNodeFlag_Stacked));
+
 		if (!(node->m_flags & NodeFlag_Locator))
 			m_nodeList.erase(node);
 
@@ -753,42 +884,15 @@ protected:
 
 	// symbol stack
 
-	AstNode*
-	getAst(size_t index)
-	{
-		size_t count = m_symbolStack.getCount();
-		return index < count ? m_symbolStack[count - index - 1]->m_astNode : NULL;
-	}
-
-	AstNode*
-	getAstTop()
-	{
-		size_t count = m_symbolStack.getCount();
-		for (intptr_t i = count - 1; i >= 0; i--)
-		{
-			SymbolNode* node = m_symbolStack[i];
-			if (node->m_astNode)
-				return node->m_astNode;
-		}
-
-		return NULL;
-	}
-
 	void
 	pushSymbol(SymbolNode* node)
 	{
-		if ((m_flags & Flag_BuildingAst) && node->m_astNode)
-		{
-			AstNode* astTop = getAstTop();
-			if (astTop)
-			{
-				node->m_astNode->m_parent = astTop;
-				astTop->m_children.append(node->m_astNode);
-			}
-		}
-
 		m_symbolStack.append(node);
 		node->m_flags |= SymbolNodeFlag_Stacked;
+
+		SymbolNodeValue* value = node->getValue();
+		value->m_firstTokenPos = m_currentToken.m_pos;
+		value->m_lastTokenPos = m_currentToken.m_pos;
 	}
 
 	void
@@ -802,8 +906,7 @@ protected:
 		}
 
 		SymbolNode* node = m_symbolStack[count - 1];
-		node->m_flags |= SymbolNodeFlag_Stacked;
-
+		node->m_flags &= ~SymbolNodeFlag_Stacked;
 		m_symbolStack.setCount(count - 1);
 	}
 
@@ -859,71 +962,82 @@ protected:
 		return node;
 	}
 
-	AstNode*
-	getAstLocator(size_t index)
-	{
-		Node* node = getLocator(index);
-		return node && node->m_kind == NodeKind_Symbol ? ((SymbolNode*)node)->m_astNode : NULL;
-	}
-
 	const Token*
 	getTokenLocator(size_t index)
 	{
 		Node* node = getLocator(index);
-		return node && node->m_kind == NodeKind_Token ? &((TokenNode*)node)->m_token : NULL;
+		return node && node->m_nodeKind == NodeKind_Token ? &((TokenNode*)node)->m_token : NULL;
+	}
+
+	SymbolNodeValue*
+	getSymbolLocator(size_t index)
+	{
+		Node* node = getLocator(index);
+		return node && node->m_nodeKind == NodeKind_Symbol ? ((SymbolNode*)node)->getValue() : NULL;
 	}
 
 	// must be implemented in derived class:
 
 	// static
-	// size_t*
-	// getParseTable ();
+	// const size_t*
+	// getParseTable();
+
+	// static
+	// const size_t*
+	// getSequence(size_t index);
 
 	// static
 	// size_t
-	// getTokenIndex (int token);
+	// getTokenIndex(int token);
 
 	// static
 	// int
-	// getTokenFromIndex (size_t index);
+	// getTokenFromIndex(size_t index);
 
 	// static
 	// const char*
-	// getSymbolName (size_t index);
+	// getSymbolName(size_t index);
 
 	// static
-	// Node*
-	// createSymbolNode (size_t index); // allocate node & ast with AXL_MEM_NEW () !!
+	// SymbolNode*
+	// createSymbolNode(size_t index); // allocate node & ast with AXL_MEM_NEW() !!
 
 	// static
-	// size_t*
-	// getSequence (size_t index);
-
-	// static
-	// size_t*
-	// getBeacon (size_t index);
+	// const size_t*
+	// getBeacon(size_t index);
 
 	// bool
-	// action (size_t index);
+	// action(size_t index);
 
 	// bool
-	// argument (
+	// argument(
 	//		size_t index,
 	//		SymbolNode* symbol
 	//		);
 
 	// bool
-	// enter (size_t index)
+	// enter(size_t index)
 
 	// bool
-	// leave (size_t index)
+	// leave(size_t index)
 
 	// LaDfaResult
-	// laDfa (
+	// laDfa(
 	//		size_t index,
 	//		int lookaheadToken,
 	//		LaDfaTransition* transition
 	//		);
+
+	// bool
+	// isSynchronizerToken(
+	//		size_t index,
+	//		int token
+	//		);
+
+	// optionally implement:
+
+	// RecoverAction
+	// processError(ErrorKind errorKind);
 };
 
 //..............................................................................

@@ -19,7 +19,7 @@
 
 enum ErrorCode
 {
-	ErrorCode_Success         = 0,
+	ErrorCode_Success         =  0,
 	ErrorCode_InvalidCmdLine  = -1,
 	ErrorCode_ParseFailure    = -2,
 	ErrorCode_BuildFailure    = -3,
@@ -94,13 +94,13 @@ main(
 		return ErrorCode_ParseFailure;
 	}
 
-	//if (pTraceFileName)
-	//	stdout = fopen (pTraceFileName, "rwt");
+#if (TRACE_FILE_NAME)
+	stdout = fopen(TRACE_FILE_NAME, "rwt");
+#endif
 
 	Module module;
-	Parser parser;
-
-	result = parser.parseFile(&module, &cmdLine, srcFilePath);
+	Parser parser(&cmdLine, &module);
+	result = parser.parseFile(srcFilePath);
 	if (!result)
 	{
 		printf("%s\n", err::getLastErrorDescription().sz());
@@ -119,7 +119,7 @@ main(
 			if (filePathSet.find(importFilePath))
 				continue;
 
-			result = parser.parseFile(&module, &cmdLine, importFilePath);
+			result = parser.parseFile(importFilePath);
 			if (!result)
 			{
 				printf("%s\n", err::getLastErrorDescription().sz());
@@ -150,9 +150,8 @@ main(
 	if (cmdLine.m_flags & CmdLineFlag_Verbose)
 		module.trace();
 
-	Generator generator;
+	Generator generator(&cmdLine);
 	generator.prepare(&module);
-	generator.m_cmdLine = &cmdLine;
 
 	ASSERT(cmdLine.m_outputFileNameList.getCount() == cmdLine.m_frameFileNameList.getCount());
 	sl::BoxIterator<sl::String> outputFileNameIt = cmdLine.m_outputFileNameList.getHead();

@@ -119,17 +119,15 @@ LaDfaState::getDefaultProduction()
 //..............................................................................
 
 LaDfaBuilder::LaDfaBuilder(
+	const CmdLine* cmdLine,
 	NodeMgr* nodeMgr,
-	sl::Array<Node*>* parseTable,
-	size_t lookeaheadLimit,
-	size_t conflictDepthLimit
+	sl::Array<Node*>* parseTable
 	)
 {
+	m_cmdLine = cmdLine;
 	m_nodeMgr = nodeMgr;
 	m_parseTable = parseTable;
-	m_lookeaheadLimit = lookeaheadLimit;
-	m_lookeahead = 1;
-	m_conflictDepthLimit = conflictDepthLimit;
+	m_maxUsedLookahead = 1;
 }
 
 static
@@ -150,13 +148,9 @@ cmpResolverThreadPriority(
 }
 
 Node*
-LaDfaBuilder::build(
-	CmdLine* cmdLine,
-	ConflictNode* conflict,
-	size_t* lookahead_o
-	)
+LaDfaBuilder::build(ConflictNode* conflict)
 {
-	ASSERT(conflict->m_kind == NodeKind_Conflict);
+	ASSERT(conflict->m_nodeKind == NodeKind_Conflict);
 
 	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount();
 
@@ -172,7 +166,7 @@ LaDfaBuilder::build(
 		LaDfaThread* thread = state0->createThread();
 		thread->m_production = production;
 
-		if (production->m_kind == NodeKind_Symbol)
+		if (production->m_nodeKind == NodeKind_Symbol)
 		{
 			SymbolNode* symbolNode = (SymbolNode*)production;
 			if (symbolNode->m_resolver)
@@ -182,7 +176,7 @@ LaDfaBuilder::build(
 			}
 		}
 
-		if (production->m_kind != NodeKind_Epsilon)
+		if (production->m_nodeKind != NodeKind_Epsilon)
 			thread->m_stack.append(production);
 		else
 			state0->m_flags |= LaDfaStateFlag_EpsilonProduction;
@@ -209,7 +203,7 @@ LaDfaBuilder::build(
 		sl::Array<LaDfaState*> stateArray;
 		stateArray.append(state1);
 
-		while (!stateArray.isEmpty() && lookahead < m_lookeaheadLimit)
+		while (!stateArray.isEmpty() && lookahead < conflict->m_lookaheadLimit)
 		{
 			lookahead++;
 
@@ -267,7 +261,7 @@ LaDfaBuilder::build(
 				"conflict at %s:%s could not be resolved with %d token lookahead; e.g. %s",
 				conflict->m_symbol->m_name.sz(),
 				conflict->m_token->m_name.sz(),
-				m_lookeaheadLimit,
+				conflict->m_lookaheadLimit,
 				tokenSeqString.sz()
 				);
 
@@ -276,11 +270,8 @@ LaDfaBuilder::build(
 		}
 	}
 
-	if (lookahead > m_lookeahead)
-		m_lookeahead = lookahead;
-
-	if (lookahead_o)
-		*lookahead_o = lookahead;
+	if (lookahead > m_maxUsedLookahead)
+		m_maxUsedLookahead = lookahead;
 
 	sl::Iterator<LaDfaState> it = m_stateList.getHead();
 	for (; it; it++)
@@ -366,7 +357,7 @@ LaDfaBuilder::build(
 		}
 	}
 
-	if (cmdLine->m_flags & CmdLineFlag_Verbose)
+	if (m_cmdLine->m_flags & CmdLineFlag_Verbose)
 		trace();
 
 	if (state1->m_resolverThreadList.isEmpty() &&
@@ -538,7 +529,7 @@ LaDfaBuilder::processThread(
 	size_t depth
 	)
 {
-	if (depth > m_conflictDepthLimit)
+	if (depth > m_cmdLine->m_conflictDepthLimit)
 		return false;
 
 	SymbolNode* token = thread->m_state->m_token;
@@ -558,7 +549,7 @@ LaDfaBuilder::processThread(
 		SequenceNode* sequence;
 		size_t childrenCount;
 
-		switch (node->m_kind)
+		switch (node->m_nodeKind)
 		{
 		case NodeKind_Token:
 			if (thread->m_match)
@@ -609,7 +600,7 @@ LaDfaBuilder::processThread(
 
 			thread->m_stack.pop();
 
-			if (production->m_kind != NodeKind_Epsilon)
+			if (production->m_nodeKind != NodeKind_Epsilon)
 				thread->m_stack.append(production);
 			else
 				thread->m_state->m_flags |= LaDfaStateFlag_EpsilonProduction;
@@ -653,7 +644,7 @@ LaDfaBuilder::processThread(
 				Node* child = conflict->m_productionArray[i];
 				LaDfaThread* newThread = thread->m_state->createThread(thread);
 
-				if (child->m_kind != NodeKind_Epsilon)
+				if (child->m_nodeKind != NodeKind_Epsilon)
 					newThread->m_stack.append(child);
 
 				bool result = processThread(newThread, depth);

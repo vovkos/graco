@@ -11,16 +11,15 @@
 
 #include "pch.h"
 #include "Node.h"
-#include "ClassMgr.h"
 
 //..............................................................................
 
 Node::Node()
 {
-	m_kind = NodeKind_Undefined;
+	m_nodeKind = NodeKind_Undefined;
+	m_flags = 0;
 	m_index = -1;
 	m_masterIndex = -1;
-	m_flags = 0;
 }
 
 void
@@ -40,6 +39,13 @@ Node::markReachable()
 }
 
 //..............................................................................
+
+GrammarNode::GrammarNode()
+{
+	m_lookaheadLimit = 1;
+	m_quantifierKind = 0;
+	m_quantifiedNode = NULL;
+}
 
 void
 GrammarNode::trace()
@@ -76,21 +82,31 @@ GrammarNode::markFinal()
 	return true;
 }
 
+bool
+GrammarNode::markWeaklyReachable()
+{
+	if (m_flags & GrammarNodeFlag_WeaklyReachable)
+		return false;
+
+	m_flags |= GrammarNodeFlag_WeaklyReachable;
+	return true;
+}
+
 void
 GrammarNode::luaExportSrcPos(
 	lua::LuaState* luaState,
 	const lex::LineCol& lineCol
 	)
 {
-	luaState->setMemberString("FilePath", m_srcPos.m_filePath);
-	luaState->setMemberInteger("Line", lineCol.m_line);
-	luaState->setMemberInteger("Col", lineCol.m_col);
+	luaState->setMemberString("filePath", m_srcPos.m_filePath);
+	luaState->setMemberInteger("line", lineCol.m_line);
+	luaState->setMemberInteger("col", lineCol.m_col);
 }
 
 GrammarNode*
 GrammarNode::stripBeacon()
 {
-	return m_kind == NodeKind_Beacon ? ((BeaconNode*)this)->m_target : this;
+	return m_nodeKind == NodeKind_Beacon ? ((BeaconNode*)this)->m_target : this;
 }
 
 static
@@ -137,37 +153,77 @@ GrammarNode::getBnfString()
 		);
 }
 
+void
+GrammarNode::buildFirstFollowArrays(const sl::ArrayRef<SymbolNode*>& tokenArray)
+{
+	m_firstArray.clear();
+	m_followArray.clear();
+
+	for (
+		size_t i = m_firstSet.findBit(0);
+		i != -1;
+		i = m_firstSet.findBit(i + 1)
+		)
+	{
+		SymbolNode* token = tokenArray[i];
+		m_firstArray.append(token);
+	}
+
+	for (
+		size_t i = m_followSet.findBit(0);
+		i != -1;
+		i = m_followSet.findBit(i + 1)
+		)
+	{
+		SymbolNode* token = tokenArray[i];
+		m_followArray.append(token);
+	}
+}
+
+bool
+GrammarNode::propagateChildGrammarProps(GrammarNode* child)
+{
+	GrammarNode* parent = this;
+
+	bool hasChanged = false;
+
+	if (m_firstSet.merge(child->m_firstSet, sl::BitOpKind_Or))
+		hasChanged = true;
+
+	if (child->m_followSet.merge(m_followSet, sl::BitOpKind_Or))
+		hasChanged = true;
+
+	if (child->isNullable())
+		if (markNullable())
+			hasChanged = true;
+
+	if (isFinal())
+		if (child->markFinal())
+			hasChanged = true;
+
+	return hasChanged;
+}
+
 //..............................................................................
 
 SymbolNode::SymbolNode()
 {
-	m_kind = NodeKind_Symbol;
+	m_nodeKind = NodeKind_Symbol;
 	m_charToken = 0;
-	m_class = NULL;
+	m_synchronizer = NULL;
 	m_resolver = NULL;
 	m_resolverPriority = 0;
-}
-
-sl::String
-SymbolNode::getArgName(size_t index)
-{
-	ASSERT(index < m_argNameList.getCount());
-
-	sl::BoxIterator<sl::String> it = m_argNameList.getHead();
-	for (size_t i = 0; i < index; i++)
-		it++;
-
-	return *it;
 }
 
 void
 SymbolNode::addProduction(GrammarNode* node)
 {
-	if (node->m_kind == NodeKind_Symbol &&
-		!(node->m_flags & SymbolNodeFlag_Named) &&
+	if (node->m_nodeKind == NodeKind_Symbol &&
+		!(node->m_flags & (SymbolNodeFlag_User | SymbolNodeFlag_Lookahead)) &&
+		!((SymbolNode*)node)->m_synchronizer &&
 		!((SymbolNode*)node)->m_resolver)
 	{
-		if (m_flags & SymbolNodeFlag_Named)
+		if (m_flags & SymbolNodeFlag_User)
 		{
 			m_quantifierKind = node->m_quantifierKind;
 			m_quantifiedNode = node->m_quantifiedNode;
@@ -184,23 +240,62 @@ SymbolNode::addProduction(GrammarNode* node)
 bool
 SymbolNode::markReachable()
 {
-	if (!Node::markReachable())
+	if (!GrammarNode::markReachable())
 		return false;
+
+	if (m_synchronizer)
+		m_synchronizer->markWeaklyReachable();
 
 	if (m_resolver)
 		m_resolver->markReachable();
 
-	if (m_class)
-		m_class->m_flags |= ClassFlag_Reachable;
-
 	size_t count = m_productionArray.getCount();
 	for (size_t i = 0; i < count; i++)
 	{
-		Node* child = m_productionArray[i];
+		GrammarNode* child = m_productionArray[i];
 		child->markReachable();
 	}
 
 	return true;
+}
+
+bool
+SymbolNode::markWeaklyReachable()
+{
+	if (!GrammarNode::markWeaklyReachable())
+		return false;
+
+	if (m_synchronizer)
+		m_synchronizer->markWeaklyReachable();
+
+	if (m_resolver)
+		m_resolver->markWeaklyReachable();
+
+	size_t count = m_productionArray.getCount();
+	for (size_t i = 0; i < count; i++)
+	{
+		GrammarNode* child = m_productionArray[i];
+		child->markWeaklyReachable();
+	}
+
+	return true;
+}
+
+bool
+SymbolNode::propagateGrammarProps()
+{
+	bool result = false;
+
+	size_t childrenCount = m_productionArray.getCount();
+
+	for (size_t j = 0; j < childrenCount; j++)
+	{
+		GrammarNode* production = m_productionArray[j];
+		if (propagateChildGrammarProps(production))
+			result = true;
+	}
+
+	return result;
 }
 
 void
@@ -208,14 +303,17 @@ SymbolNode::trace()
 {
 	GrammarNode::trace();
 
-	if (m_kind == NodeKind_Token)
+	if (m_nodeKind == NodeKind_Token)
 		return;
+
+	if (m_synchronizer)
+		printf(
+			"\t  SYNC:   %s\n",
+			nodeArrayToString(&m_synchronizer->m_firstArray).sz()
+			);
 
 	if (m_resolver)
 		printf("\t  RSLVR:  %s\n", m_resolver->m_name.sz());
-
-	if (m_class)
-		printf("\t  CLASS:  %s\n", m_class->m_name.sz());
 
 	size_t childrenCount = m_productionArray.getCount();
 
@@ -229,66 +327,88 @@ SymbolNode::trace()
 void
 SymbolNode::luaExport(lua::LuaState* luaState)
 {
-	if (m_kind == NodeKind_Token)
+	if (m_nodeKind == NodeKind_Token)
 	{
 		luaState->createTable(1);
 
 		if (m_flags & SymbolNodeFlag_EofToken)
-			luaState->setMemberBoolean("IsEofToken", true);
+			luaState->setMemberBoolean("isEofToken", true);
 		else if (m_flags & SymbolNodeFlag_AnyToken)
-			luaState->setMemberBoolean("IsAnyToken", true);
-		else if (m_flags & SymbolNodeFlag_Named)
-			luaState->setMemberString("Name", m_name);
+			luaState->setMemberBoolean("isAnyToken", true);
+		else if (m_flags & SymbolNodeFlag_User)
+			luaState->setMemberString("name", m_name);
 		else
-			luaState->setMemberInteger("Token", m_charToken);
+			luaState->setMemberInteger("token", m_charToken);
 
 		return;
 	}
 
 	luaState->createTable(0, 5);
-	luaState->setMemberString("Name", m_name);
-	luaState->setMemberBoolean("IsCustom", !m_arg.isEmpty () || !m_local.isEmpty ());
+	luaState->setMemberString("name", m_name);
+
+	luaState->setMemberBoolean(
+		"isCustomClass",
+		!m_valueBlock.isEmpty() ||
+		!m_paramBlock.isEmpty() ||
+		!m_localBlock.isEmpty()
+		);
 
 	luaState->createTable(0, 3);
 	luaExportSrcPos(luaState, m_srcPos);
-	luaState->setMember("SrcPos");
+	luaState->setMember("srcPos");
 
-	if (m_flags & SymbolNodeFlag_NoAst)
-		luaState->setMemberBoolean("IsNoAst", true);
-	else if (m_class)
-		luaState->setMemberString("Class", m_class->m_name);
-
-	if (!m_arg.isEmpty())
+	if (!m_valueBlock.isEmpty())
 	{
-		luaState->setMemberString("Arg", m_arg);
-		luaState->setMemberInteger("ArgLine", m_argLineCol.m_line);
+		luaState->setMemberString("valueBlock", m_valueBlock);
+		luaState->setMemberInteger("valueLine", m_valueLineCol.m_line);
 	}
 
-	if (!m_local.isEmpty())
+	if (!m_paramBlock.isEmpty())
 	{
-		luaState->setMemberString("Local", m_local);
-		luaState->setMemberInteger("LocalLine", m_localLineCol.m_line);
+		luaState->setMemberString("paramBlock", m_paramBlock);
+		luaState->setMemberInteger("paramLine", m_paramLineCol.m_line);
 	}
 
-	if (!m_enter.isEmpty())
+	if (!m_localBlock.isEmpty())
 	{
-		luaState->setMemberString("Enter", m_enter);
-		luaState->setMemberInteger("EnterLine", m_enterLineCol.m_line);
+		luaState->setMemberString("localBlock", m_localBlock);
+		luaState->setMemberInteger("localLine", m_localLineCol.m_line);
 	}
 
-	if (!m_leave.isEmpty())
+	if (!m_enterBlock.isEmpty())
 	{
-		luaState->setMemberString("Leave", m_leave);
-		luaState->setMemberInteger("LeaveLine", m_leaveLineCol.m_line);
+		luaState->setMemberString("enterBlock", m_enterBlock);
+		luaState->setMemberInteger("enterLine", m_enterLineCol.m_line);
 	}
 
-	luaState->createTable(m_argNameList.getCount());
+	if (!m_leaveBlock.isEmpty())
+	{
+		luaState->setMemberString("leaveBlock", m_leaveBlock);
+		luaState->setMemberInteger("leaveLine", m_leaveLineCol.m_line);
+	}
 
-	sl::BoxIterator<sl::String> it = m_argNameList.getHead();
+	luaState->createTable(m_paramNameList.getCount());
+
+	sl::BoxIterator<sl::StringRef> it = m_paramNameList.getHead();
 	for (size_t i = 1; it; it++, i++)
 		luaState->setArrayElementString(i, *it);
 
-	luaState->setMember("ArgNameTable");
+	luaState->setMember("paramNameTable");
+
+	if (m_synchronizer)
+	{
+		size_t count = m_synchronizer->m_firstArray.getCount();
+		luaState->createTable(count);
+
+		for (size_t i = 0; i < count; i++)
+		{
+			SymbolNode* token = m_synchronizer->m_firstArray[i];
+			luaState->getGlobalArrayElement("TokenTable", token->m_index + 1);
+			luaState->setArrayElement(i + 1);
+		}
+
+		luaState->setMember("syncTokenTable");
+	}
 
 	size_t childrenCount = m_productionArray.getCount();
 	luaState->createTable(childrenCount);
@@ -299,13 +419,13 @@ SymbolNode::luaExport(lua::LuaState* luaState)
 		luaState->setArrayElementInteger(i + 1, child->m_masterIndex);
 	}
 
-	luaState->setMember("ProductionTable");
+	luaState->setMember("productionTable");
 }
 
 sl::String
 SymbolNode::getBnfString()
 {
-	if (m_kind == NodeKind_Token || (m_flags & SymbolNodeFlag_Named))
+	if (m_nodeKind == NodeKind_Token || (m_flags & SymbolNodeFlag_User))
 		return m_name;
 
 	if (m_quantifierKind)
@@ -329,15 +449,10 @@ SymbolNode::getBnfString()
 
 //..............................................................................
 
-SequenceNode::SequenceNode()
-{
-	m_kind = NodeKind_Sequence;
-}
-
 void
 SequenceNode::append(GrammarNode* node)
 {
-	if (node->m_kind == NodeKind_Sequence)
+	if (node->m_nodeKind == NodeKind_Sequence)
 		m_sequence.append(((SequenceNode*)node)->m_sequence); // merge sequences
 	else
 		m_sequence.append(node);
@@ -346,17 +461,90 @@ SequenceNode::append(GrammarNode* node)
 bool
 SequenceNode::markReachable()
 {
-	if (!Node::markReachable())
+	if (!GrammarNode::markReachable())
 		return false;
 
 	size_t count = m_sequence.getCount();
 	for (size_t i = 0; i < count; i++)
-	{
-		Node* child = m_sequence[i];
-		child->markReachable();
-	}
+		m_sequence[i]->markReachable();
 
 	return true;
+}
+
+bool
+SequenceNode::markWeaklyReachable()
+{
+	if (!GrammarNode::markWeaklyReachable())
+		return false;
+
+	size_t count = m_sequence.getCount();
+	for (size_t i = 0; i < count; i++)
+		m_sequence[i]->markWeaklyReachable();
+
+	return true;
+}
+
+bool
+SequenceNode::propagateGrammarProps()
+{
+	bool hasChanged = false;
+
+	size_t childrenCount = m_sequence.getCount();
+
+	// FIRST between parent-child
+
+	bool isNullable = true;
+	for (size_t j = 0; j < childrenCount; j++)
+	{
+		GrammarNode* child = m_sequence[j];
+		if (m_firstSet.merge(child->m_firstSet, sl::BitOpKind_Or))
+			hasChanged = true;
+
+		if (!child->isNullable())
+		{
+			isNullable = false;
+			break;
+		}
+	}
+
+	if (isNullable) // all nullable
+		if (markNullable())
+			hasChanged = true;
+
+	// FOLLOW between parent-child
+
+	for (intptr_t j = childrenCount - 1; j >= 0; j--)
+	{
+		GrammarNode* child = m_sequence[j];
+		if (child->m_followSet.merge(m_followSet, sl::BitOpKind_Or))
+			hasChanged = true;
+
+		if (isFinal())
+			if (child->markFinal())
+				hasChanged = true;
+
+		if (!child->isNullable())
+			break;
+	}
+
+	// FOLLOW between child-child
+
+	if (childrenCount >= 2)
+		for (size_t j = 0; j < childrenCount - 1; j++)
+		{
+			GrammarNode* child = m_sequence[j];
+			for (size_t k = j + 1; k < childrenCount; k++)
+			{
+				GrammarNode* next = m_sequence[k];
+				if (child->m_followSet.merge(next->m_firstSet, sl::BitOpKind_Or))
+					hasChanged = true;
+
+				if (!next->isNullable())
+					break;
+			}
+		}
+
+	return hasChanged;
 }
 
 void
@@ -370,7 +558,7 @@ void
 SequenceNode::luaExport(lua::LuaState* luaState)
 {
 	luaState->createTable(0, 2);
-	luaState->setMemberString("Name", m_name);
+	luaState->setMemberString("name", m_name);
 
 	size_t count = m_sequence.getCount();
 	luaState->createTable(count);
@@ -381,7 +569,7 @@ SequenceNode::luaExport(lua::LuaState* luaState)
 		luaState->setArrayElementInteger(j + 1, child->m_masterIndex);
 	}
 
-	luaState->setMember("Sequence");
+	luaState->setMember("sequence");
 }
 
 sl::String
@@ -434,11 +622,6 @@ UserNode::UserNode()
 
 //..............................................................................
 
-ActionNode::ActionNode()
-{
-	m_kind = NodeKind_Action;
-}
-
 void
 ActionNode::trace()
 {
@@ -462,24 +645,24 @@ ActionNode::luaExport(lua::LuaState* luaState)
 	if (m_dispatcher)
 	{
 		luaState->getGlobalArrayElement("DispatcherTable", m_dispatcher->m_index + 1);
-		luaState->setMember("Dispatcher");
+		luaState->setMember("dispatcher");
 	}
 
 	luaState->getGlobalArrayElement("SymbolTable", m_productionSymbol->m_index + 1);
-	luaState->setMember("ProductionSymbol");
+	luaState->setMember("productionSymbol");
 
-	luaState->setMemberString("UserCode", m_userCode);
+	luaState->setMemberString("userCode", m_userCode);
 
 	luaState->createTable(0, 3);
 	luaExportSrcPos(luaState, m_srcPos);
-	luaState->setMember("SrcPos");
+	luaState->setMember("srcPos");
 }
 
 //..............................................................................
 
 ArgumentNode::ArgumentNode()
 {
-	m_kind = NodeKind_Argument;
+	m_nodeKind = NodeKind_Argument;
 	m_targetSymbol = NULL;
 }
 
@@ -517,34 +700,34 @@ ArgumentNode::luaExport(lua::LuaState* luaState)
 	if (m_dispatcher)
 	{
 		luaState->getGlobalArrayElement("DispatcherTable", m_dispatcher->m_index + 1);
-		luaState->setMember("Dispatcher");
+		luaState->setMember("dispatcher");
 	}
 
 	luaState->getGlobalArrayElement("SymbolTable", m_productionSymbol->m_index + 1);
-	luaState->setMember("ProductionSymbol");
+	luaState->setMember("productionSymbol");
 	luaState->getGlobalArrayElement("SymbolTable", m_targetSymbol->m_index + 1);
-	luaState->setMember("TargetSymbol");
+	luaState->setMember("targetSymbol");
 
 	luaState->createTable(m_argValueList.getCount());
 
 	sl::BoxIterator<sl::String> it = m_argValueList.getHead();
-	ASSERT(it); // empty argument should have been eliminated
+	ASSERT(it); // empty argument sh ould have been eliminated
 
 	for (size_t i = 1; it; it++, i++)
 		luaState->setArrayElementString(i, *it);
 
-	luaState->setMember("ValueTable");
+	luaState->setMember("valueTable");
 
 	luaState->createTable(0, 3);
 	luaExportSrcPos(luaState, m_srcPos);
-	luaState->setMember("SrcPos");
+	luaState->setMember("srcPos");
 }
 
 //..............................................................................
 
 BeaconNode::BeaconNode()
 {
-	m_kind = NodeKind_Beacon;
+	m_nodeKind = NodeKind_Beacon;
 	m_slotIndex = -1;
 	m_target = NULL;
 	m_argument = NULL;
@@ -554,11 +737,27 @@ BeaconNode::BeaconNode()
 bool
 BeaconNode::markReachable()
 {
-	if (!Node::markReachable())
+	if (!GrammarNode::markReachable())
 		return false;
 
 	m_target->markReachable();
 	return true;
+}
+
+bool
+BeaconNode::markWeaklyReachable()
+{
+	if (!GrammarNode::markWeaklyReachable())
+		return false;
+
+	m_target->markWeaklyReachable();
+	return true;
+}
+
+bool
+BeaconNode::propagateGrammarProps()
+{
+	return propagateChildGrammarProps(m_target);
 }
 
 void
@@ -579,11 +778,17 @@ void
 BeaconNode::luaExport(lua::LuaState* luaState)
 {
 	luaState->createTable(0, 2);
-	luaState->setMemberInteger("Slot", m_slotIndex);
-	luaState->setMemberInteger("Target", m_target->m_masterIndex);
+	luaState->setMemberInteger("slot", m_slotIndex);
+	luaState->setMemberInteger("target", m_target->m_masterIndex);
 }
 
 //..............................................................................
+
+DispatcherNode::DispatcherNode()
+{
+	m_nodeKind = NodeKind_Dispatcher;
+	m_symbol = NULL;
+}
 
 void
 DispatcherNode::trace()
@@ -606,7 +811,7 @@ DispatcherNode::luaExport(lua::LuaState* luaState)
 	luaState->createTable(0, 3);
 
 	luaState->getGlobalArrayElement("SymbolTable", m_symbol->m_index + 1);
-	luaState->setMember("Symbol");
+	luaState->setMember("symbol");
 
 	size_t beaconCount = m_beaconArray.getCount();
 	luaState->createTable(beaconCount);
@@ -617,26 +822,27 @@ DispatcherNode::luaExport(lua::LuaState* luaState)
 		ASSERT(beacon->m_slotIndex == j);
 
 		luaState->createTable(1);
-		if (beacon->m_target->m_kind == NodeKind_Symbol)
+		if (beacon->m_target->m_nodeKind == NodeKind_Symbol)
 		{
 			luaState->getGlobalArrayElement("SymbolTable", beacon->m_target->m_index + 1);
-			luaState->setMember("Symbol");
+			luaState->setMember("symbol");
 		}
 
 		luaState->setArrayElement(j + 1);
 	}
 
-	luaState->setMember("BeaconTable");
+	luaState->setMember("beaconTable");
 }
 
 //..............................................................................
 
 ConflictNode::ConflictNode()
 {
-	m_kind = NodeKind_Conflict;
+	m_nodeKind = NodeKind_Conflict;
 	m_symbol = NULL;
 	m_token = NULL;
 	m_resultNode = NULL;
+	m_lookaheadLimit = 1;
 }
 
 void
@@ -668,7 +874,7 @@ ConflictNode::trace()
 
 LaDfaNode::LaDfaNode()
 {
-	m_kind = NodeKind_LaDfa;
+	m_nodeKind = NodeKind_LaDfa;
 	m_token = NULL;
 	m_resolver = NULL;
 	m_resolverElse = NULL;
@@ -724,22 +930,22 @@ LaDfaNode::trace()
 size_t
 getTransitionIndex(Node* node)
 {
-	if (node->m_kind != NodeKind_LaDfa || !(node->m_flags & LaDfaNodeFlag_Leaf))
+	if (node->m_nodeKind != NodeKind_LaDfa || !(node->m_flags & LaDfaNodeFlag_Leaf))
 		return node->m_masterIndex;
 
 	LaDfaNode* laDfaNode = (LaDfaNode*)node;
-	ASSERT(laDfaNode->m_production && laDfaNode->m_production->m_kind != NodeKind_LaDfa);
+	ASSERT(laDfaNode->m_production && laDfaNode->m_production->m_nodeKind != NodeKind_LaDfa);
 	return laDfaNode->m_production->m_masterIndex;
 }
 
 void
 LaDfaNode::luaExportResolverMembers(lua::LuaState* luaState)
 {
-	luaState->setMemberString("Name", m_name);
-	luaState->setMemberInteger("Resolver", m_resolver->m_masterIndex);
-	luaState->setMemberInteger("Production", m_production->m_masterIndex);
-	luaState->setMemberInteger("ResolverElse", getTransitionIndex (m_resolverElse));
-	luaState->setMemberBoolean("HasChainedResolver", ((LaDfaNode*) m_resolverElse)->m_resolver != NULL);
+	luaState->setMemberString("name", m_name);
+	luaState->setMemberInteger("resolver", m_resolver->m_masterIndex);
+	luaState->setMemberInteger("production", m_production->m_masterIndex);
+	luaState->setMemberInteger("resolverElse", getTransitionIndex (m_resolverElse));
+	luaState->setMemberBoolean("hasChainedResolver", ((LaDfaNode*) m_resolverElse)->m_resolver != NULL);
 }
 
 void
@@ -768,20 +974,20 @@ LaDfaNode::luaExport(lua::LuaState* luaState)
 		luaState->createTable(0, 4);
 
 		luaState->getGlobalArrayElement("TokenTable", child->m_token->m_index + 1);
-		luaState->setMember("Token");
+		luaState->setMember("token");
 
 		if (child->m_resolver)
 			child->luaExportResolverMembers(luaState);
 		else
-			luaState->setMemberInteger("Production", getTransitionIndex (child));
+			luaState->setMemberInteger("production", getTransitionIndex (child));
 
 		luaState->setArrayElement(i + 1);
 	}
 
-	luaState->setMember("TransitionTable");
+	luaState->setMember("transitionTable");
 
 	if (m_production)
-		luaState->setMemberInteger("DefaultProduction", getTransitionIndex (m_production));
+		luaState->setMemberInteger("defaultProduction", getTransitionIndex (m_production));
 }
 
 //..............................................................................

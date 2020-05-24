@@ -17,7 +17,7 @@
 CmdLine::CmdLine()
 {
 	m_flags = 0;
-	m_lookaheadLimit = 2;
+	m_lookaheadLimit = 1;
 	m_conflictDepthLimit = 4;
 }
 

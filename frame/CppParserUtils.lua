@@ -9,10 +9,6 @@
 --
 --------------------------------------------------------------------------------
 
-if NoPpLine then
-	PpLinePrefix = "//"
-end
-
 if ParserClassName == nil then
 	ParserClassName = "Parser"
 end
@@ -21,10 +17,22 @@ if TokenClassName == nil then
 	TokenClassName = "Token"
 end
 
-AstNodeVariableName = "__astNode"
-SymbolVariableName  = "__symbol"
+if SymbolVariableName == nil then
+	SymbolVariableName  = "__symbol"
+end
 
-ClassCount      = #ClassTable
+if TargetVariableName == nil then
+	TargetVariableName  = "__target"
+end
+
+if NoPpLine then
+	PpLineFormat = "// #line %d \"%s\""
+else
+	PpLineFormat = "#line %d \"%s\""
+end
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 TokenCount      = #TokenTable
 SymbolCount     = #SymbolTable
 SequenceCount   = #SequenceTable
@@ -33,11 +41,9 @@ ArgumentCount   = #ArgumentTable
 BeaconCount     = #BeaconTable
 DispatcherCount = #DispatcherTable
 LaDfaCount      = #LaDfaTable
-
 TotalCount      = TokenCount + SymbolCount + SequenceCount + ActionCount + ArgumentCount + BeaconCount + LaDfaCount
 
 TokenEnd        = TokenCount
-NamedSymbolEnd  = TokenEnd + NamedSymbolCount
 SymbolEnd       = TokenEnd + SymbolCount
 SequenceEnd     = SymbolEnd + SequenceCount
 ActionEnd       = SequenceEnd + ActionCount
@@ -47,96 +53,66 @@ LaDfaEnd        = BeaconEnd + LaDfaCount
 
 -------------------------------------------------------------------------------
 
-function GetPpLine (
-	FilePath,
-	Line
-	)
-	return string.format (
-		"%d \"%s\"",
-		Line + 1,
-		string.gsub (FilePath, "\\", "/")
+function getPpLine(filePath, line)
+	return string.format(
+		PpLineFormat,
+		line + 1,
+		string.gsub(filePath, "\\", "/")
 		)
 end
 
-function GetPpLineDefault ()
-	return GetPpLine (TargetFilePath, getLine () + 1)
+function getPpLineDefault()
+	return getPpLine(TargetFilePath, getLine() + 1)
 end
 
-function GetTokenString (Token)
-	if Token.IsEofToken then
+function getTokenString(token)
+	if token.isEofToken then
 		return "'\\00'"
-	elseif Token.IsAnyToken then
+	elseif token.isAnyToken then
 		return "'\\01'"
-	elseif Token.Name then
-		return Token.Name
+	elseif token.name then
+		return token.name
 	else
-		TokenChar = string.char (Token.Token)
-		if string.match (TokenChar, "[%g ]") then
-			return string.format ("'%s'", TokenChar)
+		TokenChar = string.char(token.token)
+		if string.match(TokenChar, "[%g ]") then
+			return string.format("'%s'", TokenChar)
 		else
-			return Token.Token
+			return token.token
 		end
 	end
 end
 
--------------------------------------------------------------------------------
-
-function GetSymbolDeclaration (
-	Symbol,
-	Name,
-	Value
-	)
-	if Symbol.IsCustom then
-		return string.format ("SymbolNode_%s* %s = (SymbolNode_%s*) %s;", Symbol.Name, Name, Symbol.Name, Value)
+function getSymbolDeclaration(symbol, name, value)
+	if symbol.isCustomClass then
+		return string.format("SymbolNode_%s* %s = (SymbolNode_%s*)%s;", symbol.name, name, symbol.name, value)
 	else
-		return string.format ("SymbolNode* %s = %s;", Name, Value)
+		return string.format("SymbolNode* %s = %s;", name, value)
 	end
 end
 
--------------------------------------------------------------------------------
-
-function GetAstDeclaration (
-	Symbol,
-	AstName,
-	SymbolName
-	)
-	if Symbol.Class then
-		return string.format ("%s* %s = (%s*) %s->m_astNode;", Symbol.Class, AstName, Symbol.Class, SymbolName)
-	else
-		return string.format ("AstNode* %s = %s->m_astNode;", AstName, SymbolName)
-	end
-end
-
--------------------------------------------------------------------------------
-
-function ProcessActionUserCode (
-	UserCode,
-	Dispatcher,
-	SymbolName,
-	AstName
-	)
-	return (string.gsub (
-		UserCode,
+function processActionUserCode(userCode, dispatcher, symbolName)
+	return (string.gsub(
+		userCode,
 		"%$(%w*)",
-		function (s)
-			if s == "" or s == "ast" then
-				return string.format ("(*%s)", AstName)
-			elseif s == "arg" then
-				return string.format ("%s->m_arg", SymbolName)
+		function(s)
+			if s == "" then
+				return string.format("%s->m_value", symbolName)
+			elseif s == "param" then
+				return string.format("%s->m_param", symbolName)
 			elseif s == "local" then
-				return string.format ("%s->m_local", SymbolName)
-			elseif not Dispatcher then
-				error (string.format ("invalid locator $%s", s))
+				return string.format("%s->m_local", symbolName)
+			elseif not dispatcher then
+				error(string.format("invalid locator $%s", s))
 			else
-				SlotIndex = tonumber (s)
-				Symbol = Dispatcher.BeaconTable [SlotIndex + 1].Symbol
+				slotIndex = tonumber(s)
+				symbol = dispatcher.beaconTable[slotIndex + 1].symbol
 
-				if not Symbol then
-					return string.format ("(*getTokenLocator (%d))", SlotIndex)
-				elseif Symbol.Class then
-					return string.format ("(*(%s*) getAstLocator (%d))", Symbol.Class, SlotIndex)
+				if not symbol then
+					return string.format("(*getTokenLocator(%d))", slotIndex)
+				elseif symbol.valueBlock then
+					return string.format("(*(SymbolNodeValue_%s*)getSymbolLocator(%d))", symbol.name, slotIndex)
 				else
-					return string.format ("(*getAstLocator (%d))", SlotIndex)
+					return string.format("(*getSymbolLocator(%d))", slotIndex)
 				end
 			end
 		end

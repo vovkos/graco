@@ -16,40 +16,52 @@
 
 NodeMgr::NodeMgr()
 {
-	m_masterCount = 0;
-	m_primaryStartSymbol = NULL;
-
 	// we use the same master index for epsilon production and eof token:
 	// token with index 0 is eof token
 	// parse table entry equal 0 is epsilon production
 
-	m_eofTokenNode.m_kind = NodeKind_Token;
+	m_eofTokenNode.m_nodeKind = NodeKind_Token;
 	m_anyTokenNode.m_flags = SymbolNodeFlag_EofToken;
 	m_eofTokenNode.m_name = "$";
 	m_eofTokenNode.m_index = 0;
 	m_eofTokenNode.m_masterIndex = 0;
 
-	m_anyTokenNode.m_kind = NodeKind_Token;
+	m_anyTokenNode.m_nodeKind = NodeKind_Token;
 	m_anyTokenNode.m_flags = SymbolNodeFlag_AnyToken;
 	m_anyTokenNode.m_name = "any";
 	m_anyTokenNode.m_index = 1;
 	m_anyTokenNode.m_masterIndex = 1;
 
-	m_epsilonNode.m_kind = NodeKind_Epsilon;
+	m_epsilonNode.m_nodeKind = NodeKind_Epsilon;
 	m_epsilonNode.m_flags |= GrammarNodeFlag_Nullable;
 	m_epsilonNode.m_name = "epsilon";
 	m_epsilonNode.m_masterIndex = 0;
 
-	m_startPragmaSymbol.m_flags |= SymbolNodeFlag_Pragma;
-	m_startPragmaSymbol.m_name = "pragma";
+	m_pragmaStartSymbol.m_flags |= SymbolNodeFlag_Pragma;
+	m_pragmaStartSymbol.m_name = "pragma";
+	m_primaryStartSymbol = NULL;
+
+	m_lookaheadLimit = 1;
+	m_masterCount = 0;
 }
 
 void
 NodeMgr::clear()
 {
+	m_tokenMap.clear();
+	m_symbolMap.clear();
+	m_anyTokenNode.m_firstArray.clear();
+	m_anyTokenNode.m_firstSet.clear();
+
+	m_pragmaStartSymbol.m_index = -1;
+	m_pragmaStartSymbol.m_masterIndex = -1;
+	m_pragmaStartSymbol.m_productionArray.clear();
+	m_primaryStartSymbol = NULL;
+
 	m_charTokenList.clear();
 	m_namedTokenList.clear();
 	m_namedSymbolList.clear();
+	m_catchSymbolList.clear();
 	m_tempSymbolList.clear();
 	m_sequenceList.clear();
 	m_beaconList.clear();
@@ -58,18 +70,13 @@ NodeMgr::clear()
 	m_argumentList.clear();
 	m_conflictList.clear();
 	m_laDfaList.clear();
+	m_weaklyReachableNodeList.clear();
 
-	m_tokenMap.clear();
-	m_symbolMap.clear();
-	m_anyTokenNode.m_firstArray.clear();
-	m_anyTokenNode.m_firstSet.clear();
+	m_tokenArray.clear();
+	m_symbolArray.clear();
 
-	m_startPragmaSymbol.m_index = -1;
-	m_startPragmaSymbol.m_masterIndex = -1;
-	m_startPragmaSymbol.m_productionArray.clear();
-
+	m_lookaheadLimit = 1;
 	m_masterCount = 0;
-	m_primaryStartSymbol = NULL;
 }
 
 void
@@ -96,7 +103,7 @@ NodeMgr::getTokenNode(int token)
 		return mapIt->m_value;
 
 	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
-	node->m_kind = NodeKind_Token;
+	node->m_nodeKind = NodeKind_Token;
 	node->m_charToken = token;
 
 	if (isprint(token))
@@ -118,9 +125,9 @@ NodeMgr::getSymbolNode(const sl::StringRef& name)
 		return mapIt->m_value;
 
 	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
-	node->m_kind = NodeKind_Symbol;
-	node->m_flags = SymbolNodeFlag_Named;
+	node->m_flags = SymbolNodeFlag_User;
 	node->m_name = name;
+	node->m_lookaheadLimit = m_lookaheadLimit;
 
 	m_namedSymbolList.insertTail(node);
 	mapIt->m_value = node;
@@ -129,10 +136,21 @@ NodeMgr::getSymbolNode(const sl::StringRef& name)
 }
 
 SymbolNode*
+NodeMgr::createCatchSymbolNode()
+{
+	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
+	node->m_name.format("_snc%d", m_catchSymbolList.getCount() + 1);
+	node->m_lookaheadLimit = m_lookaheadLimit;
+	m_catchSymbolList.insertTail(node);
+	return node;
+}
+
+SymbolNode*
 NodeMgr::createTempSymbolNode()
 {
 	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
 	node->m_name.format("_tmp%d", m_tempSymbolList.getCount() + 1);
+	node->m_lookaheadLimit = m_lookaheadLimit;
 	m_tempSymbolList.insertTail(node);
 	return node;
 }
@@ -142,6 +160,7 @@ NodeMgr::createSequenceNode()
 {
 	SequenceNode* node = AXL_MEM_NEW(SequenceNode);
 	node->m_name.format("_seq%d", m_sequenceList.getCount() + 1);
+	node->m_lookaheadLimit = m_lookaheadLimit;
 	m_sequenceList.insertTail(node);
 	return node;
 }
@@ -158,15 +177,18 @@ BeaconNode*
 NodeMgr::createBeaconNode(SymbolNode* target)
 {
 	BeaconNode* beaconNode = AXL_MEM_NEW(BeaconNode);
-	beaconNode->m_kind = NodeKind_Beacon;
 	beaconNode->m_target = target;
-	if (target->m_kind == NodeKind_Symbol)
+	beaconNode->m_lookaheadLimit = m_lookaheadLimit;
+
+	if (target->m_nodeKind == NodeKind_Symbol)
 		beaconNode->m_label = target->m_name;
+
 	beaconNode->m_name.format(
 		"_bcn%d(%s)",
 		m_beaconList.getCount() + 1,
 		target->m_name.sz()
 		);
+
 	m_beaconList.insertTail(beaconNode);
 	return beaconNode;
 }
@@ -226,7 +248,7 @@ NodeMgr::createQuantifierNode(
 	SequenceNode* tempSeq;
 	SymbolNode* tempAlt;
 
-	if (node->m_kind == NodeKind_Action || node->m_kind == NodeKind_Epsilon)
+	if (node->m_nodeKind == NodeKind_Action || node->m_nodeKind == NodeKind_Epsilon)
 	{
 		err::setFormatStringError("can't apply quantifier to action or epsilon nodes");
 		return NULL;
@@ -240,20 +262,17 @@ NodeMgr::createQuantifierNode(
 		tempAlt = createTempSymbolNode();
 		tempAlt->addProduction(node);
 		tempAlt->addProduction(&m_epsilonNode);
-
 		resultNode = tempAlt;
 		break;
 
 	case '*':
 		tempAlt = createTempSymbolNode();
-
 		tempSeq = createSequenceNode();
 		tempSeq->append(node);
 		tempSeq->append(tempAlt);
 
 		tempAlt->addProduction(tempSeq);
 		tempAlt->addProduction(&m_epsilonNode);
-
 		resultNode = tempAlt;
 		break;
 
@@ -261,7 +280,6 @@ NodeMgr::createQuantifierNode(
 		tempSeq = createSequenceNode();
 		tempSeq->append(node);
 		tempSeq->append(createQuantifierNode(node, '*'));
-
 		resultNode = tempSeq;
 		break;
 
@@ -296,33 +314,40 @@ NodeMgr::markReachableNodes()
 			node->markReachable();
 		}
 
-	m_startPragmaSymbol.markReachable();
+	m_pragmaStartSymbol.markReachable();
 }
 
 template <typename T>
-static
 void
-deleteUnreachableNodesFromList(sl::List<T>* list)
+NodeMgr::deleteUnreachableNodes(sl::List<T>* list)
 {
 	sl::Iterator<T> nodeIt = list->getHead();
 	while (nodeIt)
 	{
 		T* node = *nodeIt++;
-		if (!node->isReachable())
-			list->erase(node);
+		if (!(node->m_flags & NodeFlag_Reachable))
+			if (node->m_flags & GrammarNodeFlag_WeaklyReachable)
+			{
+				list->remove(node);
+				m_weaklyReachableNodeList.insertTail(node);
+			}
+			else
+			{
+				list->erase(node);
+			}
 	}
 }
 
 void
 NodeMgr::deleteUnreachableNodes()
 {
-	deleteUnreachableNodesFromList(&m_charTokenList);
-	deleteUnreachableNodesFromList(&m_namedSymbolList);
-	deleteUnreachableNodesFromList(&m_tempSymbolList);
-	deleteUnreachableNodesFromList(&m_sequenceList);
-	deleteUnreachableNodesFromList(&m_beaconList);
-	deleteUnreachableNodesFromList(&m_actionList);
-	deleteUnreachableNodesFromList(&m_argumentList);
+	deleteUnreachableNodes(&m_charTokenList);
+	deleteUnreachableNodes(&m_namedSymbolList);
+	deleteUnreachableNodes(&m_tempSymbolList);
+	deleteUnreachableNodes(&m_sequenceList);
+	deleteUnreachableNodes(&m_beaconList);
+	deleteUnreachableNodes(&m_actionList);
+	deleteUnreachableNodes(&m_argumentList);
 }
 
 void
@@ -361,7 +386,7 @@ NodeMgr::indexSymbols()
 		if (!node->m_productionArray.isEmpty())
 			continue;
 
-		node->m_kind = NodeKind_Token;
+		node->m_nodeKind = NodeKind_Token;
 		node->m_index = j;
 		node->m_masterIndex = j;
 
@@ -372,10 +397,23 @@ NodeMgr::indexSymbols()
 		m_tokenArray.append(node);
 	}
 
-	size_t count = m_namedSymbolList.getCount() + m_tempSymbolList.getCount();
+	size_t count =
+		m_namedSymbolList.getCount() +
+		m_catchSymbolList.getCount() +
+		m_tempSymbolList.getCount();
+
 	m_symbolArray.setCount(count);
 
 	nodeIt = m_namedSymbolList.getHead();
+	for (; nodeIt; nodeIt++, i++, j++)
+	{
+		SymbolNode* node = *nodeIt;
+		node->m_index = i;
+		node->m_masterIndex = j;
+		m_symbolArray[i] = node;
+	}
+
+	nodeIt = m_catchSymbolList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
 		SymbolNode* node = *nodeIt;
@@ -393,11 +431,11 @@ NodeMgr::indexSymbols()
 		m_symbolArray[i] = node;
 	}
 
-	if (!m_startPragmaSymbol.m_productionArray.isEmpty())
+	if (!m_pragmaStartSymbol.m_productionArray.isEmpty())
 	{
-		m_startPragmaSymbol.m_index = i;
-		m_startPragmaSymbol.m_masterIndex = j;
-		m_symbolArray.append(&m_startPragmaSymbol);
+		m_pragmaStartSymbol.m_index = i;
+		m_pragmaStartSymbol.m_masterIndex = j;
+		m_symbolArray.append(&m_pragmaStartSymbol);
 
 		i++;
 		j++;
@@ -517,9 +555,10 @@ void
 NodeMgr::luaExport(lua::LuaState* luaState)
 {
 	luaState->setGlobalInteger("StartSymbol", m_primaryStartSymbol ? m_primaryStartSymbol->m_index : -1);
-	luaState->setGlobalInteger("StartPragmaSymbol", m_startPragmaSymbol.m_index);
+	luaState->setGlobalInteger("PragmaStartSymbol", m_pragmaStartSymbol.m_index);
 	luaState->setGlobalInteger("NamedTokenCount", m_namedTokenList.getCount());
 	luaState->setGlobalInteger("NamedSymbolCount", m_namedSymbolList.getCount());
+	luaState->setGlobalInteger("CatchSymbolCount", m_catchSymbolList.getCount());
 
 	luaExportNodeArray(luaState, "TokenTable", (Node**) (SymbolNode**) m_tokenArray, m_tokenArray.getCount());
 	luaExportNodeArray(luaState, "SymbolTable", (Node**) (SymbolNode**) m_symbolArray, m_symbolArray.getCount());

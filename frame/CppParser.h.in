@@ -1,68 +1,61 @@
-//..............................................................................
-//
-//  This file is part of the Graco toolkit.
-//
-//  Graco is distributed under the MIT license.
-//  For details see accompanying license.txt file,
-//  the public copy of which is also available at:
-//  http://tibbo.com/downloads/archive/graco/license.txt
-//
-//..............................................................................
+%{
+--------------------------------------------------------------------------------
+--
+--  This file is part of the Graco toolkit.
+--
+--  Graco is distributed under the MIT license.
+--  For details see accompanying license.txt file,
+--  the public copy of which is also available at:
+--  http://tibbo.com/downloads/archive/graco/license.txt
+--
+--------------------------------------------------------------------------------
 
-%{ dofile (FrameDir .. "/CppParserUtils.lua") }
-
-#pragma once
-
-$Includes
-
-// warning C4065: switch statement contains 'default' but no 'case' labels
-
-#pragma warning (disable: 4065)
-
-$OpenNamespace
+dofile(FrameDir .. "/CppParserUtils.lua")
+}
+$HeaderFileBegin
 
 //..............................................................................
 
 enum SymbolKind
 {
-	%{
-	for i = 1, NamedSymbolCount do
-		Symbol = SymbolTable [i]
-		emit ("SymbolKind_", Symbol.Name, " = ", i - 1, ", ")
-	}
-	%{ end }
+%{
+for i = 1, NamedSymbolCount do
+	local symbol = SymbolTable[i]
+}
+	SymbolKind_$(symbol.name) = $(i - 1),
+%{
+end -- for
+}
 };
 
 //..............................................................................
 
-class $ParserClassName: public llk::Parser <$ParserClassName, $TokenClassName>
+class $ParserClassName: public llk::Parser<$ParserClassName, $TokenClassName>
 {
+	friend llk::Parser<$ParserClassName, $TokenClassName>;
+
 public:
 	enum
 	{
-		Lookahead          = $Lookahead,
-
 		StartSymbol        = $StartSymbol,
-		StartPragmaSymbol  = $StartPragmaSymbol,
+		PragmaStartSymbol  = $PragmaStartSymbol,
 		EofToken           = 0,
 		AnyToken           = 1,
 
 		TokenCount         = $TokenCount,
+		NamedSymbolCount   = $NamedSymbolCount,
+		CatchSymbolCount   = $CatchSymbolCount,
 		SymbolCount        = $SymbolCount,
 		SequenceCount      = $SequenceCount,
 		ActionCount        = $ActionCount,
 		ArgumentCount      = $ArgumentCount,
 		BeaconCount        = $BeaconCount,
 		LaDfaCount         = $LaDfaCount,
-
 		TotalCount         = $TotalCount,
-
-		NamedSymbolCount   = $NamedSymbolCount,
 
 		TokenFirst         = 0,
 		TokenEnd           = $TokenEnd,
 		SymbolFirst        = $TokenEnd,
-		NamedSymbolEnd     = $NamedSymbolEnd,
 		SymbolEnd          = $SymbolEnd,
 		SequenceFirst      = $SymbolEnd,
 		SequenceEnd        = $SequenceEnd,
@@ -78,127 +71,68 @@ public:
 
 	// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-	$Members
+$Members
 
 	// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-	%{
-	for i = 1, ClassCount do
-		Class = ClassTable [i]
-		if Class.BaseClass then
-			BaseClass = Class.BaseClass
-		else
-			BaseClass = "AstNode"
-		end
-	}
-	class $(Class.Name): public $BaseClass
-	{
-	public:
-$PpLinePrefix #line $(GetPpLine (Class.SrcPos.FilePath, Class.SrcPos.Line))
-		$(Class.Members);
-$PpLinePrefix #line $(GetPpLineDefault ())
-	};
-	%{ end }
-
-	// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-	%{
-	for i = 1, NamedSymbolCount do
-		Symbol = SymbolTable [i]
-		if Symbol.IsCustom then }
-	class SymbolNode_$(Symbol.Name): public SymbolNode
-	{
-	public:
-			%{ if Symbol.Arg then }
-		struct
-		{
-$PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.ArgLine))
-			$((string.gsub (Symbol.Arg, ",", ";")));
-$PpLinePrefix #line $(GetPpLineDefault ())
-		} m_arg;
-			%{ end
-			if Symbol.Local then }
-		struct
-		{
-$PpLinePrefix #line $(GetPpLine (Symbol.SrcPos.FilePath, Symbol.LocalLine))
-			$(Symbol.Local);
-$PpLinePrefix #line $(GetPpLineDefault ())
-		} m_local;
-			%{ end }
-		SymbolNode_$(Symbol.Name) ()
-		{
-			m_flags = llk::SymbolNodeFlag_Named;
-			m_index = SymbolKind_$(Symbol.Name);
-			%{ if Symbol.Enter then }
-			m_flags |= llk::SymbolNodeFlag_HasEnter;
-			%{ end
-				if Symbol.Leave then }
-			m_flags |= llk::SymbolNodeFlag_HasLeave;
-			%{ end }
-		}
-	};
-		%{ end }
-	%{ end }
-
-	// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-	$Members2
-
-	// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+protected:
+	static
+	const size_t*
+	getParseTable();
 
 	static
-	size_t*
-	getParseTable ();
-
-	static
-	size_t*
-	getSequence (size_t Index);
+	const size_t*
+	getSequence(size_t index);
 
 	static
 	size_t
-	getTokenIndex (int Token);
+	getTokenIndex(int token);
 
 	static
 	int
-	getTokenFromIndex (size_t Index);
+	getTokenFromIndex(size_t index);
 
 	static
 	const char*
-	getSymbolName (size_t Index);
+	getSymbolName(size_t index);
 
 	static
 	SymbolNode*
-	createSymbolNode (size_t Index);
+	createSymbolNode(size_t index);
 
 	static
-	size_t*
-	getBeacon (size_t Index);
+	const size_t*
+	getBeacon(size_t index);
 
 	bool
-	action (size_t Index);
+	action(size_t index);
 
 	void
-	argument (
-		size_t Index,
-		SymbolNode* pSymbol
+	argument(
+		size_t index,
+		SymbolNode* symbol
 		);
 
 	bool
-	enter (size_t Index);
+	enter(size_t index);
 
 	bool
-	leave (size_t Index);
+	leave(size_t index);
 
 	LaDfaResult
-	laDfa (
-		size_t Index,
-		int LookaheadToken,
-		LaDfaTransition* pTransition
+	laDfa(
+		size_t index,
+		int lookaheadToken,
+		LaDfaTransition* transition
+		);
+
+	bool
+	isSyncToken(
+		size_t index,
+		int token
 		);
 };
 
 //..............................................................................
 
-$CloseNamespace
-
-#pragma warning (default: 4065)
+$HeaderFileEnd

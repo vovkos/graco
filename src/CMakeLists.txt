@@ -10,12 +10,29 @@
 #...............................................................................
 
 #
+# include folder
+#
+
+set(
+	INC_H_LIST
+	${GRACO_INC_DIR}/llk_Node.h
+	${GRACO_INC_DIR}/llk_Parser.h
+	${GRACO_INC_DIR}/llk_Pch.h
+	)
+
+source_group(
+	include
+	FILES
+	${INC_H_LIST}
+	)
+
+#. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+#
 # app folder
 #
 
 set(
 	APP_H_LIST
-	ClassMgr.h
 	CmdLine.h
 	DefineMgr.h
 	Generator.h
@@ -34,7 +51,6 @@ set(
 	APP_CPP_LIST
 	main.cpp
 	CmdLine.cpp
-	ClassMgr.cpp
 	DefineMgr.cpp
 	Generator.cpp
 	LaDfaBuilder.cpp
@@ -58,25 +74,6 @@ source_group(
 	${APP_H_LIST}
 	${APP_CPP_LIST}
 	${APP_RL_LIST}
-	)
-
-#. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-#
-# llk folder
-#
-
-set(
-	LLK_H_LIST
-	${GRACO_INC_DIR}/llk_Ast.h
-	${GRACO_INC_DIR}/llk_Node.h
-	${GRACO_INC_DIR}/llk_Parser.h
-	${GRACO_INC_DIR}/llk_Pch.h
-	)
-
-source_group(
-	llk
-	FILES
-	${LLK_H_LIST}
 	)
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -187,12 +184,12 @@ add_executable(
 	graco
 	${PCH_H}
 	${PCH_CPP}
+	${INC_H_LIST}
 	${APP_H_LIST}
 	${APP_CPP_LIST}
 	${APP_RL_LIST}
 	${GEN_H_LIST}
 	${GEN_RL_CPP_LIST}
-	${LLK_H_LIST}
 	${FRAME_LIST}
 	${RES_RC_LIST}
 	)

@@ -244,10 +244,10 @@ for i = 1, NamedSymbolCount do
 		break;
 
 %{
-	elseif symbol.enterCode or symbol.leaveCode then
+	elseif symbol.enterBlock or symbol.leaveBlock then
 }
 	case SymbolKind_$(symbol.name):
-		node = AXL_MEM_NEW(SymbolNode);
+		node = AXL_MEM_NEW(llk::StdSymbolNode);
 		node->m_index = index;
 %{
 		if symbol.enterBlock then
@@ -507,11 +507,13 @@ for i = 1, LaDfaCount do
 			transition->m_productionIndex = $(dfaNode.defaultProduction);
 			return LaDfaResult_Production;
 		}
+
 %{
 		else
 }
 			return LaDfaResult_Fail;
 		}
+
 %{
 		end	-- if
 	end -- if

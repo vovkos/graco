@@ -33,13 +33,13 @@ protected:
 	};
 
 protected:
-	const CmdLine* m_cmdLine;
+	CmdLine* m_cmdLine;
 	Module* m_module;
 	sl::String m_dir;
 
 public:
 	Parser(
-		const CmdLine* cmdLine,
+		CmdLine* cmdLine,
 		Module* module
 		)
 	{
@@ -77,7 +77,8 @@ protected:
 	bool
 	sizeSpecifier(
 		TokenKind tokenKind,
-		size_t* size
+		size_t* size,
+		bool* isDefault = NULL
 		);
 
 	bool

@@ -121,15 +121,16 @@ bool
 Parser::lookaheadStatement()
 {
 	size_t lookaheadLimit;
-	bool result = sizeSpecifier(TokenKind_Lookahead, &lookaheadLimit);
+	bool isDefault = false;
+	bool result = sizeSpecifier(TokenKind_Lookahead, &lookaheadLimit, &isDefault);
 	if (!result)
 		return false;
 
-	const Token* token = expectToken(';');
-	if (!token)
-		return false;
-
 	m_module->m_nodeMgr.m_lookaheadLimit = lookaheadLimit;
+
+	if (isDefault)
+		m_cmdLine->m_lookaheadLimit = lookaheadLimit;
+
 	return true;
 }
 
@@ -263,7 +264,8 @@ Parser::productionSpecifiers(ProductionSpecifiers* specifiers)
 bool
 Parser::sizeSpecifier(
 	TokenKind tokenKind,
-	size_t* size
+	size_t* size,
+	bool* isDefault
 	)
 {
 	const Token* token = getToken();
@@ -293,6 +295,14 @@ Parser::sizeSpecifier(
 	}
 
 	nextToken();
+
+	if (isDefault &&
+		getToken(0)->m_token == ',' &&
+		getToken(1)->m_token == TokenKind_Default)
+	{
+		nextToken(2);
+		*isDefault = true;
+	}
 
 	token = expectToken(')');
 	if (!token)

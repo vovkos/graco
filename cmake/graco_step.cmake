@@ -33,7 +33,9 @@ add_graco_step
 			${_INPUT_PATH}
 			-o${_OUTPUT_PATH}
 			-f${_FRAME_PATH}
-		DEPENDS ${_DEPENDENCY_LIST}
+		DEPENDS 
+			${_FRAME_PATH}
+			${_DEPENDENCY_LIST}
 		)
 endmacro()
 
@@ -67,7 +69,10 @@ add_graco_double_step
 			-o${_OUTPUT_PATH_2}
 			-f${_FRAME_PATH_1}
 			-f${_FRAME_PATH_2}
-		DEPENDS ${_DEPENDENCY_LIST}
+		DEPENDS 
+			${_FRAME_PATH_1}
+			${_FRAME_PATH_2}
+			${_DEPENDENCY_LIST}
 		)
 endmacro()
 

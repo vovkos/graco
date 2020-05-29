@@ -35,11 +35,8 @@ protected:
 
 protected:
 	NodeMgr* m_nodeMgr;
-
 	SymbolNode* m_symbol;
-	GrammarNode* m_production;
 	DispatcherNode* m_dispatcher;
-	GrammarNode* m_resolver;
 
 	sl::Array<ActionNode*> m_actionArray;
 	sl::Array<ArgumentNode*> m_argumentArray;
@@ -54,6 +51,12 @@ public:
 	build(
 		SymbolNode* symbol,
 		GrammarNode* production
+		);
+
+	bool
+	build(
+		SymbolNode* symbol,
+		GrammarNode** production
 		);
 
 protected:
@@ -72,8 +75,7 @@ protected:
 	bool
 	processUserCode(
 		lex::SrcPos& srcPos,
-		sl::String* userCode,
-		GrammarNode* resolver
+		sl::String* userCode
 		);
 
 	VariableKind

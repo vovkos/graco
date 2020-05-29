@@ -24,12 +24,12 @@ protected:
 	{
 		sl::StringRef m_valueBlock;
 		lex::LineCol m_valueLineCol;
+		GrammarNode* m_resolver;
+		size_t m_resolverPriority;
+		size_t m_lookaheadLimit;
 		uint_t m_flags;
 
-		ProductionSpecifiers()
-		{
-			m_flags = 0;
-		}
+		ProductionSpecifiers();
 	};
 
 protected:
@@ -63,32 +63,25 @@ protected:
 	program();
 
 	bool
-	lookaheadStatement();
-
-	bool
 	importStatement();
 
 	bool
-	declarationStatement();
+	defineStatement();
+
+	bool
+	declarationStatement(size_t lookaheadLimit = 0);
 
 	bool
 	productionSpecifiers(ProductionSpecifiers* specifiers);
 
-	bool
-	sizeSpecifier(
-		TokenKind tokenKind,
-		size_t* size,
-		bool* isDefault = NULL
-		);
+	size_t
+	lookahead();
 
 	bool
-	nodeSpecifier(
-		TokenKind tokenKind,
-		GrammarNode** node
-		);
+	lookaheadSpecifier(ProductionSpecifiers* specifiers);
 
 	bool
-	defineStatement();
+	resolverSpecifier(ProductionSpecifiers* specifiers);
 
 	bool
 	production(const ProductionSpecifiers* specifiers);
@@ -107,12 +100,6 @@ protected:
 
 	SymbolNode*
 	catcher();
-
-	GrammarNode*
-	lookahead();
-
-	SymbolNode*
-	resolver();
 
 	BeaconNode*
 	beacon();

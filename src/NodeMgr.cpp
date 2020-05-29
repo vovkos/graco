@@ -127,7 +127,6 @@ NodeMgr::getSymbolNode(const sl::StringRef& name)
 	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
 	node->m_flags = SymbolNodeFlag_User;
 	node->m_name = name;
-	node->m_lookaheadLimit = m_lookaheadLimit;
 
 	m_namedSymbolList.insertTail(node);
 	mapIt->m_value = node;
@@ -139,7 +138,7 @@ SymbolNode*
 NodeMgr::createCatchSymbolNode()
 {
 	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
-	node->m_name.format("_snc%d", m_catchSymbolList.getCount() + 1);
+	node->m_name.format("_cat%d", m_catchSymbolList.getCount() + 1);
 	node->m_lookaheadLimit = m_lookaheadLimit;
 	m_catchSymbolList.insertTail(node);
 	return node;
@@ -160,7 +159,6 @@ NodeMgr::createSequenceNode()
 {
 	SequenceNode* node = AXL_MEM_NEW(SequenceNode);
 	node->m_name.format("_seq%d", m_sequenceList.getCount() + 1);
-	node->m_lookaheadLimit = m_lookaheadLimit;
 	m_sequenceList.insertTail(node);
 	return node;
 }
@@ -178,7 +176,6 @@ NodeMgr::createBeaconNode(SymbolNode* target)
 {
 	BeaconNode* beaconNode = AXL_MEM_NEW(BeaconNode);
 	beaconNode->m_target = target;
-	beaconNode->m_lookaheadLimit = m_lookaheadLimit;
 
 	if (target->m_nodeKind == NodeKind_Symbol)
 		beaconNode->m_label = target->m_name;

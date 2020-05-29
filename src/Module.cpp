@@ -71,15 +71,20 @@ Module::build(const CmdLine* cmdLine)
 	{
 		SymbolNode* symbol = *symbolIt;
 
+		if (symbol->m_resolver)
+		{
+			ASSERT(symbol->m_resolver->m_productionArray.getCount() == 1);
+			result = productionBuilder.build(symbol->m_resolver, &symbol->m_resolver->m_productionArray[0]);
+			if (!result)
+				return false;
+		}
+
 		size_t count = symbol->m_productionArray.getCount();
 		for (size_t i = 0; i < count; i++)
 		{
-			GrammarNode* production = symbol->m_productionArray[i];
-			production = productionBuilder.build(symbol, production);
-			if (!production)
+			result = productionBuilder.build(symbol, &symbol->m_productionArray[i]);
+			if (!result)
 				return false;
-
-			symbol->m_productionArray[i] = production;
 		}
 	}
 
@@ -118,6 +123,15 @@ Module::build(const CmdLine* cmdLine)
 
 		*production = conflict->m_resultNode;
 	}
+
+	symbolIt = m_nodeMgr.m_tempSymbolList.getHead();
+	for (; symbolIt; symbolIt++)
+		if (symbolIt->m_resolver && !(symbolIt->m_flags & SymbolNodeFlag_ResolverUsed))
+		{
+			err::setFormatStringError("unused resolver");
+			lex::pushSrcPosError(symbolIt->m_srcPos);
+			return false;
+		}
 
 	m_nodeMgr.indexLaDfaNodes();
 	m_maxUsedLookahead = builder.getMaxUsedLookahead();

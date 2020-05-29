@@ -32,8 +32,7 @@ enum TokenKind
 	TokenKind_Pragma,
 	TokenKind_Catch,
 	TokenKind_Lookahead,
-	TokenKind_Resolve,
-	TokenKind_Priority,
+	TokenKind_Resolver,
 	TokenKind_Any,
 	TokenKind_Epsilon,
 	TokenKind_Nullable,
@@ -63,8 +62,7 @@ AXL_LEX_BEGIN_TOKEN_NAME_MAP(TokenName)
 	AXL_LEX_TOKEN_NAME(TokenKind_Pragma,       "pragma")
 	AXL_LEX_TOKEN_NAME(TokenKind_Catch,        "catch")
 	AXL_LEX_TOKEN_NAME(TokenKind_Lookahead,    "lookahead")
-	AXL_LEX_TOKEN_NAME(TokenKind_Resolve,      "resolve")
-	AXL_LEX_TOKEN_NAME(TokenKind_Priority,     "priority")
+	AXL_LEX_TOKEN_NAME(TokenKind_Resolver,     "resolver")
 	AXL_LEX_TOKEN_NAME(TokenKind_Any,          "any")
 	AXL_LEX_TOKEN_NAME(TokenKind_Epsilon,      "epsilon")
 	AXL_LEX_TOKEN_NAME(TokenKind_Nullable,     "nullable")

@@ -111,8 +111,7 @@ main := |*
 'pragma'       { createToken(TokenKind_Pragma); };
 'catch'        { createToken(TokenKind_Catch); };
 'lookahead'    { createToken(TokenKind_Lookahead); };
-'resolve'      { createToken(TokenKind_Resolve); };
-'priority'     { createToken(TokenKind_Priority); };
+'resolver'     { createToken(TokenKind_Resolver); };
 'any'          { createToken(TokenKind_Any); };
 'epsilon'      { createToken(TokenKind_Epsilon); };
 'nullable'     { createToken(TokenKind_Nullable); };

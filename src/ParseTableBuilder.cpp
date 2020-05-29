@@ -203,7 +203,6 @@ ParseTableBuilder::addParseTableEntry(
 		conflict->m_productionArray.setCount(2);
 		conflict->m_productionArray[0] = firstProduction;
 		conflict->m_productionArray[1] = production;
-		conflict->m_lookaheadLimit = AXL_MAX(firstProduction->m_lookaheadLimit, production->m_lookaheadLimit);
 
 		*productionSlot = conflict; // later will be replaced with lookahead DFA
 	}
@@ -218,11 +217,7 @@ ParseTableBuilder::addParseTableEntry(
 				break;
 
 		if (i >= count) // not found
-		{
 			conflict->m_productionArray.append(production);
-			if (conflict->m_lookaheadLimit < production->m_lookaheadLimit)
-				conflict->m_lookaheadLimit = production->m_lookaheadLimit;
-		}
 	}
 
 	return conflict->m_productionArray.getCount();

@@ -14,6 +14,15 @@
 
 //..............................................................................
 
+Parser::ProductionSpecifiers::ProductionSpecifiers()
+{
+	m_resolver = NULL;
+	m_lookaheadLimit = 0;
+	m_flags = 0;
+}
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
 bool
 Parser::parseFile(const sl::StringRef& filePath)
 {
@@ -93,7 +102,24 @@ Parser::program()
 			break;
 
 		case TokenKind_Lookahead:
-			result = lookaheadStatement();
+			lookaheadLimit = lookahead();
+			if (lookaheadLimit == -1)
+				return false;
+
+			laToken = getToken();
+			if (laToken->m_token != ';')
+			{
+				result = declarationStatement(lookaheadLimit);
+				break;
+			}
+
+			nextToken();
+
+			m_module->m_nodeMgr.m_lookaheadLimit = lookaheadLimit ?
+				lookaheadLimit :
+				m_cmdLine->m_lookaheadLimit;
+
+			lookaheadLimit = 0;
 			break;
 
 		case TokenKind_Identifier:
@@ -104,7 +130,8 @@ Parser::program()
 				break;
 			}
 
-			// fall through
+			result = declarationStatement();
+			break;
 
 		default:
 			result = declarationStatement();
@@ -113,23 +140,6 @@ Parser::program()
 		if (!result)
 			return false;
 	}
-
-	return true;
-}
-
-bool
-Parser::lookaheadStatement()
-{
-	size_t lookaheadLimit;
-	bool isDefault = false;
-	bool result = sizeSpecifier(TokenKind_Lookahead, &lookaheadLimit, &isDefault);
-	if (!result)
-		return false;
-
-	m_module->m_nodeMgr.m_lookaheadLimit = lookaheadLimit;
-
-	if (isDefault)
-		m_cmdLine->m_lookaheadLimit = lookaheadLimit;
 
 	return true;
 }
@@ -168,24 +178,21 @@ Parser::importStatement()
 }
 
 bool
-Parser::declarationStatement()
+Parser::declarationStatement(size_t lookaheadLimit)
 {
 	bool result;
 
 	ProductionSpecifiers specifiers;
-	result = productionSpecifiers(&specifiers);
+	specifiers.m_lookaheadLimit = lookaheadLimit;
+
+	result =
+		productionSpecifiers(&specifiers) &&
+		production(&specifiers);
+
 	if (!result)
 		return false;
 
-	const Token* token = getToken();
-	if (token->m_token == TokenKind_Identifier)
-	{
-		result = production(&specifiers);
-		if (!result)
-			return false;
-	}
-
-	token = expectToken(';');
+	const Token* token = expectToken(';');
 	if (!token)
 		return false;
 
@@ -218,6 +225,20 @@ Parser::productionSpecifiers(ProductionSpecifiers* specifiers)
 				return false;
 
 			isValueSpecified = true;
+			break;
+
+		case TokenKind_Lookahead:
+			result = lookaheadSpecifier(specifiers);
+			if (!result)
+				return false;
+
+			break;
+
+		case TokenKind_Resolver:
+			result = resolverSpecifier(specifiers);
+			if (!result)
+				return false;
+
 			break;
 
 		case TokenKind_Pragma:
@@ -261,65 +282,78 @@ Parser::productionSpecifiers(ProductionSpecifiers* specifiers)
 	return true;
 }
 
-bool
-Parser::sizeSpecifier(
-	TokenKind tokenKind,
-	size_t* size,
-	bool* isDefault
-	)
+size_t
+Parser::lookahead()
 {
 	const Token* token = getToken();
-	ASSERT(token->m_token == tokenKind);
+	ASSERT(token->m_token == TokenKind_Lookahead);
 
 	nextToken();
 
 	token = expectToken('(');
 	if (!token)
-		return NULL;
+		return -1;
 
 	nextToken();
+
+	size_t lookaheadLimit;
 
 	token = getToken();
 	switch (token->m_tokenKind)
 	{
 	case TokenKind_Default:
-		*size = 0;
+		lookaheadLimit = 0;
 		break;
 
 	case TokenKind_Integer:
-		*size = token->m_data.m_integer;
+		lookaheadLimit = token->m_data.m_integer;
 		break;
 
 	default:
-		err::setFormatStringError("invalid %s specifier", Token::getName(tokenKind));
+		err::setFormatStringError("invalid lookahead specified");
+		return -1;
 	}
 
 	nextToken();
 
-	if (isDefault &&
-		getToken(0)->m_token == ',' &&
-		getToken(1)->m_token == TokenKind_Default)
+	if (getToken(0)->m_token == ',' && getToken(1)->m_token == TokenKind_Default)
 	{
 		nextToken(2);
-		*isDefault = true;
+		m_cmdLine->m_lookaheadLimit = lookaheadLimit;
 	}
 
 	token = expectToken(')');
 	if (!token)
-		return NULL;
+		return -1;
 
 	nextToken();
-	return true;
+	return lookaheadLimit;
 }
 
 bool
-Parser::nodeSpecifier(
-	TokenKind tokenKind,
-	GrammarNode** resultNode
-	)
+Parser::lookaheadSpecifier(ProductionSpecifiers* specifiers)
 {
+	if (specifiers->m_lookaheadLimit)
+	{
+		err::setError("multiple 'lookahead' specifiers");
+		return false;
+	}
+
+	specifiers->m_lookaheadLimit = lookahead();
+	return specifiers->m_lookaheadLimit != -1;
+}
+
+bool
+Parser::resolverSpecifier(ProductionSpecifiers* specifiers)
+{
+	if (specifiers->m_resolver)
+	{
+		err::setError("multiple 'resolver' specifiers");
+		return false;
+	}
+
 	const Token* token = getToken();
-	ASSERT(token->m_token == tokenKind);
+	ASSERT(token->m_token == TokenKind_Resolver);
 
 	nextToken();
 
@@ -329,11 +363,21 @@ Parser::nodeSpecifier(
 
 	nextToken();
 
-	GrammarNode* node = alternative();
-	if (!node)
+	specifiers->m_resolver = alternative();
+	if (!specifiers->m_resolver)
 		return NULL;
 
-	*resultNode = node;
+	specifiers->m_resolverPriority = 0;
+
+	token = getToken();
+	if (token->m_token == ',')
+	{
+		nextToken();
+
+		token = expectToken(TokenKind_Integer);
+		specifiers->m_resolverPriority = token->m_data.m_integer;
+		nextToken();
+	}
 
 	token = expectToken(')');
 	if (!token)
@@ -742,8 +786,9 @@ Parser::production(const ProductionSpecifiers* specifiers)
 {
 	bool result;
 
-	const Token* token = getToken();
-	ASSERT(token->m_token == TokenKind_Identifier);
+	const Token* token = expectToken(TokenKind_Identifier);
+	if (!token)
+		return false;
 
 	SymbolNode* symbol = m_module->m_nodeMgr.getSymbolNode(token->m_data.m_string);
 	if (!symbol->m_productionArray.isEmpty())
@@ -762,6 +807,22 @@ Parser::production(const ProductionSpecifiers* specifiers)
 	symbol->m_valueBlock = specifiers->m_valueBlock;
 	symbol->m_valueLineCol = specifiers->m_valueLineCol;
 	symbol->m_flags |= specifiers->m_flags;
+
+	if (specifiers->m_resolver)
+	{
+		// resolver is a temp symbol with a single production
+
+		SymbolNode* temp = m_module->m_nodeMgr.createTempSymbolNode();
+		temp->addProduction(specifiers->m_resolver);
+		setGrammarNodeSrcPos(temp, specifiers->m_resolver->m_srcPos);
+
+		symbol->m_resolver = temp;
+		symbol->m_resolverPriority = specifiers->m_resolverPriority;
+	}
+
+	symbol->m_lookaheadLimit = specifiers->m_lookaheadLimit ?
+		specifiers->m_lookaheadLimit :
+		m_module->m_nodeMgr.m_lookaheadLimit;
 
 	if (symbol->m_flags & SymbolNodeFlag_Pragma)
 		m_module->m_nodeMgr.m_pragmaStartSymbol.m_productionArray.append(symbol);
@@ -839,8 +900,6 @@ isFirstOfPrimary(int token)
 	case TokenKind_Integer:
 	case TokenKind_Any:
 	case TokenKind_Catch:
-	case TokenKind_Lookahead:
-	case TokenKind_Resolve:
 	case '{':
 	case '(':
 	case '.':
@@ -989,14 +1048,6 @@ Parser::primary()
 		node = catcher();
 		break;
 
-	case TokenKind_Lookahead:
-		node = lookahead();
-		break;
-
-	case TokenKind_Resolve:
-		node = resolver();
-		break;
-
 	case '(':
 		nextToken();
 		node = alternative();
@@ -1069,80 +1120,38 @@ Parser::beacon()
 SymbolNode*
 Parser::catcher()
 {
-	GrammarNode* synchronizer;
-	bool result = nodeSpecifier(TokenKind_Catch, &synchronizer);
-	if (!result)
-		return NULL;
-
-	GrammarNode* production = sequence();
-	if (!production)
-		return NULL;
-
-	SymbolNode* temp = m_module->m_nodeMgr.createCatchSymbolNode();
-	temp->m_synchronizer = synchronizer;
-	temp->m_productionArray.copy(production);
-	setGrammarNodeSrcPos(temp, production->m_srcPos);
-	return temp;
-}
-
-GrammarNode*
-Parser::lookahead()
-{
-	size_t lookaheadLimit;
-	bool result = sizeSpecifier(TokenKind_Lookahead, &lookaheadLimit);
-	if (!result)
-		return NULL;
-
-	GrammarNode* production = sequence();
-	if (!production)
-		return NULL;
-
-	if (!lookaheadLimit || lookaheadLimit == m_module->m_nodeMgr.m_lookaheadLimit)
-		return production;
-
-	if (production->m_nodeKind >= NodeKind_Symbol &&
-		!(production->m_flags & SymbolNodeFlag_User)) // only used in this production, can adjust directly
-	{
-		production->m_lookaheadLimit = lookaheadLimit;
-		return production;
-	}
-
-	SymbolNode* temp = m_module->m_nodeMgr.createTempSymbolNode();
-	temp->m_flags |= SymbolNodeFlag_Lookahead; // prevent temp symbol production merging
-	temp->m_lookaheadLimit = lookaheadLimit ? lookaheadLimit : m_cmdLine->m_lookaheadLimit;
-	temp->addProduction(production);
-	setGrammarNodeSrcPos(temp, production->m_srcPos);
-	return temp;
-}
-
-SymbolNode*
-Parser::resolver()
-{
-	GrammarNode* resolver;
-	bool result = nodeSpecifier(TokenKind_Resolve, &resolver);
-	if (!result)
-		return NULL;
-
-	size_t priority = 0;
-
 	const Token* token = getToken();
-	if (token->m_token == TokenKind_Priority)
-	{
-		result = sizeSpecifier(TokenKind_Priority, &priority);
-		if (!result)
-			return NULL;
-	}
+	ASSERT(token->m_token == TokenKind_Catch);
+
+	nextToken();
+
+	token = expectToken('(');
+	if (!token)
+		return NULL;
+
+	nextToken();
+
+	GrammarNode* synchronizer = alternative();
+	if (!synchronizer)
+		return NULL;
+
+	token = expectToken(')');
+	if (!token)
+		return NULL;
+
+	nextToken();
 
 	GrammarNode* production = sequence();
 	if (!production)
 		return NULL;
 
-	SymbolNode* temp = m_module->m_nodeMgr.createTempSymbolNode();
-	temp->m_resolver = resolver;
-	temp->m_resolverPriority = priority;
-	temp->addProduction(production);
-	setGrammarNodeSrcPos(temp, production->m_srcPos);
-	return temp;
+	// catcher is a temp symbol with a single production
+
+	SymbolNode* catcher = m_module->m_nodeMgr.createCatchSymbolNode();
+	catcher->m_synchronizer = synchronizer;
+	catcher->m_productionArray.copy(production);
+	setGrammarNodeSrcPos(catcher, production->m_srcPos);
+	return catcher;
 }
 
 bool

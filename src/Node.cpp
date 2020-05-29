@@ -42,7 +42,6 @@ Node::markReachable()
 
 GrammarNode::GrammarNode()
 {
-	m_lookaheadLimit = 1;
 	m_quantifierKind = 0;
 	m_quantifiedNode = NULL;
 }
@@ -213,13 +212,14 @@ SymbolNode::SymbolNode()
 	m_synchronizer = NULL;
 	m_resolver = NULL;
 	m_resolverPriority = 0;
+	m_lookaheadLimit = 1;
 }
 
 void
 SymbolNode::addProduction(GrammarNode* node)
 {
 	if (node->m_nodeKind == NodeKind_Symbol &&
-		!(node->m_flags & (SymbolNodeFlag_User | SymbolNodeFlag_Lookahead)) &&
+		!(node->m_flags & SymbolNodeFlag_User) &&
 		!((SymbolNode*)node)->m_synchronizer &&
 		!((SymbolNode*)node)->m_resolver)
 	{
@@ -617,7 +617,6 @@ UserNode::UserNode()
 	m_flags = GrammarNodeFlag_Nullable;
 	m_productionSymbol = NULL;
 	m_dispatcher = NULL;
-	m_resolver = NULL;
 }
 
 //..............................................................................
@@ -731,7 +730,6 @@ BeaconNode::BeaconNode()
 	m_slotIndex = -1;
 	m_target = NULL;
 	m_argument = NULL;
-	m_resolver = NULL;
 }
 
 bool
@@ -842,7 +840,6 @@ ConflictNode::ConflictNode()
 	m_symbol = NULL;
 	m_token = NULL;
 	m_resultNode = NULL;
-	m_lookaheadLimit = 1;
 }
 
 void

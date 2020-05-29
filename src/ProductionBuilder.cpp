@@ -18,9 +18,21 @@ ProductionBuilder::ProductionBuilder(NodeMgr* nodeMgr)
 {
 	m_nodeMgr = nodeMgr;
 	m_symbol = NULL;
-	m_production = NULL;
 	m_dispatcher = NULL;
-	m_resolver = NULL;
+}
+
+bool
+ProductionBuilder::build(
+	SymbolNode* symbol,
+	GrammarNode** production
+	)
+{
+	GrammarNode* result = build(symbol, *production);
+	if (!result)
+		return false;
+
+	*production = result;
+	return true;
 }
 
 GrammarNode*
@@ -80,9 +92,7 @@ ProductionBuilder::build(
 	m_beaconMap.clear();
 
 	m_symbol = symbol;
-	m_production = production;
 	m_dispatcher = NULL;
-	m_resolver = NULL;
 
 	result = scan(production);
 	if (!result)
@@ -116,7 +126,7 @@ ProductionBuilder::processAllUserCode()
 		if (node->m_flags & UserNodeFlag_UserCodeProcessed)
 			continue;
 
-		result = processUserCode(node->m_srcPos, &node->m_userCode, node->m_resolver);
+		result = processUserCode(node->m_srcPos, &node->m_userCode);
 		if (!result)
 			return false;
 
@@ -134,7 +144,7 @@ ProductionBuilder::processAllUserCode()
 		sl::BoxIterator<sl::String> it = node->m_argValueList.getHead();
 		for (; it; it++)
 		{
-			result = processUserCode(node->m_srcPos, &*it, node->m_resolver);
+			result = processUserCode(node->m_srcPos, &*it);
 			if (!result)
 				return false;
 		}
@@ -172,19 +182,9 @@ ProductionBuilder::scan(GrammarNode* node)
 			break;
 
 		symbol = (SymbolNode*)node;
+		ASSERT(!symbol->m_resolver);
+
 		symbol->m_flags |= NodeFlag_RecursionStopper;
-
-		if (symbol->m_resolver)
-		{
-			GrammarNode* resolver = m_resolver;
-			m_resolver = symbol->m_resolver;
-
-			result = scan(symbol->m_resolver);
-			if (!result)
-				return false;
-
-			m_resolver = resolver;
-		}
 
 		childrenCount = symbol->m_productionArray.getCount();
 		for (size_t i = 0; i < childrenCount; i++)
@@ -224,14 +224,12 @@ ProductionBuilder::scan(GrammarNode* node)
 	case NodeKind_Action:
 		action = (ActionNode*)node;
 		action->m_productionSymbol = m_symbol;
-		action->m_resolver = m_resolver;
 		m_actionArray.append(action);
 		break;
 
 	case NodeKind_Argument:
 		argument = (ArgumentNode*)node;
 		argument->m_productionSymbol = m_symbol;
-		argument->m_resolver = m_resolver;
 		m_argumentArray.append(argument);
 		break;
 
@@ -276,7 +274,6 @@ ProductionBuilder::addBeacon(BeaconNode* beacon)
 
 	m_beaconArray.append(beacon);
 	beacon->m_flags |= BeaconNodeFlag_Added;
-	beacon->m_resolver = m_resolver;
 	return true;
 }
 
@@ -325,9 +322,6 @@ ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode** node0)
 
 		if (symbol->m_synchronizer)
 			findAndReplaceUnusedBeacons(&symbol->m_synchronizer);
-
-		if (symbol->m_resolver)
-			findAndReplaceUnusedBeacons(&symbol->m_resolver);
 
 		count = symbol->m_productionArray.getCount();
 		for (size_t i = 0; i < count; i++)
@@ -408,8 +402,7 @@ ProductionBuilder::findVariable(
 bool
 ProductionBuilder::processUserCode(
 	lex::SrcPos& srcPos,
-	sl::String* userCode,
-	GrammarNode* resolver
+	sl::String* userCode
 	)
 {
 	const Token* token;
@@ -459,15 +452,6 @@ ProductionBuilder::processUserCode(
 		{
 		case VariableKind_SymbolBeacon:
 		case VariableKind_TokenBeacon:
-			if (beacon->m_resolver != resolver)
-			{
-				err::setFormatStringError(
-					"cross-resolver reference to locator '%s'",
-					token->getText().sz()
-					);
-				return false;
-			}
-
 			if (beacon->m_slotIndex == -1)
 			{
 				if (!m_dispatcher)
@@ -481,39 +465,15 @@ ProductionBuilder::processUserCode(
 			break;
 
 		case VariableKind_This:
-			if (resolver)
-			{
-				err::setFormatStringError("resolvers cannot reference left side of production");
-				return false;
-			}
-
 			resultString.append('$');
 			break;
 
 		case VariableKind_Param:
-			if (resolver)
-			{
-				err::setFormatStringError("resolvers cannot reference parameters");
-				return false;
-			}
-
-			resultString.appendFormat(
-				"$param.%s",
-				token->m_data.m_string.sz()
-				);
+			resultString.appendFormat("$param.%s", token->m_data.m_string.sz());
 			break;
 
 		case VariableKind_Local:
-			if (resolver)
-			{
-				err::setFormatStringError("resolvers cannot reference locals");
-				return false;
-			}
-
-			resultString.appendFormat(
-				"$local.%s",
-				token->m_data.m_string.sz()
-				);
+			resultString.appendFormat("$local.%s", token->m_data.m_string.sz());
 			break;
 
 		default:

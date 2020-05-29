@@ -110,8 +110,6 @@ class GrammarNode: public Node
 {
 public:
 	lex::SrcPos m_srcPos;
-	size_t m_lookaheadLimit;
-
 	int m_quantifierKind; // '?' '*' '+'
 	GrammarNode* m_quantifiedNode;
 
@@ -191,11 +189,10 @@ enum SymbolNodeFlag
 	SymbolNodeFlag_User         = 0x0100,
 	SymbolNodeFlag_EofToken     = 0x0200,
 	SymbolNodeFlag_AnyToken     = 0x0400,
-	SymbolNodeFlag_Pragma       = 0x0800,
-	SymbolNodeFlag_Start        = 0x1000,
-	SymbolNodeFlag_Lookahead    = 0x2000,
-	SymbolNodeFlag_ResolverUsed = 0x4000,
-	SymbolNodeFlag_Nullable     = 0x8000,
+	SymbolNodeFlag_Pragma       = 0x1000,
+	SymbolNodeFlag_Start        = 0x2000,
+	SymbolNodeFlag_Nullable     = 0x4000,
+	SymbolNodeFlag_ResolverUsed = 0x8000,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -206,8 +203,9 @@ public:
 	int m_charToken;
 
 	GrammarNode* m_synchronizer;
-	GrammarNode* m_resolver;
+	SymbolNode* m_resolver;
 	size_t m_resolverPriority;
+	size_t m_lookaheadLimit;
 
 	sl::Array<GrammarNode*> m_productionArray;
 
@@ -320,7 +318,6 @@ class UserNode: public GrammarNode
 public:
 	SymbolNode* m_productionSymbol;
 	DispatcherNode* m_dispatcher;
-	GrammarNode* m_resolver;
 
 	UserNode();
 };
@@ -398,7 +395,6 @@ public:
 	size_t m_slotIndex;
 	SymbolNode* m_target;
 	ArgumentNode* m_argument;
-	GrammarNode* m_resolver;
 
 public:
 	BeaconNode();
@@ -460,7 +456,6 @@ public:
 	SymbolNode* m_token;
 	Node* m_resultNode; // lookahead DFA or immediate production
 	sl::Array<GrammarNode*> m_productionArray;
-	size_t m_lookaheadLimit;
 
 public:
 	ConflictNode();

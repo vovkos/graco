@@ -162,19 +162,10 @@ LaDfaBuilder::build(ConflictNode* conflict)
 	size_t count = conflict->m_productionArray.getCount();
 	for (size_t i = 0; i < count; i++)
 	{
-		Node* production = conflict->m_productionArray[i];
+		GrammarNode* production = conflict->m_productionArray[i];
+
 		LaDfaThread* thread = state0->createThread();
 		thread->m_production = production;
-
-		if (production->m_nodeKind == NodeKind_Symbol)
-		{
-			SymbolNode* symbolNode = (SymbolNode*)production;
-			if (symbolNode->m_resolver)
-			{
-				ASSERT(symbolNode->m_productionArray.getCount() == 1);
-				thread->m_production = symbolNode->m_productionArray[0]; // adjust root production
-			}
-		}
 
 		if (production->m_nodeKind != NodeKind_Epsilon)
 			thread->m_stack.append(production);
@@ -203,7 +194,7 @@ LaDfaBuilder::build(ConflictNode* conflict)
 		sl::Array<LaDfaState*> stateArray;
 		stateArray.append(state1);
 
-		while (!stateArray.isEmpty() && lookahead < conflict->m_lookaheadLimit)
+		while (!stateArray.isEmpty() && lookahead < conflict->m_symbol->m_lookaheadLimit)
 		{
 			lookahead++;
 
@@ -261,7 +252,7 @@ LaDfaBuilder::build(ConflictNode* conflict)
 				"conflict at %s:%s could not be resolved with %d token lookahead; e.g. %s",
 				conflict->m_symbol->m_name.sz(),
 				conflict->m_token->m_name.sz(),
-				conflict->m_lookaheadLimit,
+				conflict->m_symbol->m_lookaheadLimit,
 				tokenSeqString.sz()
 				);
 
@@ -591,6 +582,7 @@ LaDfaBuilder::processThread(
 			symbol = (SymbolNode*)node;
 			if (symbol->m_resolver)
 			{
+				symbol->m_flags |= SymbolNodeFlag_ResolverUsed;
 				thread->m_resolver = symbol->m_resolver;
 				thread->m_resolverPriority = symbol->m_resolverPriority;
 				thread->m_state->m_activeThreadList.remove(thread);

@@ -124,7 +124,7 @@ Module::build(const CmdLine* cmdLine)
 		*production = conflict->m_resultNode;
 	}
 
-	symbolIt = m_nodeMgr.m_tempSymbolList.getHead();
+	symbolIt = m_nodeMgr.m_namedSymbolList.getHead();
 	for (; symbolIt; symbolIt++)
 		if (symbolIt->m_resolver && !(symbolIt->m_flags & SymbolNodeFlag_ResolverUsed))
 		{

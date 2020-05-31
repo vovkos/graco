@@ -28,6 +28,7 @@ LaDfaThread::LaDfaThread()
 LaDfaState::LaDfaState()
 {
 	m_index = -1;
+	m_lookahead = 0;
 	m_flags = 0;
 	m_dfaNode = NULL;
 	m_fromState = NULL;
@@ -465,6 +466,7 @@ LaDfaBuilder::transition(
 	LaDfaState* newState = createState();
 	newState->m_token = token;
 	newState->m_fromState = state;
+	newState->m_lookahead = state->m_lookahead + 1;
 	newState->m_flags = state->m_flags & LaDfaStateFlag_EpsilonProduction; // propagate epsilon
 
 	sl::Iterator<LaDfaThread> threadIt = state->m_activeThreadList.getHead();
@@ -580,7 +582,7 @@ LaDfaBuilder::processThread(
 			// ok this thread seems to stay active, let's check if we can eliminate it with resolver
 
 			symbol = (SymbolNode*)node;
-			if (symbol->m_resolver)
+			if (symbol->m_resolver && thread->m_state->m_lookahead == 1) // only use resolvers at the first step
 			{
 				symbol->m_flags |= SymbolNodeFlag_ResolverUsed;
 				thread->m_resolver = symbol->m_resolver;

@@ -55,6 +55,7 @@ class LaDfaState: public sl::ListLink
 {
 public:
 	size_t m_index;
+	size_t m_lookahead;
 	int m_flags;
 
 	sl::List<LaDfaThread> m_activeThreadList;

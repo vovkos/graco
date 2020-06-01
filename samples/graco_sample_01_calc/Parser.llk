@@ -17,8 +17,6 @@ HeaderFileBegin
 	#include "Value.h"
 }
 
-NoPpLine = true;
-
 Members
 {
 protected:

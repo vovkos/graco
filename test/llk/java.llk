@@ -9,7 +9,7 @@
 //
 //..............................................................................
 
-lookahead = 2;
+lookahead(2);
 
 Identifier
     : IDENTIFIER
@@ -40,6 +40,7 @@ TypeDeclaration
     | ';'
     ;
 
+resolver(Modifier* (Keyword_class | Keyword_interface | Keyword_enum))
 ClassOrInterfaceDeclaration
     : Modifier* (ClassDeclaration | InterfaceDeclaration)
     ;
@@ -89,9 +90,9 @@ BasicType
     | Keyword_boolean
     ;
 
+resolver(Identifier TypeArguments? ('.' Identifier TypeArguments?)* { return isType(/* qualified-type-name */); })
 ReferenceType
-    : resolver ({ semantic-check-for-identifier-kind })
-        Identifier TypeArguments? ('.' Identifier TypeArguments?)*
+    : Identifier TypeArguments? ('.' Identifier TypeArguments?)*
     ;
 
 TypeArguments
@@ -342,8 +343,7 @@ BlockStatements
 
 BlockStatement
     : LocalVariableDeclarationStatement
-    | resolver (Modifier* (Keyword_class | Keyword_interface | Keyword_enum))
-        ClassOrInterfaceDeclaration
+    | ClassOrInterfaceDeclaration
     | (Identifier ':')? Statement
     ;
 
@@ -507,8 +507,13 @@ InfixOp
 
 Expression3
     : PrefixOp Expression3
-    | '(' Type ')' Expression3
+    | CastOperator
     | Primary Selector* PostfixOp*
+    ;
+
+resolver('(' Type ')')
+CastOperator
+    : '(' Type ')' Expression3
     ;
 
 PrefixOp
@@ -533,10 +538,17 @@ Primary
     | Keyword_new Creator
     | NonWildcardTypeArguments (ExplicitGenericInvocationSuffix | Keyword_this Arguments)
     | Identifier ('.' Identifier)* IdentifierSuffix?
-    | resolver (BasicType ('[' ']')* '.' Keyword_class)
-        BasicType ('[' ']')* '.' Keyword_class
-    | resolver (Keyword_void '.' Keyword_class)
-        Keyword_void '.' Keyword_class
+    | BasicTypeClass
+    | VoidClass
+    ;
+
+resolver(BasicType ('[' ']')* '.' Keyword_class)
+BasicTypeClass
+    : BasicType ('[' ']')* '.' Keyword_class
+    ;
+
+VoidClass
+    : Keyword_void '.' Keyword_class
     ;
 
 Literal

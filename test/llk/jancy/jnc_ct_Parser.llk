@@ -11,66 +11,55 @@
 
 import "jnc_ct_Decl.llk";
 import "jnc_ct_Expr.llk";
-import "jnc_ct_Expr_0.llk";
 import "jnc_ct_Stmt.llk";
 import "jnc_ct_Reactor.llk";
-
 import "jnc_ct_DeclarationSpecifier.llk";
 import "jnc_ct_Declarator.llk";
 import "jnc_ct_NamedTypeSpecifier.llk";
 
 //..............................................................................
 
-lookahead = 2;
-
-start
-nullable
-compilation_unit
-	: global_declaration*
-	;
-
-//..............................................................................
-
-ParserClassName = Parser;
-
-Includes
-{
+HeaderFileBegin
+{.
 	#include "jnc_ct_Lexer.h"
 	#include "jnc_ct_Module.h"
 	#include "jnc_ct_Decl.h"
-	#include "jnc_ct_DoxyParser.h"
-}
 
-CppIncludes
-{
-	#include "jnc_ct_Parser.llk.h"
-}
+	namespace jnc {
+	namespace ct {
+.}
+
+HeaderFileEnd
+{.
+	} // namespace ct
+	} // namespace jnc
+.}
+
+CppFileBegin
+{.
+	namespace jnc {
+	namespace ct {
+
+	typedef Parser::CurlyInitializer CurlyInitializer;
+	typedef Parser::FmtSite FmtSite;
+	typedef Parser::Literal Literal;
+	typedef Parser::StmtPass1 StmtPass1;
+.}
+
+CppFileEnd
+{.
+	} // namespace ct
+	} // namespace jnc
+.}
 
 Members
 {
-	enum Stage
+public:
+	enum Mode
 	{
-		Stage_Pass1,          // global declarations (before linkage)
-		Stage_Pass2,          // statements and expressions (after linkage & calclayout)
-		Stage_ReactorScan,    // scan reactor body to build bind site map (after linkage but before calclayout)
-		Stage_ReactorStarter, // evaluate expression and save bindable event pointers
-	};
-
-	enum Flag
-	{
-		Flag_ConstExpression = 0x01,
-	};
-
-	enum AssignKind
-	{
-		AssignKind_Normal,
-		AssignKind_BinOp,
-	};
-
-	enum AutomatonState
-	{
-		AutomatonState_Idle,
-		AutomatonState_RegExpCase,
+		Mode_Parse,    // parsing declarations (global/namespaces/type members)
+		Mode_Compile,  // compiling statements and expressions
+		Mode_Reaction, // compiling the 'reaction' method of a reactor (w/ implicit bindings)
 	};
 
 	struct CurlyInitializer
@@ -79,6 +68,12 @@ Members
 		Value m_memberValue;
 		size_t m_index;
 		size_t m_count;
+
+		CurlyInitializer()
+		{
+			m_index = 0;
+			m_count = 0;
+		}
 	};
 
 	struct FmtSite: sl::ListLink
@@ -87,31 +82,42 @@ Members
 		size_t m_index;
 		Value m_value;
 		sl::String m_fmtSpecifierString;
+
+		FmtSite()
+		{
+			m_offset = 0;
+			m_index = -1;
+		}
 	};
 
 	struct Literal
 	{
-		sl::Array <char> m_binData;
-		sl::StdList <FmtSite> m_fmtSiteList;
+		sl::Array<char> m_binData;
+		sl::List<FmtSite> m_fmtSiteList;
+		size_t m_lastIndex;
 		bool m_isZeroTerminated;
-	};
 
-	struct Literal_0
-	{
-		size_t m_length;
-		bool m_isZeroTerminated;
-		bool m_isFmtLiteral;
+		Literal()
+		{
+			m_lastIndex = 0;
+			m_isZeroTerminated = false;
+		}
 	};
 
 	struct StmtPass1
 	{
-		sl::BoxList <Token> m_tokenList;
+		sl::BoxList<Token> m_tokenList;
 		Token* m_scopeAnchorToken;
+
+		StmtPass1 ()
+		{
+			m_scopeAnchorToken = NULL;
+		}
 	};
 
+protected:
 	Module* m_module;
-	Stage m_stage;
-	uint_t m_flags;
+	Mode m_mode;
 	size_t m_fieldAlignment;
 	size_t m_defaultFieldAlignment;
 
@@ -120,408 +126,459 @@ Members
 	AttributeBlock* m_attributeBlock;
 
 	ModuleItem* m_lastDeclaredItem;
-	sl::Array <TypeSpecifier*> m_typeSpecifierStack;
-
+	NamedType* m_lastNamedType;
+	QualifiedName m_lastQualifiedName;
+	Value m_lastExpressionValue;
+	sl::BoxList<Value> m_lastExpressionValueList;
 	FunctionType* m_lastPropertyGetterType;
-	TypeModifiers m_lastPropertyTypeModifiers;
+	uint_t m_lastPropertyTypeModifiers;
 
-	DoxyParser m_doxyParser;
+	sl::Array<TypeSpecifier*> m_typeSpecifierStack;
+	Declarator* m_topDeclarator; // orphan declarators affect import type resolution
 
-	ReactorClassType* m_reactorType;
-	sl::StdList <Reaction> m_reactionList;
-	sl::BoxList <Value> m_reactionBindSiteList;
-	sl::HashTableMap <llvm::Value*, bool, sl::HashId <llvm::Value*> > m_reactionBindSiteMap;
-	size_t m_reactionBindSiteCount;
-	size_t m_reactorTotalBindSiteCount;
-	size_t m_reactionCount;
+	size_t m_reactionIdx;
+
+	dox::Parser m_doxyParser;
+
+public:
+	// freely adjustible
 
 	DerivableType* m_constructorType;
 	Property* m_constructorProperty;
-
+	ReactorClassType* m_reactorType;
+	Value m_reactionIdxArgValue;
 	Value m_curlyInitializerTargetValue;
 
-	AutomatonState m_automatonState;
-	fsm::StdRegExpNameMgr m_automatonRegExpNameMgr;
-	fsm::RegExp m_automatonRegExp;
-	BasicBlock* m_automatonSwitchBlock;
-	BasicBlock* m_automatonReturnBlock;
-	sl::StdList <AutomatonAcceptContext> m_automatonAcceptContextList;
-
-	size_t m_dynamicLibFunctionCount;
-
-	// saved attributes
-
-	Value m_expressionValue;
-	sl::BoxList <Value> m_expressionValueList;
-	NamedType* m_namedType;
-}
-
-Members2
-{
-	Parser (Module* module);
-
-	bool
-	parseTokenList (
-		SymbolKind symbol,
-		const sl::ConstBoxList <Token>& tokenList,
-		bool isBuildingAst = false
+public:
+	Parser(
+		Module* module,
+		Mode mode = Mode_Parse
 		);
 
+	ModuleItem*
+	getLastDeclaredItem()
+	{
+		return m_lastDeclaredItem;
+	}
+
+	NamedType*
+	getLastNamedType()
+	{
+		return m_lastNamedType;
+	}
+
+	const QualifiedName&
+	getLastQualifiedName()
+	{
+		return m_lastQualifiedName;
+	}
+
+	const Value&
+	getLastExpressionValue()
+	{
+		return m_lastExpressionValue;
+	}
+
+	const sl::BoxList<Value>&
+	getLastExpressionValueList()
+	{
+		return m_lastExpressionValueList;
+	}
+
+	void
+	takeOverLastExpressionValueList(sl::BoxList<Value>* list)
+	{
+		sl::takeOver(list, &m_lastExpressionValueList);
+	}
+
+	size_t
+	getReactionCount()
+	{
+		return m_reactionIdx;
+	}
+
+	bool
+	tokenizeBody(
+		sl::BoxList<Token>* tokenList,
+		const lex::LineCol& pos,
+		const sl::StringRef& body
+		);
+
+	bool
+	parseBody(
+		SymbolKind symbol,
+		const lex::LineCol& pos,
+		const sl::StringRef& source
+		);
+
+	bool
+	parseTokenList(
+		SymbolKind symbol,
+		const sl::ConstBoxList<Token>& tokenList
+		);
+
+protected:
+	RecoverAction
+	processError(ErrorKind errorKind);
+
+	bool
+	parseEofToken(const lex::LineCol& pos);
+
+	void
+	addDoxyComment(const Token& token);
+
 	NamedImportType*
-	getNamedImportType (
+	getNamedImportType(
 		const QualifiedName& name,
-		const Token::Pos& pos
+		const lex::LineCol& pos
 		);
 
 	sl::String
-	getQualifiedTypeNameString (
+	getQualifiedTypeNameString(
 		size_t baseTypeIdx,
 		const QualifiedName& name
 		);
 
 	Type*
-	findType (
+	findType(
 		size_t baseTypeIdx,
 		const QualifiedName& name,
-		const Token::Pos& pos
+		const lex::LineCol& pos
 		);
 
 	Type*
-	getType (
+	getType(
 		size_t baseTypeIdx,
 		const QualifiedName& name,
-		const Token::Pos& pos
+		const lex::LineCol& pos
 		);
 
 	DerivableType*
-	findBaseType (size_t baseTypeIdx);
+	findBaseType(size_t baseTypeIdx);
 
 	DerivableType*
-	getBaseType (size_t baseTypeIdx);
+	getBaseType(size_t baseTypeIdx);
 
 	bool
-	getBaseType (
+	getBaseType(
 		size_t baseTypeIdx,
 		Value* resultValue
 		);
 
 	bool
-	setSetAsType (Type* type);
+	setSetAsType(Type* type);
 
 	bool
-	setStorageKind (StorageKind storageKind);
+	setStorageKind(StorageKind storageKind);
 
 	bool
-	setAccessKind (AccessKind accessKind);
+	setAccessKind(AccessKind accessKind);
 
 	void
-	pushTypeSpecifier (TypeSpecifier* typeSpecifier)
+	postDeclaratorName(Declarator* declarator);
+
+	void
+	postDeclarator(Declarator* declarator);
+
+	void
+	pushTypeSpecifier(TypeSpecifier* typeSpecifier)
 	{
-		m_typeSpecifierStack.append (typeSpecifier);
+		m_typeSpecifierStack.append(typeSpecifier);
 	}
 
 	TypeSpecifier*
-	getTypeSpecifier ()
+	getTypeSpecifier()
 	{
-		return m_typeSpecifierStack.getBack ();
+		return m_typeSpecifierStack.getBack();
 	}
 
 	void
-	popTypeSpecifier (TypeSpecifier* typeSpecifier)
+	popTypeSpecifier(TypeSpecifier* typeSpecifier)
 	{
-		m_typeSpecifierStack.pop ();
+		m_typeSpecifierStack.pop();
 	}
 
 	bool
-	isTypeSpecified ();
-
-	void
-	preDeclaration ();
+	isTypeSpecified();
 
 	bool
-	emptyDeclarationTerminator (TypeSpecifier* typeSpecifier);
+	createAttributeBlock(const lex::LineCol& pos);
 
 	bool
-	setDeclarationBody (sl::BoxList <Token>* tokenList);
-
-	bool
-	setFunctionBody (
-		Function* function,
-		sl::BoxList <Token>* tokenList
+	createAttribute(
+		const lex::LineCol& pos,
+		const sl::StringRef& name,
+		sl::BoxList<Token>* initializer
 		);
 
 	void
-	assignDeclarationAttributes (
+	preDeclaration();
+
+	bool
+	bodylessDeclaration();
+
+	bool
+	setDeclarationBody(
+		const lex::LineCol& pos,
+		const sl::StringRef& body
+		);
+
+	void
+	assignDeclarationAttributes(
 		ModuleItem* item,
 		ModuleItemDecl* decl,
-		const Token::Pos& pos,
+		const lex::LineCol& pos,
 		AttributeBlock* attributeBlock = NULL,
-		DoxyBlock* doxyBlock = NULL
+		dox::Block* doxyBlock = NULL
 		);
 
 	void
-	assignDeclarationAttributes (
+	assignDeclarationAttributes(
 		ModuleItem* item,
 		ModuleItemDecl* itemDecl,
 		Declarator* declarator
 		)
 	{
-		assignDeclarationAttributes (item, itemDecl, declarator->m_pos, declarator->m_attributeBlock, declarator->m_doxyBlock);
+		assignDeclarationAttributes(item, itemDecl, declarator->m_pos, declarator->m_attributeBlock, declarator->m_doxyBlock);
 	}
 
+	bool
+	checkUnusedAttributeBlock();
+
 	GlobalNamespace*
-	getGlobalNamespace (
+	getGlobalNamespace(
 		GlobalNamespace* parentNamespace,
 		const sl::StringRef& name,
-		const Token::Pos& pos
-		);
-
-	GlobalNamespace*
-	openGlobalNamespace (
-		const QualifiedName& name,
-		const Token::Pos& pos
-		);
-
-	ExtensionNamespace*
-	openExtensionNamespace (
-		const sl::StringRef& name,
-		Type* type,
-		const Token::Pos& pos
+		const lex::LineCol& pos
 		);
 
 	bool
-	useNamespace (
-		const sl::BoxList <QualifiedName>& nameList,
+	useNamespace(
+		const sl::BoxList<QualifiedName>& nameList,
 		NamespaceKind namespaceKind,
-		const Token::Pos& pos
+		const lex::LineCol& pos
 		);
 
 	AttributeBlock*
-	popAttributeBlock ();
+	popAttributeBlock();
 
 	bool
-	declare (Declarator* declarator);
+	declare(Declarator* declarator);
 
 	bool
-	declareInReactorScan (Declarator* declarator);
+	declareInReaction(Declarator* declarator);
+
+	GlobalNamespace*
+	declareGlobalNamespace(
+		const lex::LineCol& pos,
+		const QualifiedName& name,
+		const lex::LineCol& bodyPos,
+		const sl::StringRef& body
+		);
+
+	ExtensionNamespace*
+	declareExtensionNamespace(
+		const lex::LineCol& pos,
+		const sl::StringRef& name,
+		Type* type,
+		const lex::LineCol& bodyPos,
+		const sl::StringRef& body
+		);
 
 	bool
-	declareInReactorStarter (Declarator* declarator);
-
-	bool
-	declareTypedef (
+	declareTypedef(
 		Declarator* declarator,
 		Type* type
 		);
 
 	bool
-	declareAlias (
+	declareAlias(
 		Declarator* declarator,
 		Type* type,
 		uint_t ptrTypeFlags
 		);
 
 	bool
-	declareFunction (
+	declareFunction(
 		Declarator* declarator,
 		FunctionType* type
 		);
 
 	bool
-	declareProperty (
+	declareProperty(
 		Declarator* declarator,
 		PropertyType* type,
 		uint_t flags
 		);
 
 	bool
-	declareData (
+	declareData(
 		Declarator* declarator,
 		Type* type,
 		uint_t ptrTypeFlags
 		);
 
 	bool
-	declareUnnamedStructOrUnion (DerivableType* type);
+	declareUnnamedStructOrUnion(DerivableType* type);
 
 	bool
-	declareReactor (
+	declareReactor(
 		Declarator* declarator,
-		ClassType* type,
 		uint_t ptrTypeFlags
 		);
 
 	FunctionArg*
-	createFormalArg (
+	createFormalArg(
 		DeclFunctionSuffix* argSuffix,
 		Declarator* declarator
 		);
 
 	bool
-	addEnumFlag (
+	addEnumFlag(
 		uint_t* flags,
 		EnumTypeFlag flag
 		);
 
 	EnumType*
-	createEnumType (
+	createEnumType(
 		const sl::StringRef& name,
 		Type* baseType,
 		uint_t flags
 		);
 
 	EnumConst*
-	createEnumConst (
-		EnumType* type,
+	createEnumConst(
 		const sl::StringRef& name,
-		const Token::Pos& pos,
-		sl::BoxList <Token>* initializer
+		const lex::LineCol& pos,
+		sl::BoxList<Token>* initializer
 		);
 
 	StructType*
-	createStructType (
+	createStructType(
 		const sl::StringRef& name,
-		sl::BoxList <Type*>* baseTypeList,
-		size_t fieldAlignment
+		sl::BoxList<Type*>* baseTypeList,
+		size_t fieldAlignment,
+		uint_t flags
 		);
 
 	UnionType*
-	createUnionType (
+	createUnionType(
 		const sl::StringRef& name,
-		size_t fieldAlignment
-		);
-
-	ClassType*
-	createClassType (
-		const sl::StringRef& name,
-		sl::BoxList <Type*>* baseTypeList,
 		size_t fieldAlignment,
 		uint_t flags
 		);
 
 	ClassType*
-	createDynamicLibType (const sl::StringRef& name);
+	createClassType(
+		const sl::StringRef& name,
+		sl::BoxList<Type*>* baseTypeList,
+		size_t fieldAlignment,
+		uint_t flags
+		);
+
+	DynamicLibClassType*
+	createDynamicLibType(const sl::StringRef& name);
 
 	bool
-	finalizeDynamicLibType ();
+	finalizeDynamicLibType();
 
 	Property*
-	createProperty (Declarator* decl);
+	createProperty(Declarator* decl);
 
 	PropertyTemplate*
-	createPropertyTemplate ();
+	createPropertyTemplate();
 
 	bool
-	finalizeLastProperty (bool hasBody);
+	finalizeLastProperty(bool hasBody);
 
 	bool
-	parseLastPropertyBody (const sl::ConstBoxList <Token>& body);
-
-	bool
-	newOperator_0 (
-		Type* type,
-		Value* resultValue
+	parseLastPropertyBody(
+		const lex::LineCol& pos,
+		const sl::StringRef& body
 		);
 
 	bool
-	addReactorBindSite (const Value& value);
-
-	void
-	resetReactorBindSites ()
-	{
-		m_reactionBindSiteList.clear ();
-		m_reactionBindSiteMap.clear ();
-	}
+	parseLastPropertyBody(const sl::ConstBoxList<Token>& body);
 
 	bool
-	finalizeReactor ();
+	addReactionBinding(const Value& value);
 
-	void
-	reactorOnEventStmt (
-		sl::BoxList <Value>* valueList,
+	bool
+	resetReactionBindings();
+
+	bool
+	reactorOnEventStmt(
+		const sl::ConstBoxList<Value>& valueList,
 		Declarator* declarator,
-		sl::BoxList <Token>* tokenList
+		sl::BoxList<Token>* tokenList
 		);
 
 	bool
-	reactorDeclarationOrExpressionStmt (sl::BoxList <Token>* tokenList);
+	initializeReaction();
 
 	bool
-	countReactionBindSites ();
+	finalizeReaction();
 
 	bool
-	beginAutomatonFunction ();
-
-	bool
-	finalizeAutomatonFunction ();
-
-	bool
-	automatonRegExp (
-		const sl::StringRef& source,
-		const Token::Pos& pos
-		);
-
-	bool
-	callBaseTypeMemberConstructor (
+	callBaseTypeMemberConstructor(
 		const QualifiedName& name,
-		sl::BoxList <Value>* argList
+		sl::BoxList<Value>* argList
 		);
 
 	bool
-	callBaseTypeConstructor (
+	callBaseTypeConstructor(
 		size_t baseTypeIdx,
-		sl::BoxList <Value>* argList
+		sl::BoxList<Value>* argList
 		);
 
 	bool
-	callBaseTypeConstructor (
+	callBaseTypeConstructor(
 		Type* type,
-		sl::BoxList <Value>* argList
+		sl::BoxList<Value>* argList
 		);
 
 	bool
-	callBaseTypeConstructorImpl (
+	callBaseTypeConstructorImpl(
 		BaseTypeSlot* baseTypeSlot,
-		sl::BoxList <Value>* argList
+		sl::BoxList<Value>* argList
 		);
 
 	bool
-	callFieldConstructor (
-		StructField* field,
-		sl::BoxList <Value>* argList
+	callFieldConstructor(
+		Field* field,
+		sl::BoxList<Value>* argList
 		);
 
 	bool
-	finalizeBaseTypeMemberConstructBlock ();
+	finalizeBaseTypeMemberConstructBlock();
 
 	bool
-	lookupIdentifier (
+	lookupIdentifier(
 		const sl::StringRef& name,
-		const Token::Pos& pos,
+		const lex::LineCol& pos,
 		Value* value
 		);
 
 	bool
-	lookupIdentifierType (
-		const sl::StringRef& name,
-		const Token::Pos& pos,
-		Value* value
-		);
-
-	bool
-	prepareCurlyInitializerNamedItem (
+	prepareCurlyInitializerNamedItem(
 		CurlyInitializer* initializer,
 		const sl::StringRef& name
 		);
 
 	bool
-	prepareCurlyInitializerIndexedItem (CurlyInitializer* initializer);
+	prepareCurlyInitializerIndexedItem(CurlyInitializer* initializer);
 
 	bool
-	skipCurlyInitializerItem (CurlyInitializer* initializer);
+	skipCurlyInitializerItem(CurlyInitializer* initializer);
 
 	bool
-	addFmtSite (
+	assignCurlyInitializerItem(
+		CurlyInitializer* initializer,
+		const Value& value
+		);
+
+	bool
+	addFmtSite(
 		Literal* literal,
 		const sl::StringRef& string,
 		const Value& value,
@@ -529,67 +586,87 @@ Members2
 		const sl::StringRef& fmtSpecifierString
 		);
 
-	bool
-	finalizeLiteral (
+	void
+	addFmtSite(
 		Literal* literal,
-		sl::BoxList <Value>* argValueList,
-		Value* resultValue
+		const sl::StringRef& string,
+		size_t index
+		);
+
+	void
+	addFmtSite(
+		Literal* literal,
+		const sl::StringRef& string,
+		const sl::StringRef& fmtSpecifierString
 		);
 
 	bool
-	finalizeLiteral_0 (
-		Literal_0* literal,
+	finalizeLiteral(
+		Literal* literal,
+		sl::BoxList<Value>* argValueList,
 		Value* resultValue
 		);
 
 	void
-	appendFmtLiteralRawData (
+	appendFmtLiteralRawData(
 		const Value& fmtLiteralValue,
 		const void* p,
 		size_t size
 		);
 
 	bool
-	appendFmtLiteralValue (
+	appendFmtLiteralValue(
 		const Value& fmtLiteralValue,
 		const Value& rawSrcValue,
 		const sl::StringRef& fmtSpecifierString
 		);
 
 	bool
-	appendFmtLiteralBinValue (
+	appendFmtLiteralBinValue(
 		const Value& fmtLiteralValue,
 		const Value& rawSrcValue
 		);
 
+	bool
+	finalizeReSwitchCaseLiteral(
+		sl::StringRef* data,
+		const Value& value,
+		bool isZeroTerminated
+		);
+
 	BasicBlock*
-	assertCondition (const sl::BoxList <Token>& tokenList);
+	assertCondition(const sl::BoxList<Token>& tokenList);
 
 	bool
-	finalizeAssertStmt (
-		const sl::BoxList <Token>& conditionTokenList,
+	finalizeAssertStmt(
+		const sl::BoxList<Token>& conditionTokenList,
 		const Value& messageValue,
 		BasicBlock* continueBlock
 		);
 
 	static
 	void
-	addScopeAnchorToken (
+	addScopeAnchorToken(
 		StmtPass1* stmt,
 		const Token& token
 		);
 }
 
-OpenNamespace
-{.
-	namespace jnc {
-	namespace ct {
-.}
+//..............................................................................
 
-CloseNamespace
-{.
-	} // namespace ct
-	} // namespace jnc
-.}
+lookahead(2, default);
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+start
+nullable
+compilation_unit
+	:	catch(compilation_unit_sync) (import_declaration | global_declaration)*
+	;
+
+compilation_unit_sync
+	:	TokenKind_Import
+	|	global_declaration_sync
+	;
 
 //..............................................................................

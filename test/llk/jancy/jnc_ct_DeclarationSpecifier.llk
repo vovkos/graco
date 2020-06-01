@@ -9,74 +9,73 @@
 //
 //..............................................................................
 
-class
+struct
 {
 	TypeSpecifier m_typeSpecifier;
 }
 declaration_specifier_list
 	enter
 	{
-		pushTypeSpecifier (&$.m_typeSpecifier);
+		pushTypeSpecifier(&$.m_typeSpecifier);
 	}
 	leave
 	{
-		popTypeSpecifier (&$.m_typeSpecifier);
+		popTypeSpecifier(&$.m_typeSpecifier);
 	}
-	:	declaration_specifier <&$.m_typeSpecifier>+
+	:	declaration_specifier<&$.m_typeSpecifier>+
 	;
 
-declaration_specifier <TypeSpecifier* $typeSpecifier>
-	:	attribute_block
-	|	storage_specifier
+declaration_specifier<TypeSpecifier* $typeSpecifier>
+	:	storage_specifier
 			{
-				return setStorageKind ($1.m_storageKind);
+				return setStorageKind($1.m_storageKind);
 			}
 	|	access_specifier
 			{
-				return setAccessKind ($1.m_accessKind);
+				return setAccessKind($1.m_accessKind);
 			}
 	|	type_specifier
 			{
-				return $typeSpecifier->setType ($1.m_type);
+				return $typeSpecifier->setType($1.m_type);
 			}
 	|	type_modifier
 			{
-				return $typeSpecifier->setTypeModifier ($1.m_typeModifier);
+				return $typeSpecifier->addTypeModifier($1.m_typeModifier);
 			}
 	;
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class
+struct
 {
 	TypeSpecifier m_typeSpecifier;
 }
 type_specifier_modifier_list
 	enter
 	{
-		pushTypeSpecifier (&$.m_typeSpecifier);
+		pushTypeSpecifier(&$.m_typeSpecifier);
 	}
 	leave
 	{
-		popTypeSpecifier (&$.m_typeSpecifier);
+		popTypeSpecifier(&$.m_typeSpecifier);
 	}
-	: type_specifier_modifier <&$.m_typeSpecifier>+
+	: type_specifier_modifier<&$.m_typeSpecifier>+
 	;
 
-type_specifier_modifier <TypeSpecifier* $typeSpecifier>
+type_specifier_modifier<TypeSpecifier* $typeSpecifier>
 	:	type_specifier
 			{
-				return $typeSpecifier->setType ($1.m_type);
+				return $typeSpecifier->setType($1.m_type);
 			}
 	|	type_modifier
 			{
-				return $typeSpecifier->setTypeModifier ($1.m_typeModifier);
+				return $typeSpecifier->addTypeModifier($1.m_typeModifier);
 			}
 	;
 
 //..............................................................................
 
-class
+struct
 {
 	StorageKind m_storageKind;
 }
@@ -121,7 +120,7 @@ storage_specifier
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class
+struct
 {
 	AccessKind m_accessKind;
 }
@@ -138,79 +137,70 @@ access_specifier
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class
+struct
 {
 	Type* m_type;
 }
 type_specifier
 	:	TokenKind_Void
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_Void);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_Void);
 			}
 	|	TokenKind_Variant
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_Variant);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_Variant);
 			}
 	|	TokenKind_Class
 			{
-				$.m_type = m_module->m_typeMgr.getStdType (StdType_AbstractClass);
+				$.m_type = m_module->m_typeMgr.getStdType(StdType_AbstractClass);
 			}
 	|	TokenKind_AnyData
 			{
-				$.m_type = m_module->m_typeMgr.getStdType (StdType_AbstractData);
+				$.m_type = m_module->m_typeMgr.getStdType(StdType_AbstractData);
 			}
 	|	TokenKind_Bool
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_Bool);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_Bool);
 			}
 	|	TokenKind_Int
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_Int);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_Int);
 			}
 	|	TokenKind_IntPtr
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_IntPtr);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_IntPtr);
 			}
 	|	TokenKind_Char
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_Char);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_Char);
 			}
 	|	TokenKind_Short
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_Short);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_Short);
 			}
 	|	TokenKind_Long
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_Long);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_Long);
 			}
 	|	TokenKind_Float
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_Float);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_Float);
 			}
 	|	TokenKind_Double
 			{
-				$.m_type = m_module->m_typeMgr.getPrimitiveType (TypeKind_Double);
+				$.m_type = m_module->m_typeMgr.getPrimitiveType(TypeKind_Double);
 			}
-	|	TokenKind_Auto
-			{
-				err::setError ("'auto' type specifier is not yet supported");
-				return false;
-			}
-	|	resolver (TokenKind_Property '{')
-		property_template_specifier $t
+	|	property_template_specifier $t
 			{
 				$.m_type = $t.m_type;
 			}
-	|	resolver (qualified_type_name_rslv)
-		qualified_type_name $t
+	|	qualified_type_name $t
 			{
 				$.m_type = $t.m_type;
 			}
 	;
 
-// expression vs item_declaration_w_specifier
-
-class
+struct
 {
 	size_t m_baseTypeIdx;
 	QualifiedName m_name;
@@ -220,56 +210,60 @@ basetype_qualified_name
 			{
 				$.m_baseTypeIdx = $1.m_data.m_integer - 1;
 			}
-	|	TokenKind_BaseType '.' qualified_name_impl <&$.m_name>
+	|	TokenKind_BaseType '.' qualified_name_impl<&$.m_name>
 			{
 				$.m_baseTypeIdx = $1.m_data.m_integer - 1;
 			}
-	|	qualified_name_impl <&$.m_name>
+	|	qualified_name_impl<&$.m_name>
 			{
 				$.m_baseTypeIdx = -1;
 			}
 	;
 
+// the main conflict of C-family: expression vs declaration
+
 qualified_type_name_rslv
-	:		{
-				if (isTypeSpecified ())
-					return false;
-			}
-		basetype_qualified_name $n
+	enter
+	{
+		if (isTypeSpecified())
+			return false;
+	}
+	:	basetype_qualified_name $n
 			{
 				return
-					m_stage == Stage_Pass1 ||
-					findType (
+					m_mode == Mode_Parse ||
+					findType(
 						$n.m_baseTypeIdx,
 						$n.m_name,
-						$n.m_firstToken.m_pos
+						$n.m_firstTokenPos
 						) != NULL;
 			}
-		(('(' | '[' | '=') // declarator suffix detected
+		(('(' | '[' | '=') // declarator suffix detected, e.g.: static foo()
 			{
 				return false;
 			}
 		)?
 	;
 
-class
+struct
 {
 	Type* m_type;
 }
+resolver(qualified_type_name_rslv)
 qualified_type_name
 	:	basetype_qualified_name
 			{
-				$.m_type = getType (
+				$.m_type = getType(
 					$1.m_baseTypeIdx,
 					$1.m_name,
-					$1.m_firstToken.m_pos
+					$1.m_firstTokenPos
 					);
 
 				return $.m_type != NULL;
 			}
 	;
 
-class
+struct
 {
 	PropertyType* m_type;
 }
@@ -280,20 +274,20 @@ property_template_specifier
 	}
 	:	TokenKind_Property
 			{
-				$propertyTemplate = createPropertyTemplate ();
-				m_module->m_namespaceMgr.openNamespace ($propertyTemplate);
+				$propertyTemplate = createPropertyTemplate();
+				m_module->m_namespaceMgr.openNamespace($propertyTemplate);
 			}
-		named_type_block_impl
+		'{' member_block_declaration_list '}'
 			{
-				m_module->m_namespaceMgr.closeNamespace ();
-				$.m_type = $propertyTemplate->calcType ();
+				m_module->m_namespaceMgr.closeNamespace();
+				$.m_type = $propertyTemplate->calcType();
 				return $.m_type != NULL;
 			}
 	;
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class
+struct
 {
 	TypeModifier m_typeModifier;
 }
@@ -313,6 +307,10 @@ type_modifier
 	|	TokenKind_ReadOnly
 			{
 				$.m_typeModifier = TypeModifier_ReadOnly;
+			}
+	|	TokenKind_CMut
+			{
+				$.m_typeModifier = TypeModifier_CMut;
 			}
 	|	TokenKind_Volatile
 			{
@@ -386,13 +384,13 @@ type_modifier
 			{
 				$.m_typeModifier = TypeModifier_Reactor;
 			}
-	|	TokenKind_Automaton
-			{
-				$.m_typeModifier = TypeModifier_Automaton;
-			}
 	|	TokenKind_ErrorCode
 			{
 				$.m_typeModifier = TypeModifier_ErrorCode;
+			}
+	|	TokenKind_Async
+			{
+				$.m_typeModifier = TypeModifier_Async;
 			}
 	;
 

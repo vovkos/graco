@@ -770,7 +770,7 @@ protected:
 
 		if (masterIndex < T::TokenEnd)
 		{
-			node = AXL_MEM_NEW(TokenNode);
+			node = llk::getNodeAllocator<T>()->allocate<TokenNode>();
 			node->m_index = masterIndex;
 		}
 		else if (masterIndex < T::TokenEnd + T::NamedSymbolCount)
@@ -781,29 +781,29 @@ protected:
 		}
 		else if (masterIndex < T::TokenEnd + T::NamedSymbolCount + T::CatchSymbolCount)
 		{
-			node = AXL_MEM_NEW(StdSymbolNode);
+			node = llk::getNodeAllocator<T>()->allocate<StdSymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
 		}
 		else if (masterIndex < T::SymbolEnd)
 		{
-			node = AXL_MEM_NEW(SymbolNode);
+			node = llk::getNodeAllocator<T>()->allocate<SymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
 		}
 		else if (masterIndex < T::SequenceEnd)
 		{
-			node = AXL_MEM_NEW(Node);
+			node = llk::getNodeAllocator<T>()->allocate<Node>();
 			node->m_nodeKind = NodeKind_Sequence;
 			node->m_index = masterIndex - T::SequenceFirst;
 		}
 		else if (masterIndex < T::ActionEnd)
 		{
-			node = AXL_MEM_NEW(Node);
+			node = llk::getNodeAllocator<T>()->allocate<Node>();
 			node->m_nodeKind = NodeKind_Action;
 			node->m_index = masterIndex - T::ActionFirst;
 		}
 		else if (masterIndex < T::ArgumentEnd)
 		{
-			node = AXL_MEM_NEW(Node);
+			node = llk::getNodeAllocator<T>()->allocate<Node>();
 			node->m_nodeKind = NodeKind_Argument;
 			node->m_index = masterIndex - T::ArgumentFirst;
 		}
@@ -829,7 +829,7 @@ protected:
 		{
 			ASSERT(masterIndex < T::LaDfaEnd);
 
-			node = AXL_MEM_NEW(LaDfaNode);
+			node = llk::getNodeAllocator<T>()->allocate<LaDfaNode>();
 			node->m_index = masterIndex - T::LaDfaFirst;
 		}
 
@@ -1000,7 +1000,7 @@ protected:
 
 	// static
 	// SymbolNode*
-	// createSymbolNode(size_t index); // allocate node & ast with AXL_MEM_NEW() !!
+	// createSymbolNode(size_t index); // allocate node with llk::NodeAllocator
 
 	// static
 	// const size_t*

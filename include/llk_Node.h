@@ -13,6 +13,8 @@
 
 #define _LLK_NODE_H
 
+#include "llk_Pch.h"
+
 namespace llk {
 
 // these are run-time nodes (as opposed to compile-time nodes in src/Node.h)
@@ -179,6 +181,63 @@ struct LaDfaNode: Node
 		m_resolverThenIndex = -1;
 		m_resolverElseIndex = -1;
 	}
+};
+
+//..............................................................................
+
+template <typename Parser>
+class NodeAllocator
+{
+public:
+	enum
+	{
+		MaxNodeSize = Parser::MaxNodeSize,
+	};
+
+protected:
+	axl::sl::List<Node> m_nodeList;
+	axl::sl::List<axl::sl::ListLink> m_freeList;
+
+public:
+	template <typename N>
+	N*
+	allocate()
+	{
+		ASSERT(sizeof(N) <= MaxNodeSize);
+
+		axl::sl::ListLink* link = !m_freeList.isEmpty() ?
+			m_freeList.removeHead() :
+			(axl::sl::ListLink*)AXL_MEM_ALLOCATE(MaxNodeSize);
+
+
+		N* node = new(link)N;
+		m_nodeList.insertTail(node);
+		return node;
+	}
+
+	template <typename N>
+	void
+	free(N* node)
+	{
+		ASSERT(sizeof(N) <= MaxNodeSize);
+		m_nodeList.remove(node);
+		m_freeList.insertHead(node);
+	}
+};
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+template <typename Parser>
+NodeAllocator<Parser>*
+getNodeAllocator()
+{
+	return axl::sys::getTlsPtrSlotValue<NodeAllocator<Parser> >();
+}
+
+
+class NodeDelete
+{
+
 };
 
 //..............................................................................

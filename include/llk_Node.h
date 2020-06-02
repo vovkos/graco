@@ -186,7 +186,7 @@ struct LaDfaNode: Node
 //..............................................................................
 
 template <typename Parser>
-class NodeAllocator
+class NodeAllocator: public axl::ref::RefCount
 {
 public:
 	enum
@@ -195,32 +195,26 @@ public:
 	};
 
 protected:
-	axl::sl::List<Node> m_nodeList;
-	axl::sl::List<axl::sl::ListLink> m_freeList;
+	axl::sl::List<Node, axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink>, axl::mem::StdFree> m_freeList;
 
 public:
-	template <typename N>
-	N*
+	template <typename T>
+	T*
 	allocate()
 	{
-		ASSERT(sizeof(N) <= MaxNodeSize);
+		ASSERT(sizeof(T) <= MaxNodeSize);
 
-		axl::sl::ListLink* link = !m_freeList.isEmpty() ?
+		Node* node = !m_freeList.isEmpty() ?
 			m_freeList.removeHead() :
-			(axl::sl::ListLink*)AXL_MEM_ALLOCATE(MaxNodeSize);
+			(Node*)AXL_MEM_ALLOCATE(MaxNodeSize);
 
-
-		N* node = new(link)N;
-		m_nodeList.insertTail(node);
-		return node;
+		return new(node)T;
 	}
 
-	template <typename N>
 	void
-	free(N* node)
+	free(Node* node)
 	{
-		ASSERT(sizeof(N) <= MaxNodeSize);
-		m_nodeList.remove(node);
+		node->~Node();
 		m_freeList.insertHead(node);
 	}
 };
@@ -229,15 +223,44 @@ public:
 
 template <typename Parser>
 NodeAllocator<Parser>*
-getNodeAllocator()
+createCurrentThreadNodeAllocator()
 {
-	return axl::sys::getTlsPtrSlotValue<NodeAllocator<Parser> >();
+	ref::Ptr<NodeAllocator<Parser> > allocator = AXL_REF_NEW(NodeAllocator<Parser>);
+	axl::sys::setTlsPtrSlotValue<NodeAllocator<Parser> >(allocator);
+	return allocator;
 }
 
-
-class NodeDelete
+template <typename Parser>
+NodeAllocator<Parser>*
+getCurrentThreadNodeAllocator()
 {
+	NodeAllocator<Parser>* allocator = axl::sys::getTlsPtrSlotValue<NodeAllocator<Parser> >();
+	return allocator ? allocator : createCurrentThreadNodeAllocator<Parser>();
+}
 
+//..............................................................................
+
+template <
+	typename Parser,
+	typename T
+	>
+T*
+allocateNode()
+{
+	return getCurrentThreadNodeAllocator<Parser>()->allocate<T>();
+}
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+template <typename Parser>
+class DeleteNode
+{
+public:
+	void
+	operator () (Node* node)
+	{
+		getCurrentThreadNodeAllocator<Parser>()->free(node);
+	}
 };
 
 //..............................................................................

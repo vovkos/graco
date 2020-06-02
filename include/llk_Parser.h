@@ -30,6 +30,7 @@ public:
 	typedef typename Token::TokenKind TokenKind;
 	typedef llk::TokenNode<Token> TokenNode;
 	typedef llk::SymbolNode SymbolNode;
+	typedef llk::StdSymbolNode StdSymbolNode;
 	typedef llk::LaDfaNode<Token> LaDfaNode;
 
 protected:
@@ -77,14 +78,13 @@ protected:
 	};
 
 protected:
-	axl::sl::List<Node> m_nodeList;
+	axl::sl::List<Node, axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink>, DeleteNode<T> > m_nodeList;
 	axl::sl::Array<Node*> m_predictionStack;
 	axl::sl::Array<SymbolNode*> m_symbolStack;
 	axl::sl::Array<LaDfaNode*> m_resolverStack;
 
 	axl::sl::BoxList<Token> m_tokenList;
 	axl::sl::BoxIterator<Token> m_tokenCursor;
-
 	Token m_currentToken;
 	Token m_lastMatchedToken;
 
@@ -770,7 +770,7 @@ protected:
 
 		if (masterIndex < T::TokenEnd)
 		{
-			node = llk::getNodeAllocator<T>()->allocate<TokenNode>();
+			node = allocateNode<T, TokenNode>();
 			node->m_index = masterIndex;
 		}
 		else if (masterIndex < T::TokenEnd + T::NamedSymbolCount)
@@ -781,29 +781,29 @@ protected:
 		}
 		else if (masterIndex < T::TokenEnd + T::NamedSymbolCount + T::CatchSymbolCount)
 		{
-			node = llk::getNodeAllocator<T>()->allocate<StdSymbolNode>();
+			node = allocateNode<T, StdSymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
 		}
 		else if (masterIndex < T::SymbolEnd)
 		{
-			node = llk::getNodeAllocator<T>()->allocate<SymbolNode>();
+			node = allocateNode<T, SymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
 		}
 		else if (masterIndex < T::SequenceEnd)
 		{
-			node = llk::getNodeAllocator<T>()->allocate<Node>();
+			node = allocateNode<T, Node>();
 			node->m_nodeKind = NodeKind_Sequence;
 			node->m_index = masterIndex - T::SequenceFirst;
 		}
 		else if (masterIndex < T::ActionEnd)
 		{
-			node = llk::getNodeAllocator<T>()->allocate<Node>();
+			node = allocateNode<T, Node>();
 			node->m_nodeKind = NodeKind_Action;
 			node->m_index = masterIndex - T::ActionFirst;
 		}
 		else if (masterIndex < T::ArgumentEnd)
 		{
-			node = llk::getNodeAllocator<T>()->allocate<Node>();
+			node = allocateNode<T, Node>();
 			node->m_nodeKind = NodeKind_Argument;
 			node->m_index = masterIndex - T::ArgumentFirst;
 		}
@@ -828,8 +828,7 @@ protected:
 		else
 		{
 			ASSERT(masterIndex < T::LaDfaEnd);
-
-			node = llk::getNodeAllocator<T>()->allocate<LaDfaNode>();
+			node = allocateNode<T, LaDfaNode>();
 			node->m_index = masterIndex - T::LaDfaFirst;
 		}
 

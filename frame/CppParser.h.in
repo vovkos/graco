@@ -34,6 +34,97 @@ class $ParserClassName: public llk::Parser<$ParserClassName, $TokenClassName>
 {
 	friend llk::Parser<$ParserClassName, $TokenClassName>;
 
+$Members
+
+protected:
+	// custom symbols
+
+%{
+for i = 1, NamedSymbolCount do
+	local symbol = SymbolTable[i]
+	if symbol.isCustomClass then
+		if symbol.valueBlock then
+}
+	struct SymbolNodeValue_$(symbol.name): llk::SymbolNodeValue
+	{
+$(getPpLine(symbol.srcPos.filePath, symbol.valueLine))
+	$(symbol.valueBlock);
+$(getPpLineDefault())
+	};
+
+	struct SymbolNode_$(symbol.name): llk::SymbolNodeImpl<SymbolNodeValue_$(symbol.name)>
+%{
+		else
+}
+	struct SymbolNode_$(symbol.name): llk::StdSymbolNode
+%{
+		end -- if
+}
+	{
+	public:
+%{
+		if symbol.paramBlock then
+}
+		struct
+		{
+$(getPpLine(symbol.srcPos.filePath, symbol.paramLine))
+			$((string.gsub(symbol.paramBlock, ",", ";")));
+$(getPpLineDefault())
+		} m_param;
+%{
+		end -- if
+
+		if symbol.localBlock then
+}
+		struct
+		{
+$(getPpLine(symbol.srcPos.filePath, symbol.localLine))
+			$(symbol.localBlock);
+$(getPpLineDefault())
+		} m_local;
+%{
+		end -- if
+}
+		SymbolNode_$(symbol.name)()
+		{
+			m_index = SymbolKind_$(symbol.name);
+%{
+		if symbol.enterBlock then
+}
+			m_flags |= llk::SymbolNodeFlag_HasEnter;
+%{
+		end -- if
+
+		if symbol.leaveBlock then
+}
+			m_flags |= llk::SymbolNodeFlag_HasLeave;
+%{
+		end -- if
+}
+		}
+	};
+
+%{
+	end -- if
+end -- for
+}
+	union MaxNodeSizeCalc
+	{
+		char m_laDfaNode[sizeof(LaDfaNode)];
+		char m_tokenNode[sizeof(TokenNode)];
+		char m_stdSymbolNode[sizeof(StdSymbolNode)];
+%{
+for i = 1, NamedSymbolCount do
+	local symbol = SymbolTable[i]
+	if symbol.isCustomClass then
+}
+		char m_symbolNode_$(symbol.name)[sizeof(SymbolNode_$(symbol.name))];
+%{
+	end -- if
+end -- for
+}
+	};
+
 public:
 	enum
 	{
@@ -67,13 +158,9 @@ public:
 		BeaconEnd          = $BeaconEnd,
 		LaDfaFirst         = $BeaconEnd,
 		LaDfaEnd           = $LaDfaEnd,
+
+		MaxNodeSize        = sizeof(MaxNodeSizeCalc),
 	};
-
-	// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-$Members
-
-	// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 protected:
 	static

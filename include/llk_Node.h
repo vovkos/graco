@@ -225,7 +225,7 @@ template <typename Parser>
 NodeAllocator<Parser>*
 createCurrentThreadNodeAllocator()
 {
-	ref::Ptr<NodeAllocator<Parser> > allocator = AXL_REF_NEW(NodeAllocator<Parser>);
+	axl::ref::Ptr<NodeAllocator<Parser> > allocator = AXL_REF_NEW(NodeAllocator<Parser>);
 	axl::sys::setTlsPtrSlotValue<NodeAllocator<Parser> >(allocator);
 	return allocator;
 }
@@ -247,7 +247,7 @@ template <
 T*
 allocateNode()
 {
-	return getCurrentThreadNodeAllocator<Parser>()->allocate<T>();
+	return getCurrentThreadNodeAllocator<Parser>()->template allocate<T>();
 }
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

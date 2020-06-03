@@ -190,6 +190,21 @@ NodeMgr::createBeaconNode(SymbolNode* target)
 	return beaconNode;
 }
 
+void
+NodeMgr::deleteBeaconNode(BeaconNode* node)
+{
+	if (node->m_flags & NodeFlag_Reachable)
+	{
+		m_beaconList.erase(node);
+	}
+	else
+	{
+		ASSERT(node->m_flags & GrammarNodeFlag_WeaklyReachable); // otherwise should have been deleted
+		m_weaklyReachableNodeList.erase(node);
+	}
+}
+
+
 DispatcherNode*
 NodeMgr::createDispatcherNode(SymbolNode* symbol)
 {

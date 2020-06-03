@@ -89,10 +89,7 @@ public:
 	createBeaconNode(SymbolNode* target);
 
 	void
-	deleteBeaconNode(BeaconNode* node)
-	{
-		m_beaconList.erase(node);
-	}
+	deleteBeaconNode(BeaconNode* node);
 
 	void
 	deleteLaDfaNode(LaDfaNode* node)

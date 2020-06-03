@@ -122,12 +122,13 @@ LaDfaState::getDefaultProduction()
 LaDfaBuilder::LaDfaBuilder(
 	const CmdLine* cmdLine,
 	NodeMgr* nodeMgr,
-	sl::Array<Node*>* parseTable
+	const sl::Array<Node*>* parseTable
 	)
 {
 	m_cmdLine = cmdLine;
 	m_nodeMgr = nodeMgr;
 	m_parseTable = parseTable;
+	m_conflict = NULL;
 	m_maxUsedLookahead = 1;
 }
 
@@ -152,6 +153,8 @@ Node*
 LaDfaBuilder::build(ConflictNode* conflict)
 {
 	ASSERT(conflict->m_nodeKind == NodeKind_Conflict);
+
+	m_conflict = conflict;
 
 	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount();
 
@@ -572,7 +575,7 @@ LaDfaBuilder::processThread(
 			if (thread->m_match)
 				return true;
 
-			production = (*m_parseTable) [node->m_index * tokenCount + token->m_index];
+			production = (*m_parseTable)[node->m_index * tokenCount + token->m_index];
 			if (!production)  // could happen after epsilon production
 			{
 				thread->m_state->m_activeThreadList.erase(thread);
@@ -584,6 +587,14 @@ LaDfaBuilder::processThread(
 			symbol = (SymbolNode*)node;
 			if (symbol->m_resolver && thread->m_state->m_lookahead == 1) // only use resolvers at the first step
 			{
+				if (m_cmdLine->m_flags & CmdLineFlag_Verbose)
+					printf(
+						"  RESOLVER of %s is used for conflict at %s:%s\n",
+						symbol->m_name.sz(),
+						m_conflict->m_symbol->m_name.sz(),
+						m_conflict->m_token->m_name.sz()
+						);
+
 				symbol->m_flags |= SymbolNodeFlag_ResolverUsed;
 				thread->m_resolver = symbol->m_resolver;
 				thread->m_resolverPriority = symbol->m_resolverPriority;

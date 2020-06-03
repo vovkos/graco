@@ -114,14 +114,15 @@ protected:
 	const CmdLine* m_cmdLine;
 	NodeMgr* m_nodeMgr;
 	sl::List<LaDfaState> m_stateList;
-	sl::Array<Node*>* m_parseTable;
+	const sl::Array<Node*>* m_parseTable;
+	ConflictNode* m_conflict;
 	size_t m_maxUsedLookahead;
 
 public:
 	LaDfaBuilder(
 		const CmdLine* cmdLine,
 		NodeMgr* nodeMgr,
-		sl::Array<Node*>* parseTable
+		const sl::Array<Node*>* parseTable
 		);
 
 	Node*

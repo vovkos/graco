@@ -78,6 +78,8 @@ protected:
 	};
 
 protected:
+	axl::sl::StringRef m_fileName;
+
 	axl::sl::List<Node, axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink>, DeleteNode<T> > m_nodeList;
 	axl::sl::Array<Node*> m_predictionStack;
 	axl::sl::Array<SymbolNode*> m_symbolStack;
@@ -88,8 +90,6 @@ protected:
 	axl::sl::BoxIterator<Token> m_tokenCursor;
 	Token m_currentToken;
 	Token m_lastMatchedToken;
-
-	size_t m_errorCount;
 	uint_t m_flags;
 
 public:
@@ -99,21 +99,20 @@ public:
 	}
 
 	SymbolNode*
-	create(int symbol = T::StartSymbol)
+	create(
+		const axl::sl::StringRef& fileName,
+		int symbol = T::StartSymbol
+		)
 	{
 		clear();
+		m_fileName = fileName;
 		return (SymbolNode*)pushPrediction(T::SymbolFirst + symbol);
-	}
-
-	size_t
-	getErrorCount()
-	{
-		return m_errorCount;
 	}
 
 	void
 	clear()
 	{
+		m_fileName.clear();
 		m_nodeList.clear();
 		m_predictionStack.clear();
 		m_symbolStack.clear();
@@ -121,7 +120,6 @@ public:
 		m_tokenList.clear();
 		m_tokenCursor = NULL;
 		m_flags = 0;
-		m_errorCount = 0;
 	}
 
 	bool
@@ -349,8 +347,6 @@ protected:
 	RecoverAction
 	recover(ErrorKind errorKind)
 	{
-		m_errorCount++;
-
 		if (errorKind == ErrorKind_Syntax && (m_flags & Flag_PostSynchronize))
 		{
 			// synchronizer token must match (otherwise, it's a bad choice of sync tokens)
@@ -360,9 +356,11 @@ protected:
 				m_currentToken.getName()
 				);
 
+			axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
 			return RecoverAction_Fail;
 		}
 
+		axl::lex::ensureSrcPosError(m_fileName, m_currentToken.m_pos);
 		RecoverAction action = static_cast<T*>(this)->processError(errorKind);
 		ASSERT(action != RecoverAction_Continue || errorKind != ErrorKind_Syntax); // can't continue on syntax errors
 
@@ -388,6 +386,7 @@ protected:
 		if (m_syncTokenSet.isEmpty())
 		{
 			axl::err::setError("empty synchronization set (consider adding a 'catch' clause to the grammar)");
+			axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
 			return RecoverAction_Fail;
 		}
 

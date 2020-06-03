@@ -36,9 +36,9 @@ public:
 protected:
 	enum Flag
 	{
-		Flag_Synchronize     = 0x01,
-		Flag_PostSynchronize = 0x02,
-		Flag_TokenMatch      = 0x04,
+		Flag_TokenMatch      = 0x01,
+		Flag_Synchronize     = 0x10,
+		Flag_PostSynchronize = 0x20,
 	};
 
 	enum ErrorKind
@@ -83,6 +83,7 @@ protected:
 	axl::sl::Array<SymbolNode*> m_symbolStack;
 	axl::sl::Array<LaDfaNode*> m_resolverStack;
 
+	axl::sl::SimpleHashTable<int, size_t> m_syncTokenSet;
 	axl::sl::BoxList<Token> m_tokenList;
 	axl::sl::BoxIterator<Token> m_tokenCursor;
 	Token m_currentToken;
@@ -250,13 +251,13 @@ public:
 	traceSymbolStack()
 	{
 		intptr_t count = m_symbolStack.getCount();
-
 		TRACE("SYMBOL STACK (%d symbols):\n", count);
-		for (intptr_t i = 0; i < count; i++)
+
+		for (intptr_t i = count - 1; i >= 0; i--)
 		{
 			SymbolNode* node = m_symbolStack[i];
 			SymbolNodeValue* value = node->getValue();
-			TRACE("%s", static_cast <T*> (this)->getSymbolName (node->m_index));
+			TRACE("%p %s", node, static_cast<T*>(this)->getSymbolName(node->m_index));
 			TRACE(" (%d:%d)", value->m_firstTokenPos.m_line + 1, value->m_firstTokenPos.m_col + 1);
 			TRACE("\n");
 		}
@@ -266,12 +267,17 @@ public:
 	tracePredictionStack()
 	{
 		intptr_t count = m_predictionStack.getCount();
-
 		TRACE("PREDICTION STACK (%d nodes):\n", count);
-		for (intptr_t i = 0; i < count; i++)
+
+		for (intptr_t i = count - 1; i >= 0; i--)
 		{
 			Node* node = m_predictionStack[i];
-			TRACE("%s (%d)\n", getNodeKindString(node->m_nodeKind), node->m_index);
+
+			const char* extra = node->m_nodeKind == NodeKind_Symbol ?
+				static_cast<T*>(this)->getSymbolName(node->m_index) :
+				"";
+
+			TRACE("%p %s (%d) %s\n", node, getNodeKindString(node->m_nodeKind), node->m_index, extra);
 		}
 	}
 
@@ -347,8 +353,10 @@ protected:
 
 		if (errorKind == ErrorKind_Syntax && (m_flags & Flag_PostSynchronize))
 		{
+			// synchronizer token must match (otherwise, it's a bad choice of sync tokens)
+
 			axl::err::setFormatStringError(
-				"synchronizer token '%s' didn't match (adjust the 'catch' clause)",
+				"synchronizer token '%s' didn't match (adjust the 'catch' clause in the grammar)",
 				m_currentToken.getName()
 				);
 
@@ -361,29 +369,30 @@ protected:
 		if (action != RecoverAction_Synchronize)
 			return action;
 
-		SymbolNode* catcher = NULL;
+		size_t catcherCount = 0;
+		m_syncTokenSet.clear();
+
 		size_t count = m_symbolStack.getCount();
 		for (intptr_t i = count - 1; i >= 0; i--)
-			if (isCatchSymbolIndex(m_symbolStack[i]->m_index))
-			{
-				catcher = m_symbolStack[i];
-				m_symbolStack.setCount(i); // take it off symbol stack
-				break;
-			}
-
-		if (!catcher)
 		{
-			axl::err::setError("no catchers on stack (consider adding a 'catch' clause)");
+			SymbolNode* symbol = m_symbolStack[i];
+			if (isCatchSymbolIndex(symbol->m_index))
+			{
+				catcherCount++;
+				int const* p = static_cast<T*>(this)->getSyncTokenSet(symbol->m_index);
+				for (; *p != -1; p++)
+					m_syncTokenSet.addIfNotExists(*p, i);
+			}
+		}
+
+		if (m_syncTokenSet.isEmpty())
+		{
+			axl::err::setError("empty synchronization set (consider adding a 'catch' clause to the grammar)");
 			return RecoverAction_Fail;
 		}
 
-		ASSERT(catcher->m_flags & SymbolNodeFlag_Stacked);
-		catcher->m_flags &= ~SymbolNodeFlag_Stacked;
+		// reset and wait for a synchornization token
 
-		size_t i = findInPredictionStack(catcher);
-		ASSERT(i != -1);
-
-		m_predictionStack.setCount(i + 1); // keep it on prediction stack
 		m_resolverStack.clear();
 		m_tokenList.clear();
 		m_tokenCursor = NULL;
@@ -394,17 +403,35 @@ protected:
 	MatchResult
 	synchronize(const Token* token)
 	{
-		ASSERT(m_flags & Flag_Synchronize);
+		ASSERT((m_flags & Flag_Synchronize) && !m_syncTokenSet.isEmpty());
 
-		Node* catcher = getPredictionTop();
-		ASSERT(catcher && catcher->m_nodeKind == NodeKind_Symbol && isCatchSymbolIndex(catcher->m_index));
-
-		bool canSync = static_cast<T*>(this)->isSyncToken(catcher->m_index, token->m_token);
-		if (!canSync)
+		size_t i = m_syncTokenSet.findValue(token->m_token, -1);
+		if (i == -1)
 			return MatchResult_NextToken;
 
+		Node* catcher = m_symbolStack[i];
+		ASSERT(isCatchSymbolIndex(catcher->m_index));
+
+		// pop everything above the catcher off prediction stack
+
+		intptr_t j = m_predictionStack.getCount() - 1;
+		for (; j >= 0; j--)
+		{
+			Node* node = m_predictionStack[j];
+			if (node == catcher)
+				break;
+
+			if (!(node->m_flags & NodeFlag_Locator))
+				m_nodeList.erase(node);
+		}
+
+		ASSERT(catcher->m_flags & SymbolNodeFlag_Stacked);
+		catcher->m_flags &= ~SymbolNodeFlag_Stacked;
+		m_symbolStack.setCount(i); // remove catcher from symbol stack...
+		m_predictionStack.setCount(j + 1); // ...but keep it on prediction stack
+
 		m_flags &= ~Flag_Synchronize;
-		m_flags |= Flag_PostSynchronize; // synchronizer token must match (otherwise, a bad choice of sync tokens)
+		m_flags |= Flag_PostSynchronize; // synchronizer token must match
 		return MatchResult_Continue;
 	}
 
@@ -424,17 +451,6 @@ protected:
 			return false;
 
 		return true;
-	}
-
-	size_t
-	findInPredictionStack(Node* node)
-	{
-		size_t count = m_predictionStack.getCount();
-		for (intptr_t i = count - 1; i >= 0; i--)
-			if (m_predictionStack[i] == node)
-				return i;
-
-		return -1;
 	}
 
 	// match against different kinds of nodes on top of prediction stack
@@ -1027,11 +1043,8 @@ protected:
 	//		LaDfaTransition* transition
 	//		);
 
-	// bool
-	// isSynchronizerToken(
-	//		size_t index,
-	//		int token
-	//		);
+	// const size_t*
+	// getSyncTokenSet(size_t index);
 
 	// optionally implement:
 

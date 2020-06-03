@@ -213,11 +213,8 @@ protected:
 		LaDfaTransition* transition
 		);
 
-	bool
-	isSyncToken(
-		size_t index,
-		int token
-		);
+	const int*
+	getSyncTokenSet(size_t index);
 };
 
 //..............................................................................

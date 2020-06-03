@@ -74,7 +74,7 @@ for i = 1, SequenceCount do
 }
 		$j,
 %{
-	j = j + #sequence + 1 -- to account left side & terminating -1
+	j = j + #sequence + 1 -- including the terminating -1
 end -- for
 }
 		-1
@@ -452,42 +452,44 @@ end -- for
 	}
 }
 
-bool
-$ParserClassName::isSyncToken(
-	size_t index,
-	int token
-	)
+const int*
+$ParserClassName::getSyncTokenSet(size_t index)
 {
-	switch (index)
+	ASSERT(index >= NamedSymbolCount && index < NamedSymbolCount + CatchSymbolCount);
+
+	static const int syncTokenTable[] =
 	{
 %{
 for i = NamedSymbolCount + 1, NamedSymbolCount + CatchSymbolCount do
-	local symbol = SymbolTable[i]
-}
-	case $(i - 1):
-		switch (token)
-		{
-%{
-	local tokenTable = symbol.syncTokenTable
+	local tokenTable = SymbolTable[i].syncTokenTable
+	emit(string.format("\t\t/* %2d */  ", i - NamedSymbolCount - 1))
 	for j = 1, #tokenTable do
 		local token = tokenTable[j]
-}
-		case $(getTokenString(token)):
-%{
-	end -- for
-}
-			return true;
-
-		default:
-			return false;
-		}
-
+		emit(getTokenString(token), ", ")
+	end
+}-1,
 %{
 end -- for
 }
-	default:
-		return false;
-	}
+		-1
+	};
+
+	static const size_t syncTokenIndexTable[] =
+	{
+%{
+local j = 0;
+for i = NamedSymbolCount + 1, NamedSymbolCount + CatchSymbolCount do
+	local tokenTable = SymbolTable[i].syncTokenTable
+}
+		$j,
+%{
+	j = j + #tokenTable + 1 -- including the terminating -1
+end -- for
+}
+		-1
+	};
+
+	return syncTokenTable + syncTokenIndexTable[index - NamedSymbolCount];
 }
 
 //..............................................................................

@@ -48,6 +48,23 @@ protected:
 	processError(ErrorKind errorKind);
 }
 
+lookahead(2);
+
+start
+nullable
+program
+	:	declaration*
+	;
+
+declaration
+	:	qualified_name ('.' TokenKind_Var)? ';'
+	;
+
+qualified_name
+	:	TokenKind_Identifier ('.' TokenKind_Identifier)*
+	;
+
+/*
 //..............................................................................
 
 start
@@ -556,3 +573,4 @@ expression
 	;
 
 //..............................................................................
+*/

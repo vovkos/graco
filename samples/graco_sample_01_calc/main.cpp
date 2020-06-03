@@ -24,7 +24,7 @@ parse(const sl::StringRef& p)
 	lexer.create("my-source", p);
 
 	Parser parser;
-	parser.create(Parser::StartSymbol);
+	parser.create("my-source", Parser::StartSymbol);
 
 	for (;;)
 	{
@@ -66,12 +66,18 @@ main(
 {
 	g::getModule()->setTag("graco_test_cpp");
 
+	lex::registerParseErrorProvider();
+
 	bool result = parse(
-		"const pi = 3.14159265358979323846;\n"
+		"a.b.c;\n"
+		"d.e.f.var;\n"
+		"g.h.i.const;\n"
+
+/*		"const pi = 3.14159265358979323846;\n"
   		"var r = 100;\n"
 		"2 * pi * r;\n"
 		"var x, y, ; z = 15; x = y = 10;\n"
-  		"assert(x == 10);\n"
+  		"assert(x == 10);\n" */
 		);
 
 	if (!result)

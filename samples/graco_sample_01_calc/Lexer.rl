@@ -64,6 +64,9 @@ main := |*
 'null'   { createToken(TokenKind_Const); };
 'assert' { createToken(TokenKind_Assert); };
 
+'new' { createToken(TokenKind_New); };
+'int' { createToken(TokenKind_Int); };
+
 '++'     { createToken(TokenKind_Inc); };
 '--'     { createToken(TokenKind_Dec); };
 '*='     { createToken(TokenKind_MulAssign); };

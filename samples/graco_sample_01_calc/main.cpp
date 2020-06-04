@@ -69,9 +69,11 @@ main(
 	lex::registerParseErrorProvider();
 
 	bool result = parse(
-		"a.b.c;\n"
-		"d.e.f.var;\n"
-		"g.h.i.const;\n"
+		"[0]\n"
+
+/*		"a.b.c;\n"
+		"d.e.var;\n"
+		"f.g.h.i.const;\n" */
 
 /*		"const pi = 3.14159265358979323846;\n"
   		"var r = 100;\n"

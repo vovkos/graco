@@ -50,19 +50,94 @@ protected:
 
 lookahead(2);
 
+//..............................................................................
+
+start
+program
+	:	'[' any ']'
+	|	'[' ']'
+	;
+
+/*
+
+start
+program
+	:	TokenKind_New new_operator_type ('{' '}')? ';'
+	;
+
+type_specifier
+	:	TokenKind_Int
+	|	qualified_type_name
+	;
+
+resolver({ return false; })
+qualified_type_name
+	:	TokenKind_Identifier ('.' TokenKind_Identifier)*
+	;
+
+type_name
+	:	type_specifier+ declarator_prefix* declarator_suffix*
+	;
+
+declarator_prefix
+	:	'*'
+	;
+
+declarator_suffix
+	:	'[' any ']'
+	|	'[' ']'
+	;
+
+new_operator_type
+	:	type_name
+	|	new_operator_type_w_constructor
+	;
+
+resolver(qualified_type_name, 2)
+new_operator_type_w_constructor
+	:	qualified_type_name '(' ')'
+	;
+
+/*
+
+//..............................................................................
+
 start
 nullable
 program
-	:	declaration*
+	:	catch(';') declaration*
 	;
 
 declaration
-	:	qualified_name ('.' TokenKind_Var)? ';'
+	:	qualified_name
+		(	'.' TokenKind_Var
+				{
+					printf(".VAR");
+				}
+		|	'.' TokenKind_Const
+				{
+					printf(".CONST");
+				}
+		)?
+		';'
+			{
+				printf("\n");
+			}
 	;
 
 qualified_name
-	:	TokenKind_Identifier ('.' TokenKind_Identifier)*
+	:	TokenKind_Identifier
+			{
+				printf("%s", $1.m_data.m_string.sz());
+			}
+		(	'.' TokenKind_Identifier $i
+				{
+					printf(".%s", $i.m_data.m_string.sz());
+				}
+		)*
 	;
+
+*/
 
 /*
 //..............................................................................

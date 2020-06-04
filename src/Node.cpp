@@ -964,12 +964,16 @@ LaDfaNode::luaExport(lua::LuaState* luaState)
 
 	luaState->createTable(childrenCount);
 
+	Node* defaultProduction = m_production;
+
 	for (size_t i = 0; i < childrenCount; i++)
 	{
 		LaDfaNode* child = m_transitionArray[i];
 
-		luaState->createTable(0, 4);
+		if ((child->m_token->m_flags & SymbolNodeFlag_AnyToken) && !defaultProduction)
+			defaultProduction = child->m_production;
 
+		luaState->createTable(0, 4);
 		luaState->getGlobalArrayElement("TokenTable", child->m_token->m_index + 1);
 		luaState->setMember("token");
 
@@ -983,8 +987,8 @@ LaDfaNode::luaExport(lua::LuaState* luaState)
 
 	luaState->setMember("transitionTable");
 
-	if (m_production)
-		luaState->setMemberInteger("defaultProduction", getTransitionIndex(m_production));
+	if (defaultProduction)
+		luaState->setMemberInteger("defaultProduction", getTransitionIndex(defaultProduction));
 }
 
 //..............................................................................

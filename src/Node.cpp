@@ -976,7 +976,7 @@ LaDfaNode::luaExport(lua::LuaState* luaState)
 		if (child->m_resolver)
 			child->luaExportResolverMembers(luaState);
 		else
-			luaState->setMemberInteger("production", getTransitionIndex (child));
+			luaState->setMemberInteger("production", getTransitionIndex(child));
 
 		luaState->setArrayElement(i + 1);
 	}
@@ -984,7 +984,7 @@ LaDfaNode::luaExport(lua::LuaState* luaState)
 	luaState->setMember("transitionTable");
 
 	if (m_production)
-		luaState->setMemberInteger("defaultProduction", getTransitionIndex (m_production));
+		luaState->setMemberInteger("defaultProduction", getTransitionIndex(m_production));
 }
 
 //..............................................................................

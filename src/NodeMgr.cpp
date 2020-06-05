@@ -74,6 +74,8 @@ NodeMgr::clear()
 
 	m_tokenArray.clear();
 	m_symbolArray.clear();
+	m_enterArray.clear();
+	m_leaveArray.clear();
 
 	m_lookaheadLimit = 1;
 	m_masterCount = 0;
@@ -401,7 +403,6 @@ NodeMgr::indexSymbols()
 		node->m_nodeKind = NodeKind_Token;
 		node->m_index = j;
 		node->m_masterIndex = j;
-
 		j++;
 
 		m_namedSymbolList.remove(node);
@@ -423,6 +424,18 @@ NodeMgr::indexSymbols()
 		node->m_index = i;
 		node->m_masterIndex = j;
 		m_symbolArray[i] = node;
+
+		if (!node->m_enterBlock.isEmpty())
+		{
+			node->m_enterIndex = m_enterArray.getCount();
+			m_enterArray.append(node);
+		}
+
+		if (!node->m_leaveBlock.isEmpty())
+		{
+			node->m_leaveIndex = m_leaveArray.getCount();
+			m_leaveArray.append(node);
+		}
 	}
 
 	nodeIt = m_catchSymbolList.getHead();
@@ -572,15 +585,38 @@ NodeMgr::luaExport(lua::LuaState* luaState)
 	luaState->setGlobalInteger("NamedSymbolCount", m_namedSymbolList.getCount());
 	luaState->setGlobalInteger("CatchSymbolCount", m_catchSymbolList.getCount());
 
-	luaExportNodeArray(luaState, "TokenTable", (Node**) (SymbolNode**) m_tokenArray, m_tokenArray.getCount());
-	luaExportNodeArray(luaState, "SymbolTable", (Node**) (SymbolNode**) m_symbolArray, m_symbolArray.getCount());
+	luaExportNodeArray(luaState, "TokenTable", (Node**)(SymbolNode**) m_tokenArray, m_tokenArray.getCount());
+	luaExportNodeArray(luaState, "SymbolTable", (Node**)(SymbolNode**) m_symbolArray, m_symbolArray.getCount());
 	luaExportNodeList(luaState, "SequenceTable", m_sequenceList.getHead (), m_sequenceList.getCount());
 	luaExportNodeList(luaState, "BeaconTable", m_beaconList.getHead (), m_beaconList.getCount());
 	luaExportNodeList(luaState, "DispatcherTable", m_dispatcherList.getHead (), m_dispatcherList.getCount());
 	luaExportNodeList(luaState, "ActionTable", m_actionList.getHead (), m_actionList.getCount());
 	luaExportNodeList(luaState, "ArgumentTable", m_argumentList.getHead (), m_argumentList.getCount());
+	luaExportSymbolNodeRefArray(luaState, "EnterTable", m_enterArray, m_enterArray.getCount());
+	luaExportSymbolNodeRefArray(luaState, "LeaveTable", m_leaveArray, m_leaveArray.getCount());
 
 	luaExportLaDfaTable(luaState);
+}
+
+void
+NodeMgr::luaExportNodeList(
+	lua::LuaState* luaState,
+	const sl::StringRef& name,
+	sl::Iterator<Node> nodeIt,
+	size_t countEstimate
+	)
+{
+	luaState->createTable(countEstimate);
+
+	size_t i = 1;
+
+	for (; nodeIt; nodeIt++, i++)
+	{
+		nodeIt->luaExport(luaState);
+		luaState->setArrayElement(i);
+	}
+
+	luaState->setGlobal(name);
 }
 
 void
@@ -605,22 +641,22 @@ NodeMgr::luaExportNodeArray(
 }
 
 void
-NodeMgr::luaExportNodeList(
+NodeMgr::luaExportSymbolNodeRefArray(
 	lua::LuaState* luaState,
 	const sl::StringRef& name,
-	sl::Iterator<Node> nodeIt,
-	size_t countEstimate
+	SymbolNode* const* nodeArray,
+	size_t count
 	)
 {
-	luaState->createTable(countEstimate);
+	luaState->createTable(count);
 
-	size_t i = 1;
-
-	for (; nodeIt; nodeIt++, i++)
+	for (size_t i = 0; i < count; i++)
 	{
-		nodeIt->luaExport(luaState);
-		luaState->setArrayElement(i);
+		Node* node = nodeArray[i];
+		luaState->getGlobalArrayElement("SymbolTable", node->m_index + 1);
+		luaState->setArrayElement(i + 1);
 	}
+
 
 	luaState->setGlobal(name);
 }

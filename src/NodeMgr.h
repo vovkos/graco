@@ -46,8 +46,10 @@ protected:
 	sl::List<LaDfaNode> m_laDfaList;
 	sl::List<GrammarNode> m_weaklyReachableNodeList;
 
-	sl::Array<SymbolNode*> m_tokenArray;        // char tokens + named tokens
-	sl::Array<SymbolNode*> m_symbolArray;       // named symbols + temp symbols
+	sl::Array<SymbolNode*> m_tokenArray;   // char tokens + named tokens
+	sl::Array<SymbolNode*> m_symbolArray;  // named symbols + temp symbols
+	sl::Array<SymbolNode*> m_enterArray;   // named symbols with enter actions
+	sl::Array<SymbolNode*> m_leaveArray;   // named symbols with leave actions
 
 	size_t m_lookaheadLimit;
 	size_t m_masterCount;
@@ -164,6 +166,14 @@ protected:
 		lua::LuaState* luaState,
 		const sl::StringRef& name,
 		Node* const* node,
+		size_t count
+		);
+
+	void
+	luaExportSymbolNodeRefArray(
+		lua::LuaState* luaState,
+		const sl::StringRef& name,
+		SymbolNode* const* node,
 		size_t count
 		);
 

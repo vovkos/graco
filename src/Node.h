@@ -224,9 +224,11 @@ public:
 
 	sl::StringRef m_enterBlock;
 	lex::LineCol m_enterLineCol;
+	size_t m_enterIndex;
 
 	sl::StringRef m_leaveBlock;
 	lex::LineCol m_leaveLineCol;
+	size_t m_leaveIndex;
 
 public:
 	SymbolNode();

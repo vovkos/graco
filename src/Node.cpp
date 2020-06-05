@@ -213,6 +213,8 @@ SymbolNode::SymbolNode()
 	m_resolver = NULL;
 	m_resolverPriority = 0;
 	m_lookaheadLimit = 1;
+	m_enterIndex = -1;
+	m_leaveIndex = -1;
 }
 
 void
@@ -379,12 +381,14 @@ SymbolNode::luaExport(lua::LuaState* luaState)
 	{
 		luaState->setMemberString("enterBlock", m_enterBlock);
 		luaState->setMemberInteger("enterLine", m_enterLineCol.m_line);
+		luaState->setMemberInteger("enterIndex", m_enterIndex);
 	}
 
 	if (!m_leaveBlock.isEmpty())
 	{
 		luaState->setMemberString("leaveBlock", m_leaveBlock);
 		luaState->setMemberInteger("leaveLine", m_leaveLineCol.m_line);
+		luaState->setMemberInteger("leaveIndex", m_leaveIndex);
 	}
 
 	luaState->createTable(m_paramNameList.getCount());

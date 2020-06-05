@@ -125,7 +125,8 @@ dec+           { createIntegerToken(10); };
 '0' [xx] hex+  { createIntegerToken(16, 2); };
 
 '//' [^\n]*    ;
-'/*' (any | nl)* :>> '*/' ;
+'/*' (any | nl)* :>> '*/'?
+               ;
 
 ws | nl        ;
 print          { createToken(ts[0]); };

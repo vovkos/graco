@@ -35,6 +35,8 @@ end
 
 TokenCount      = #TokenTable
 SymbolCount     = #SymbolTable
+EnterCount      = #EnterTable
+LeaveCount      = #LeaveTable
 SequenceCount   = #SequenceTable
 ActionCount     = #ActionTable
 ArgumentCount   = #ArgumentTable
@@ -67,9 +69,9 @@ end
 
 function getTokenString(token)
 	if token.isEofToken then
-		return "'\\00'"
+		return "EofToken"
 	elseif token.isAnyToken then
-		return "'\\01'"
+		return "AnyToken"
 	elseif token.name then
 		return token.name
 	else

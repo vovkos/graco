@@ -13,7 +13,6 @@
 dofile(FrameDir .. "/CppParserUtils.lua")
 }
 $HeaderFileBegin
-
 //..............................................................................
 
 enum SymbolKind
@@ -37,6 +36,12 @@ class $ParserClassName: public llk::Parser<$ParserClassName, $TokenClassName>
 $Members
 
 protected:
+	class TokenMap: public axl::sl::SimpleHashTable<int, size_t>
+	{
+	public:
+		TokenMap();
+	};
+
 	// custom symbols
 
 %{
@@ -91,13 +96,13 @@ $(getPpLineDefault())
 %{
 		if symbol.enterBlock then
 }
-			m_flags |= llk::SymbolNodeFlag_HasEnter;
+			m_enterIndex = $(symbol.enterIndex);
 %{
 		end -- if
 
 		if symbol.leaveBlock then
 }
-			m_flags |= llk::SymbolNodeFlag_HasLeave;
+			m_leaveIndex = $(symbol.leaveIndex);
 %{
 		end -- if
 }
@@ -140,6 +145,8 @@ public:
 		SequenceCount      = $SequenceCount,
 		ActionCount        = $ActionCount,
 		ArgumentCount      = $ArgumentCount,
+		EnterCount         = $EnterCount,
+		LeaveCount         = $LeaveCount,
 		BeaconCount        = $BeaconCount,
 		LaDfaCount         = $LaDfaCount,
 		TotalCount         = $TotalCount,
@@ -215,6 +222,87 @@ protected:
 
 	const int*
 	getSyncTokenSet(size_t index);
+
+private:
+	// symbol nodes
+
+%{
+for i = 1, NamedSymbolCount do
+	local symbol = SymbolTable[i]
+	if symbol.isCustomClass or symbol.enterBlock or symbol.leaveBlock then
+}
+	static
+	SymbolNode*
+	createSymbolNode_$(symbol.name)(size_t index);
+
+%{
+	end -- if
+end -- for
+}
+	static
+	SymbolNode*
+	createStdSymbolNode(size_t index);
+
+	// actions
+
+%{
+for i = 1, ActionCount do
+}
+	bool
+	action_$(i - 1)();
+
+%{
+end --for
+}
+	// arguments
+
+%{
+for i = 1, ArgumentCount do
+}
+	void
+	argument_$(i - 1)(SymbolNode* symbol);
+
+%{
+end --for
+}
+	// enter
+
+%{
+for i = 1, EnterCount do
+	local symbol = EnterTable[i]
+}
+	bool
+	enter_$(symbol.name)();
+
+%{
+end -- for
+}
+	// leave
+
+%{
+for i = 1, LeaveCount do
+	local symbol = LeaveTable[i]
+}
+	bool
+	leave_$(symbol.name)();
+
+%{
+end -- for
+}
+	// lookahead DFA
+
+%{
+for i = 1, LaDfaCount do
+}
+	LaDfaResult
+	laDfa_$(i - 1)(
+		int lookaheadToken,
+		LaDfaTransition* transition
+		);
+
+%{
+end -- for
+}
 };
 
 //..............................................................................

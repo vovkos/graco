@@ -18,7 +18,7 @@ $CppFileBegin
 
 //..............................................................................
 
-// parser methods
+// parse tables
 
 const size_t*
 $ParserClassName::getParseTable()
@@ -32,6 +32,8 @@ for i = 1, SymbolCount do
 	for j = 1, TokenCount do
 		emit(row[j], ", ")
 	end
+
+	trimOutput()
 	-- emit("\n") also works, but it can cause inconsistent-new-lines warnings on windows
 }
 
@@ -83,27 +85,27 @@ end -- for
 	return sequenceTable + sequenceIndexTable[index];
 }
 
-size_t
-$ParserClassName::getTokenIndex(int token)
-{
-	switch (token)
-	{
-	case 0:
-		return EofToken;
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
+// tokens
+
+$(ParserClassName)::TokenMap::TokenMap()
+{
+	add(0, $(ParserClassName)::EofToken);
 %{
 for i = 3, TokenCount do
 	local token = TokenTable[i]
 }
-	case $(getTokenString(token)):
-		return $(i - 1);
-
+	add($(getTokenString(token)), $(i - 1));
 %{
 end -- for
 }
-	default:
-		return AnyToken;
-	}
+}
+
+size_t
+$ParserClassName::getTokenIndex(int token)
+{
+	return axl::sl::getSingleton<TokenMap>()->findValue(token, AnyToken);
 }
 
 int
@@ -129,12 +131,16 @@ end -- for
 	return tokenTable[index];
 }
 
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+// symbols
+
 const char*
 $ParserClassName::getSymbolName(size_t index)
 {
 	ASSERT(index < SymbolCount);
 
-	static const char* symbolNameTable[NamedSymbolCount] =
+	static const char* symbolNameTable[NamedSymbolCount + 1] =
 	{
 %{
 for i = 1, NamedSymbolCount do
@@ -144,6 +150,7 @@ for i = 1, NamedSymbolCount do
 %{
 end -- for
 }
+		NULL
 	};
 
 	return
@@ -157,58 +164,90 @@ $ParserClassName::createSymbolNode(size_t index)
 {
 	ASSERT(index < NamedSymbolCount);
 
-	SymbolNode* node;
+	typedef
+	SymbolNode*
+	CreateFunc(size_t index);
 
-	switch (index)
+	static CreateFunc* const createFuncTable[NamedSymbolCount + 1] =
 	{
 %{
 for i = 1, NamedSymbolCount do
 	local symbol = SymbolTable[i]
-	if symbol.isCustomClass then
+	if symbol.isCustomClass or symbol.enterBlock or symbol.leaveBlock then
 }
-	case SymbolKind_$(symbol.name):
-		node = llk::allocateNode<$ParserClassName, SymbolNode_$(symbol.name)>();
-		break;
+		createSymbolNode_$(symbol.name),
+%{
+	else
+}
+		createStdSymbolNode,
+%{
+	end --if
+end -- for
+}
+		NULL
+	};
+
+	return createFuncTable[index](index);
+}
 
 %{
-	elseif symbol.enterBlock or symbol.leaveBlock then
+for i = 1, NamedSymbolCount do
+	local symbol = SymbolTable[i]
+	if symbol.isCustomClass or symbol.enterBlock or symbol.leaveBlock then
 }
-	case SymbolKind_$(symbol.name):
-		node = llk::allocateNode<$ParserClassName, StdSymbolNode>();
-		node->m_index = index;
+$ParserClassName::SymbolNode*
+$ParserClassName::createSymbolNode_$(symbol.name)(size_t index)
+{
 %{
-		if symbol.enterBlock then
+		if symbol.isCustomClass then
 }
-		node->m_flags |= llk::SymbolNodeFlag_HasEnter;
+	return llk::allocateNode<$ParserClassName, SymbolNode_$(symbol.name)>();
 %{
-		end -- if
+		else
+}
+	StdSymbolNode* node = llk::allocateNode<$ParserClassName, StdSymbolNode>();
+	node->m_index = index;
+%{
+			if symbol.enterBlock then
+}
+	node->m_enterIndex = $(symbol.enterIndex);
+%{
+			end -- if
 
-		if symbol.leaveBlock then
+			if symbol.leaveBlock then
 }
-		node->m_flags |= llk::SymbolNodeFlag_HasLeave;
+	node->m_leaveIndex = $(symbol.leaveIndex);
+%{
+			end -- if
+}
+	return node;
 %{
 		end -- if
 }
-		break;
+}
 
 %{
 	end -- if
 end -- for
 }
-	default:
-		node = llk::allocateNode<$ParserClassName, StdSymbolNode>();
-		node->m_index = index;
-	};
-
+$ParserClassName::SymbolNode*
+$ParserClassName::createStdSymbolNode(size_t index)
+{
+	SymbolNode* node = llk::allocateNode<$ParserClassName, StdSymbolNode>();
+	node->m_index = index;
 	return node;
 }
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+// beacons
 
 const size_t*
 $ParserClassName::getBeacon(size_t index)
 {
 	ASSERT(index < BeaconCount);
 
-	static const size_t beaconTable[][2] =
+	static const size_t beaconTable[BeaconCount + 1][2] =
 	{
 %{
 for i = 1, BeaconCount do
@@ -224,35 +263,55 @@ end -- for
 	return beaconTable[index];
 }
 
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+// actions
+
 bool
 $ParserClassName::action(size_t index)
 {
 	ASSERT(index < ActionCount);
 
-	switch (index)
+	typedef
+	bool
+	($ParserClassName::*ActionFunc)();
+
+	static const ActionFunc actionFuncTable[ActionCount + 1]  =
 	{
+%{
+for i = 1, ActionCount do
+}
+		&$ParserClassName::action_$(i - 1),
+%{
+end -- for
+}
+		NULL
+	};
+
+	return (this->*(actionFuncTable[index]))();
+}
+
 %{
 for i = 1, ActionCount do
 	local action = ActionTable[i]
 	local productionSymbol = action.productionSymbol;
 }
-	case $(i - 1):
-		{
-		$(getSymbolDeclaration(productionSymbol, SymbolVariableName, "getSymbolTop()"))
+bool
+$ParserClassName::action_$(i - 1)()
+{
+	$(getSymbolDeclaration(productionSymbol, SymbolVariableName, "getSymbolTop()"))
 $(getPpLine(action.srcPos.filePath, action.srcPos.line))
 $(processActionUserCode(action.userCode, action.dispatcher, SymbolVariableName));
 $(getPpLineDefault())
-		}
-		return true;
+	return true;
+}
 
 %{
 end  -- for
 }
-	default:
-		ASSERT(false);
-		return true;
-	}
-}
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+// arguments
 
 void
 $ParserClassName::argument(
@@ -262,8 +321,25 @@ $ParserClassName::argument(
 {
 	ASSERT(index < ArgumentCount);
 
-	switch (index)
+	typedef
+	void
+	($ParserClassName::*ArgumentFunc)(SymbolNode* symbol);
+
+	static const ArgumentFunc argumentFuncTable[ArgumentCount + 1]  =
 	{
+%{
+for i = 1, ArgumentCount do
+}
+		&$ParserClassName::argument_$(i - 1),
+%{
+end -- for
+}
+		NULL
+	};
+
+	(this->*(argumentFuncTable[index]))(symbol);
+}
+
 %{
 for i = 1, ArgumentCount do
 	local argument = ArgumentTable[i]
@@ -271,10 +347,11 @@ for i = 1, ArgumentCount do
 	local productionSymbol = argument.productionSymbol
 	local valueTable = argument.valueTable
 }
-	case $(i - 1):
-		{
-		$(getSymbolDeclaration(targetSymbol, TargetVariableName, "symbol"))
-		$(getSymbolDeclaration(productionSymbol, SymbolVariableName, "getSymbolTop()"))
+void
+$ParserClassName::argument_$(i - 1)(SymbolNode* symbol)
+{
+	$(getSymbolDeclaration(targetSymbol, TargetVariableName, "symbol"))
+	$(getSymbolDeclaration(productionSymbol, SymbolVariableName, "getSymbolTop()"))
 %{
 	for j = 1, #valueTable do
 		local name = targetSymbol.paramNameTable[j]
@@ -286,78 +363,106 @@ $(getPpLineDefault())
 %{
 	end -- for
 }
-		}
-		break;
+}
 
 %{
 end -- for
 }
-	default:
-		ASSERT(false);
-	}
-}
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+// enter blocks
 
 bool
 $ParserClassName::enter(size_t index)
 {
-	ASSERT(index < NamedSymbolCount);
+	ASSERT(index < EnterCount);
 
-	switch (index)
+	typedef
+	bool
+	($ParserClassName::*EnterFunc)();
+
+	static const EnterFunc enterFuncTable[EnterCount + 1]  =
 	{
 %{
-for i = 1, NamedSymbolCount do
-	local symbol = SymbolTable[i]
-	if (symbol.enterBlock) then
+for i = 1, EnterCount do
+	local symbol = EnterTable[i];
 }
-	case SymbolKind_$(symbol.name):
-		{
-		$(getSymbolDeclaration(symbol, SymbolVariableName, "getSymbolTop()"))
+		&$ParserClassName::enter_$(symbol.name),
+%{
+end -- for
+}
+		NULL
+	};
+
+	return (this->*(enterFuncTable[index]))();
+}
+
+%{
+for i = 1, EnterCount do
+	local symbol = EnterTable[i]
+}
+bool
+$ParserClassName::enter_$(symbol.name)()
+{
+	$(getSymbolDeclaration(symbol, SymbolVariableName, "getSymbolTop()"))
 $(getPpLine(symbol.srcPos.filePath, symbol.enterLine))
 $(processActionUserCode(symbol.enterBlock, nil, SymbolVariableName));
 $(getPpLineDefault())
-		}
-		return true;
+	return true;
+}
 
 %{
-	end -- if
-end --for
+end -- for
 }
-	default:
-		ASSERT(false);
-		return true;
-	}
-}
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+// leave blocks
 
 bool
 $ParserClassName::leave(size_t index)
 {
-	ASSERT(index < NamedSymbolCount);
+	ASSERT(index < LeaveCount);
 
-	switch (index)
+	typedef
+	bool
+	($ParserClassName::*LeaveFunc)();
+
+	static const LeaveFunc leaveFuncTable[LeaveCount + 1]  =
 	{
 %{
-for i = 1, NamedSymbolCount do
-	local symbol = SymbolTable[i]
-	if (symbol.leaveBlock) then
+for i = 1, LeaveCount do
+	local symbol = LeaveTable[i];
 }
-	case SymbolKind_$(symbol.name):
-		{
-		$(getSymbolDeclaration(symbol, SymbolVariableName, "getSymbolTop()"))
+		&$ParserClassName::leave_$(symbol.name),
+%{
+end -- for
+}
+		NULL
+	};
+
+	return (this->*(leaveFuncTable[index]))();
+}
+
+%{
+for i = 1, LeaveCount do
+	local symbol = LeaveTable[i]
+}
+bool
+$ParserClassName::leave_$(symbol.name)()
+{
+	$(getSymbolDeclaration(symbol, SymbolVariableName, "getSymbolTop()"))
 $(getPpLine(symbol.srcPos.filePath, symbol.leaveLine))
 $(processActionUserCode(symbol.leaveBlock, nil, SymbolVariableName));
 $(getPpLineDefault())
-		}
-		return true;
+	return true;
+}
 
 %{
-	end -- if
-end --for
+end -- for
 }
-	default:
-		ASSERT(false);
-		return true;
-	}
-}
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+// lookahead DFAs
 
 $ParserClassName::LaDfaResult
 $ParserClassName::laDfa(
@@ -368,89 +473,113 @@ $ParserClassName::laDfa(
 {
 	ASSERT(index < LaDfaCount);
 
-	switch (index)
+	typedef
+	LaDfaResult
+	($ParserClassName::*LaDfaFunc)(
+		int lookaheadToken,
+		LaDfaTransition* transition
+		);
+
+	static const LaDfaFunc laDfaFuncTable[LaDfaCount + 1] =
 	{
+%{
+for i = 1, LaDfaCount do
+}
+		&$ParserClassName::laDfa_$(i - 1),
+%{
+end -- for
+}
+		NULL
+	};
+
+	return (this->*(laDfaFuncTable[index]))(lookaheadToken, transition);
+}
+
 %{
 for i = 1, LaDfaCount do
 	local dfaNode = LaDfaTable[i]
 }
-	case $(i - 1):
+$ParserClassName::LaDfaResult
+$ParserClassName::laDfa_$(i - 1)(
+	int lookaheadToken,
+	LaDfaTransition* transition
+	)
+{
 %{
 	if dfaNode.resolver then
 }
-		transition->m_productionIndex = $(dfaNode.production);
-		transition->m_resolverIndex = $(dfaNode.resolver);
-		transition->m_resolverElseIndex = $(dfaNode.resolverElse);
+	transition->m_productionIndex = $(dfaNode.production);
+	transition->m_resolverIndex = $(dfaNode.resolver);
+	transition->m_resolverElseIndex = $(dfaNode.resolverElse);
 %{
 		if dfaNode.hasChainedResolver then
 }
-		transition->m_flags = llk::LaDfaNodeFlag_HasChainedResolver;
+	transition->m_flags = llk::LaDfaNodeFlag_HasChainedResolver;
 %{
 		end -- if
 }
-		return LaDfaResult_Resolver;
-
+	return LaDfaResult_Resolver;
 %{
 	else
 }
-		switch (lookaheadToken)
-		{
+	switch (lookaheadToken)
+	{
 %{
 		local transitionTable = dfaNode.transitionTable
 		for j = 1, #transitionTable do
 			local transition = transitionTable[j]
 			local tokenString = getTokenString(transition.token)
 }
-		case $tokenString:
+	case $tokenString:
 %{
 			if (transition.resolver) then
 }
-			transition->m_productionIndex = $(transition.production);
-			transition->m_resolverIndex = $(transition.resolver);
-			transition->m_resolverElseIndex = $(transition.resolverElse);
+		transition->m_productionIndex = $(transition.production);
+		transition->m_resolverIndex = $(transition.resolver);
+		transition->m_resolverElseIndex = $(transition.resolverElse);
 %{
 				if transition.hasChainedResolver then
 }
-			transition->m_flags = llk::LaDfaNodeFlag_HasChainedResolver;
+		transition->m_flags = llk::LaDfaNodeFlag_HasChainedResolver;
 %{
 				end -- if
 }
-			return LaDfaResult_Resolver;
+		return LaDfaResult_Resolver;
 
 %{
 			else
 }
-			transition->m_productionIndex = $(transition.production);
-			return LaDfaResult_Production;
+		transition->m_productionIndex = $(transition.production);
+		return LaDfaResult_Production;
 
 %{
 			end -- if
 		end -- for
 }
-		default:
+	default:
 %{
 		if (dfaNode.defaultProduction) then
 }
-			transition->m_productionIndex = $(dfaNode.defaultProduction);
-			return LaDfaResult_Production;
-		}
-
+		transition->m_productionIndex = $(dfaNode.defaultProduction);
+		return LaDfaResult_Production;
+	}
 %{
 		else
 }
-			return LaDfaResult_Fail;
-		}
-
+		return LaDfaResult_Fail;
+	}
 %{
 		end	-- if
 	end -- if
+}
+}
+
+%{
 end -- for
 }
-	default:
-		ASSERT(false);
-		return LaDfaResult_Fail;
-	}
-}
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+// synchornization tokens
 
 const int*
 $ParserClassName::getSyncTokenSet(size_t index)

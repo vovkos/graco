@@ -52,9 +52,6 @@ enum TokenKind
 	TokenKind_Const,
 	TokenKind_Null,
 	TokenKind_Assert,
-
-	TokenKind_New,
-	TokenKind_Int,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -98,9 +95,6 @@ AXL_LEX_BEGIN_TOKEN_NAME_MAP(TokenName)
 	AXL_LEX_TOKEN_NAME(TokenKind_Const,  "const")
 	AXL_LEX_TOKEN_NAME(TokenKind_Null,   "null")
 	AXL_LEX_TOKEN_NAME(TokenKind_Assert, "assert")
-
-	AXL_LEX_TOKEN_NAME(TokenKind_New, "new")
-	AXL_LEX_TOKEN_NAME(TokenKind_Int, "int")
 
 AXL_LEX_END_TOKEN_NAME_MAP();
 

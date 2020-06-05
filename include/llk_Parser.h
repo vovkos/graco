@@ -517,9 +517,9 @@ protected:
 			node->getValue()->m_lastTokenPos = m_lastMatchedToken.m_pos;
 			node->m_flags |= NodeFlag_Matched;
 
-			if (node->m_flags & SymbolNodeFlag_HasLeave)
+			if (node->m_leaveIndex != -1)
 			{
-				result = static_cast<T*>(this)->leave(node->m_index);
+				result = static_cast<T*>(this)->leave(node->m_leaveIndex);
 				if (!result)
 				{
 					if (!m_resolverStack.isEmpty())
@@ -552,9 +552,9 @@ protected:
 
 			pushSymbol(node);
 
-			if (node->m_flags & SymbolNodeFlag_HasEnter)
+			if (node->m_enterIndex != -1)
 			{
-				result = static_cast<T*>(this)->enter(node->m_index);
+				result = static_cast<T*>(this)->enter(node->m_enterIndex);
 				if (!result)
 				{
 					if (!m_resolverStack.isEmpty())

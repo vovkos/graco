@@ -15,6 +15,10 @@
 
 #include "llk_Node.h"
 
+#define _LLK_RANDOM_SYNTAX_ERRORS 1
+#define _LLK_RANDOM_SEMANTIC_ERRORS 1
+#define _LLK_RANDOM_ERRORS_PROBABILITY 5
+
 namespace llk {
 
 //..............................................................................
@@ -434,6 +438,19 @@ protected:
 		return MatchResult_Continue;
 	}
 
+#if (_LLK_RANDOM_SYNTAX_ERRORS || _LLK_RANDOM_SEMANTIC_ERRORS)
+	bool
+	isRandomError(const char* description)
+	{
+		if (rand() % _LLK_RANDOM_ERRORS_PROBABILITY)
+			return false;
+
+		axl::err::setFormatStringError("random error: %s", description);
+		axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
+		return true;
+	}
+#endif
+
 	bool
 	advanceTokenCursor()
 	{
@@ -473,7 +490,11 @@ protected:
 		if (m_flags & Flag_TokenMatch)
 			return MatchResult_NextToken;
 
+#if (_LLK_RANDOM_SYNTAX_ERRORS)
+		if (node->m_index != T::AnyToken && node->m_index != tokenIndex || isRandomError("match-token"))
+#else
 		if (node->m_index != T::AnyToken && node->m_index != tokenIndex)
+#endif
 		{
 			if (!m_resolverStack.isEmpty())
 				return MatchResult_Fail; // rollback resolver
@@ -520,7 +541,11 @@ protected:
 			if (node->m_leaveIndex != -1)
 			{
 				result = static_cast<T*>(this)->leave(node->m_leaveIndex);
+#if (_LLK_RANDOM_SEMANTIC_ERRORS)
+				if (!result || isRandomError("leave"))
+#else
 				if (!result)
+#endif
 				{
 					if (!m_resolverStack.isEmpty())
 						return MatchResult_Fail; // rollback resolver
@@ -555,7 +580,11 @@ protected:
 			if (node->m_enterIndex != -1)
 			{
 				result = static_cast<T*>(this)->enter(node->m_enterIndex);
-				if (!result)
+#if (_LLK_RANDOM_SEMANTIC_ERRORS)
+				if (!result || isRandomError("enter"))
+#else
+				if (!result )
+#endif
 				{
 					if (!m_resolverStack.isEmpty())
 						return MatchResult_Fail; // rollback resolver
@@ -574,7 +603,11 @@ protected:
 		}
 
 		size_t productionIndex = parseTable[node->m_index * T::TokenCount + tokenIndex];
+#if (_LLK_RANDOM_SYNTAX_ERRORS)
+		if (productionIndex == -1 || isRandomError("parseTable"))
+#else
 		if (productionIndex == -1)
+#endif
 		{
 			if (!m_resolverStack.isEmpty())
 				return MatchResult_Fail; // rollback resolver
@@ -618,7 +651,11 @@ protected:
 	matchActionNode(Node* node)
 	{
 		bool result = static_cast<T*>(this)->action(node->m_index);
+#if (_LLK_RANDOM_SEMANTIC_ERRORS)
+		if (!result || isRandomError("action"))
+#else
 		if (!result)
+#endif
 		{
 			if (!m_resolverStack.isEmpty())
 				return MatchResult_Fail; // rollback resolver

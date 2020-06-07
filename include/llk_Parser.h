@@ -15,9 +15,13 @@
 
 #include "llk_Node.h"
 
-#define _LLK_RANDOM_SYNTAX_ERRORS 1
-#define _LLK_RANDOM_SEMANTIC_ERRORS 1
-#define _LLK_RANDOM_ERRORS_PROBABILITY 5
+#define _LLK_RANDOM_SYNTAX_ERRORS      1
+#define _LLK_RANDOM_SEMANTIC_ERRORS    1
+#define _LLK_RANDOM_ERRORS_PROBABILITY 32
+
+#if (_LLK_RANDOM_SYNTAX_ERRORS || _LLK_RANDOM_SEMANTIC_ERRORS)
+#	define _LLK_RANDOM_ERRORS 1
+#endif
 
 namespace llk {
 
@@ -40,9 +44,12 @@ public:
 protected:
 	enum Flag
 	{
-		Flag_TokenMatch      = 0x01,
-		Flag_Synchronize     = 0x10,
-		Flag_PostSynchronize = 0x20,
+		Flag_TokenMatch      = 0x0001,
+		Flag_Synchronize     = 0x0010,
+		Flag_PostSynchronize = 0x0020,
+#if (_LLK_RANDOM_ERRORS)
+		Flag_NoRandomErrors  = 0x1000,
+#endif
 	};
 
 	enum ErrorKind
@@ -126,6 +133,14 @@ public:
 		m_flags = 0;
 	}
 
+#if (_LLK_RANDOM_ERRORS)
+	void
+	disableRandomErrors()
+	{
+		m_flags |= Flag_NoRandomErrors;
+	}
+#endif
+
 	bool
 	parseToken(const Token* token)
 	{
@@ -163,10 +178,28 @@ public:
 			if (m_flags & Flag_Synchronize)
 			{
 				MatchResult matchResult = synchronize(&m_currentToken);
-				if (matchResult == MatchResult_NextToken)
-					return true;
-				else if (matchResult == MatchResult_Fail)
-					return false;
+				switch (matchResult)
+				{
+				case MatchResult_Continue:
+					break;
+
+				case MatchResult_NextToken:
+					result = advanceTokenCursor();
+					if (!result)
+						return true; // no more tokens, we are done
+
+					// fall through
+
+				case MatchResult_NextTokenNoAdvance:
+					m_currentToken = *m_tokenCursor;
+					tokenIndex = static_cast<T*>(this)->getTokenIndex(m_currentToken.m_token);
+					ASSERT(tokenIndex < T::TokenCount);
+					m_flags &= ~Flag_TokenMatch;
+					break;
+
+				default:
+					ASSERT(false);
+				}
 			}
 
 			MatchResult matchResult;
@@ -398,7 +431,7 @@ protected:
 
 		m_resolverStack.clear();
 		m_tokenList.clear();
-		m_tokenCursor = NULL;
+		m_tokenCursor = m_tokenList.insertTail(m_currentToken);
 		m_flags |= Flag_Synchronize;
 		return RecoverAction_Synchronize;
 	}
@@ -414,6 +447,16 @@ protected:
 
 		Node* catcher = m_symbolStack[i];
 		ASSERT(isCatchSymbolIndex(catcher->m_index));
+
+		// call leave() on symbols above the catcher
+
+		size_t k = m_symbolStack.getCount() - 1;
+		for (; k > i; k--)
+		{
+			SymbolNode* symbol = m_symbolStack[k];
+			if (symbol->m_leaveIndex != -1)
+				static_cast<T*>(this)->leave(symbol->m_leaveIndex); // ignore result
+		}
 
 		// pop everything above the catcher off prediction stack
 
@@ -438,11 +481,13 @@ protected:
 		return MatchResult_Continue;
 	}
 
-#if (_LLK_RANDOM_SYNTAX_ERRORS || _LLK_RANDOM_SEMANTIC_ERRORS)
+#if (_LLK_RANDOM_ERRORS)
 	bool
 	isRandomError(const char* description)
 	{
-		if (rand() % _LLK_RANDOM_ERRORS_PROBABILITY)
+		if ((m_flags & Flag_NoRandomErrors) ||
+			m_resolverStack.isEmpty() ||
+			rand() % _LLK_RANDOM_ERRORS_PROBABILITY)
 			return false;
 
 		axl::err::setFormatStringError("random error: %s", description);
@@ -491,10 +536,11 @@ protected:
 			return MatchResult_NextToken;
 
 #if (_LLK_RANDOM_SYNTAX_ERRORS)
-		if (node->m_index != T::AnyToken && node->m_index != tokenIndex || isRandomError("match-token"))
-#else
-		if (node->m_index != T::AnyToken && node->m_index != tokenIndex)
+		if (isRandomError("match-token"))
+			return recover(ErrorKind_Syntax) ? MatchResult_Continue : MatchResult_Fail;
 #endif
+
+		if (node->m_index != T::AnyToken && node->m_index != tokenIndex)
 		{
 			if (!m_resolverStack.isEmpty())
 				return MatchResult_Fail; // rollback resolver
@@ -528,12 +574,6 @@ protected:
 
 		if (node->m_flags & SymbolNodeFlag_Stacked)
 		{
-			if (getSymbolTop() != node)
-			{
-				traceSymbolStack();
-				tracePredictionStack();
-			}
-
 			ASSERT(getSymbolTop() == node);
 			node->getValue()->m_lastTokenPos = m_lastMatchedToken.m_pos;
 			node->m_flags |= NodeFlag_Matched;
@@ -602,12 +642,13 @@ protected:
 			pushSymbol(node); // keep catch on symbol stack, too
 		}
 
-		size_t productionIndex = parseTable[node->m_index * T::TokenCount + tokenIndex];
 #if (_LLK_RANDOM_SYNTAX_ERRORS)
-		if (productionIndex == -1 || isRandomError("parseTable"))
-#else
-		if (productionIndex == -1)
+		if (isRandomError("parseTable"))
+			return recover(ErrorKind_Syntax) ? MatchResult_Continue : MatchResult_Fail;
 #endif
+
+		size_t productionIndex = parseTable[node->m_index * T::TokenCount + tokenIndex];
+		if (productionIndex == -1)
 		{
 			if (!m_resolverStack.isEmpty())
 				return MatchResult_Fail; // rollback resolver
@@ -770,10 +811,10 @@ protected:
 
 			if (node->m_nodeKind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Stacked))
 			{
-				ASSERT(getSymbolTop() == node);
-
-				// do NOT call leave() during resolver unwinding
-				// cause leave() assumes parsing of the symbol is complete
+				SymbolNode* symbol = (SymbolNode*)node;
+				ASSERT(symbol == getSymbolTop());
+				if (symbol->m_leaveIndex != -1) // call leave() even when in a resolver
+					static_cast<T*>(this)->leave(symbol->m_leaveIndex);
 
 				popSymbol();
 			}

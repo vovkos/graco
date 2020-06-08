@@ -455,8 +455,15 @@ protected:
 		{
 			SymbolNode* symbol = m_symbolStack[k];
 			if (symbol->m_leaveIndex != -1)
+			{
+				m_symbolStack.setCount(k + 1); // leave() uses the top of the stack
 				static_cast<T*>(this)->leave(symbol->m_leaveIndex); // ignore result
+			}
 		}
+
+		ASSERT(catcher->m_flags & SymbolNodeFlag_Stacked);
+		catcher->m_flags &= ~SymbolNodeFlag_Stacked;
+		m_symbolStack.setCount(i); // remove the catcher from symbol stack
 
 		// pop everything above the catcher off prediction stack
 
@@ -471,10 +478,7 @@ protected:
 				m_nodeList.erase(node);
 		}
 
-		ASSERT(catcher->m_flags & SymbolNodeFlag_Stacked);
-		catcher->m_flags &= ~SymbolNodeFlag_Stacked;
-		m_symbolStack.setCount(i); // remove catcher from symbol stack...
-		m_predictionStack.setCount(j + 1); // ...but keep it on prediction stack
+		m_predictionStack.setCount(j + 1); // keep the catcher on prediction stack
 
 		m_flags &= ~Flag_Synchronize;
 		m_flags |= Flag_PostSynchronize; // synchronizer token must match

@@ -31,7 +31,7 @@ end -- for
 
 class $ParserClassName: public llk::Parser<$ParserClassName, $TokenClassName>
 {
-	friend llk::Parser<$ParserClassName, $TokenClassName>;
+	friend class llk::Parser<$ParserClassName, $TokenClassName>;
 
 $Members
 

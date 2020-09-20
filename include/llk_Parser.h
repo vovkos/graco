@@ -404,7 +404,6 @@ protected:
 		if (action != RecoverAction_Synchronize)
 			return action;
 
-		size_t catcherCount = 0;
 		m_syncTokenSet.clear();
 
 		size_t count = m_symbolStack.getCount();
@@ -413,7 +412,6 @@ protected:
 			SymbolNode* symbol = m_symbolStack[i];
 			if (isCatchSymbolIndex(symbol->m_index))
 			{
-				catcherCount++;
 				int const* p = static_cast<T*>(this)->getSyncTokenSet(symbol->m_index);
 				for (; *p != -1; p++)
 					m_syncTokenSet.addIfNotExists(*p, i);
@@ -422,7 +420,7 @@ protected:
 
 		if (m_syncTokenSet.isEmpty())
 		{
-			axl::err::setError("empty synchronization set (consider adding a 'catch' clause to the grammar)");
+			err::setError("unable to recover from previous error(s)");
 			axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
 			return RecoverAction_Fail;
 		}

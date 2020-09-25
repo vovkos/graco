@@ -420,7 +420,7 @@ protected:
 
 		if (m_syncTokenSet.isEmpty())
 		{
-			err::setError("unable to recover from previous error(s)");
+			axl::err::setError("unable to recover from previous error(s)");
 			axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
 			return RecoverAction_Fail;
 		}

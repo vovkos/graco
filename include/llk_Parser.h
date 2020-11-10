@@ -375,6 +375,16 @@ protected:
 		return RecoverAction_Synchronize;
 	}
 
+	void
+	onSynchronizeSkipToken(const Token* token)
+	{
+	}
+
+	void
+	onSynchronized(const Token* token)
+	{
+	}
+
 	bool
 	isCatchSymbolIndex(size_t index)
 	{
@@ -441,7 +451,10 @@ protected:
 
 		size_t i = m_syncTokenSet.findValue(token->m_token, -1);
 		if (i == -1)
+		{
+			static_cast<T*>(this)->onSynchronizeSkipToken(token);
 			return MatchResult_NextToken;
+		}
 
 		Node* catcher = m_symbolStack[i];
 		ASSERT(isCatchSymbolIndex(catcher->m_index));
@@ -480,6 +493,7 @@ protected:
 
 		m_flags &= ~Flag_Synchronize;
 		m_flags |= Flag_PostSynchronize; // synchronizer token must match
+		static_cast<T*>(this)->onSynchronized(token);
 		return MatchResult_Continue;
 	}
 

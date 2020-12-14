@@ -132,7 +132,13 @@ main(
 
 	if (!cmdLine.m_bnfFileName.isEmpty())
 	{
-		result = module.writeBnfFile(cmdLine.m_bnfFileName);
+		result = module.writeBnfFile(
+			cmdLine.m_bnfFileName,
+			(cmdLine.m_flags & CmdLineFlag_GracoBnf) ?
+				BnfDialect_Graco :
+				BnfDialect_Classic
+			);
+
 		if (!result)
 		{
 			printf("%s\n", err::getLastErrorDescription().sz());

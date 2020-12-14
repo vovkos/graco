@@ -74,6 +74,10 @@ CmdLineParser::onSwitch(
 		m_cmdLine->m_bnfFileName = value;
 		break;
 
+	case CmdLineSwitchKind_GracoBnf:
+		m_cmdLine->m_flags |= CmdLineFlag_GracoBnf;
+		break;
+
 	case CmdLineSwitchKind_TraceFileName:
 		m_cmdLine->m_traceFileName = value;
 		break;

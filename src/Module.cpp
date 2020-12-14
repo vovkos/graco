@@ -148,7 +148,10 @@ Module::trace()
 }
 
 bool
-Module::writeBnfFile(const sl::StringRef& fileName)
+Module::writeBnfFile(
+	const sl::StringRef& fileName,
+	BnfDialect dialect
+	)
 {
 	sl::String bufferString;
 
@@ -160,16 +163,19 @@ Module::writeBnfFile(const sl::StringRef& fileName)
 	if (!result)
 		return false;
 
-	sl::String string = generateBnfString();
+	sl::String string = generateBnfString(dialect);
 	file.write(string, string.getLength());
 	return true;
 }
 
 sl::String
-Module::generateBnfString()
+Module::generateBnfString(BnfDialect dialect)
 {
 	sl::String string;
 	sl::String sequenceString;
+	sl::StringRef orString = "\t|\t";
+	sl::StringRef equString = dialect == BnfDialect_Graco ? "\t:\t" : "\t::=\t";
+	sl::StringRef termString = dialect == BnfDialect_Graco ? "\t;\n\n" : "\n";
 
 	sl::Iterator<SymbolNode> node = m_nodeMgr.m_namedSymbolList.getHead();
 	for (; node; node++)
@@ -178,14 +184,17 @@ Module::generateBnfString()
 		if (symbol->m_productionArray.isEmpty())
 			continue;
 
-		if (symbol->m_flags & SymbolNodeFlag_Start)
-			string.append("start\n");
+		if (dialect == BnfDialect_Graco)
+		{
+			if (symbol->m_flags & SymbolNodeFlag_Start)
+				string.append("start\n");
 
-		if (symbol->m_flags & SymbolNodeFlag_Nullable)
-			string.append("nullable\n");
+			if (symbol->m_flags & SymbolNodeFlag_Nullable)
+				string.append("nullable\n");
 
-		if (symbol->m_flags & SymbolNodeFlag_Pragma)
-			string.append("pragma\n");
+			if (symbol->m_flags & SymbolNodeFlag_Pragma)
+				string.append("pragma\n");
+		}
 
 		string.append(symbol->m_name);
 		string.append('\n');
@@ -194,18 +203,18 @@ Module::generateBnfString()
 
 		if (symbol->m_quantifierKind)
 		{
-			string.append("\t:\t");
+			string.append(equString);
 			string.append(symbol->GrammarNode::getBnfString());
 			string.append('\n');
 		}
 		else for (size_t i = 0; i < productionCount; i++)
 		{
-			string.append(i ? "\t|\t" : "\t:\t");
+			string.append(i ? orString : equString);
 			string.append(symbol->m_productionArray[i]->getBnfString());
 			string.append('\n');
 		}
 
-		string.append("\t;\n\n");
+		string.append(termString);
 	}
 
 	return string;

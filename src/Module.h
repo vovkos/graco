@@ -17,6 +17,14 @@
 
 //..............................................................................
 
+enum BnfDialect
+{
+	BnfDialect_Classic,
+	BnfDialect_Graco,
+};
+
+//..............................................................................
+
 class Module
 {
 	friend class Parser;
@@ -59,10 +67,13 @@ public:
 	trace();
 
 	sl::String
-	generateBnfString();
+	generateBnfString(BnfDialect dialect = BnfDialect_Classic);
 
 	bool
-	writeBnfFile(const sl::StringRef& fileName);
+	writeBnfFile(
+		const sl::StringRef& fileName,
+		BnfDialect dialect = BnfDialect_Classic
+		);
 
 protected:
 	void

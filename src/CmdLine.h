@@ -19,6 +19,7 @@ enum CmdLineFlag
 	CmdLineFlag_Version  = 0x02,
 	CmdLineFlag_Verbose  = 0x04,
 	CmdLineFlag_NoPpLine = 0x08,
+	CmdLineFlag_GracoBnf = 0x10,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -59,6 +60,7 @@ enum CmdLineSwitchKind
 	CmdLineSwitchKind_OutputDir,
 	CmdLineSwitchKind_FrameDir,
 	CmdLineSwitchKind_ImportDir,
+	CmdLineSwitchKind_GracoBnf,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -117,7 +119,13 @@ AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE(CmdLineSwitchTable, CmdLineSwitchKind)
 	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_BnfFileName,
 		"b", "bnf", "<file>",
-		"Generate \"clean\" EBNF file"
+		"Generate \"clean\" EBNF file (classic dialect)"
+		)
+
+	AXL_SL_CMD_LINE_SWITCH(
+		CmdLineSwitchKind_GracoBnf,
+		"graco-bnf", NULL,
+		"Use the Graco EBNF dialect"
 		)
 
 	AXL_SL_CMD_LINE_SWITCH_2(

@@ -37,7 +37,7 @@ Lexer::createCharToken(int tokenKind)
 	ASSERT(token->m_pos.m_length >= 2);
 
 	char buffer[256];
-	sl::String string(ref::BufKind_Stack, buffer, sizeof(buffer));
+	sl::String string(rc::BufKind_Stack, buffer, sizeof(buffer));
 	enc::EscapeEncoding::decode(&string, sl::StringRef(ts + 1, token->m_pos.m_length - 2));
 
 	token->m_data.m_integer = string[0];

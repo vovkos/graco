@@ -188,7 +188,7 @@ struct LaDfaNode: Node
 //..............................................................................
 
 template <typename Parser>
-class NodeAllocator: public axl::ref::RefCount
+class NodeAllocator: public axl::rc::RefCount
 {
 public:
 	enum
@@ -227,7 +227,7 @@ template <typename Parser>
 NodeAllocator<Parser>*
 createCurrentThreadNodeAllocator()
 {
-	axl::ref::Ptr<NodeAllocator<Parser> > allocator = AXL_REF_NEW(NodeAllocator<Parser>);
+	axl::rc::Ptr<NodeAllocator<Parser> > allocator = AXL_RC_NEW(NodeAllocator<Parser>);
 	axl::sys::setTlsPtrSlotValue<NodeAllocator<Parser> >(allocator);
 	return allocator;
 }

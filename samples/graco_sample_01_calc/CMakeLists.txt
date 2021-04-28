@@ -147,7 +147,6 @@ set_target_properties(
 
 target_link_libraries(
 	graco_sample_01_calc
-	axl_fsm
 	axl_lex
 	axl_io
 	axl_core

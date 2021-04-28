@@ -108,7 +108,7 @@ struct TokenNode: Node
 
 enum SymbolNodeFlag
 {
-	SymbolNodeFlag_Stacked  = 0x0010,
+	SymbolNodeFlag_Stacked = 0x0010,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -125,8 +125,17 @@ struct SymbolNode: Node
 {
 	axl::sl::List<Node> m_locatorList;
 	axl::sl::Array<Node*> m_locatorArray;
-	size_t m_enterIndex;
-	size_t m_leaveIndex;
+
+	union
+	{
+		struct
+		{
+			size_t m_enterIndex;
+			size_t m_leaveIndex;
+		};
+
+		size_t m_catchSymbolCount;
+	};
 
 	SymbolNode()
 	{

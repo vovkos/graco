@@ -36,9 +36,9 @@ ParseTableBuilder::build()
 		{
 			ASSERT(node->m_productionArray.getCount() == 1);
 			GrammarNode* production = node->m_productionArray[0];
-			if (!production->isNullable())
+			if (!production->isNullable() && node->m_synchronizer != &m_nodeMgr->m_eofTokenNode)
 			{
-				err::setError("'synchronize' applied to a non-nullable production");
+				err::setError("'catch' applied to a non-nullable production");
 				lex::pushSrcPosError(node->m_srcPos);
 				return false;
 			}

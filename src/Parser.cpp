@@ -898,7 +898,8 @@ isFirstOfPrimary(int token)
 	{
 	case TokenKind_Identifier:
 	case TokenKind_Integer:
-	case TokenKind_Any:
+	case TokenKind_EofToken:
+	case TokenKind_AnyToken:
 	case TokenKind_Catch:
 	case '{':
 	case '(':
@@ -985,7 +986,8 @@ Parser::primary()
 	switch (token->m_token)
 	{
 	case '.':
-	case TokenKind_Any:
+	case TokenKind_EofToken:
+	case TokenKind_AnyToken:
 	case TokenKind_Integer:
 		node = beacon();
 		break;
@@ -1074,7 +1076,11 @@ Parser::beacon()
 	const Token* token = getToken();
 	switch (token->m_token)
 	{
-	case TokenKind_Any:
+	case TokenKind_EofToken:
+		node = &m_module->m_nodeMgr.m_eofTokenNode;
+		break;
+
+	case TokenKind_AnyToken:
 	case '.':
 		node = &m_module->m_nodeMgr.m_anyTokenNode;
 		break;

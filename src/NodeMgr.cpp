@@ -21,10 +21,12 @@ NodeMgr::NodeMgr()
 	// parse table entry equal 0 is epsilon production
 
 	m_eofTokenNode.m_nodeKind = NodeKind_Token;
-	m_anyTokenNode.m_flags = SymbolNodeFlag_EofToken;
-	m_eofTokenNode.m_name = "$";
+	m_eofTokenNode.m_flags = SymbolNodeFlag_EofToken;
+	m_eofTokenNode.m_name = "eof";
 	m_eofTokenNode.m_index = 0;
 	m_eofTokenNode.m_masterIndex = 0;
+	m_eofTokenNode.m_firstSet.setBit(0);
+	m_eofTokenNode.m_firstArray.append(&m_eofTokenNode);
 
 	m_anyTokenNode.m_nodeKind = NodeKind_Token;
 	m_anyTokenNode.m_flags = SymbolNodeFlag_AnyToken;
@@ -43,6 +45,9 @@ NodeMgr::NodeMgr()
 
 	m_lookaheadLimit = 1;
 	m_masterCount = 0;
+
+	m_tokenMap[0] = &m_eofTokenNode;
+	m_tokenMap[1] = &m_anyTokenNode;
 }
 
 void
@@ -52,6 +57,9 @@ NodeMgr::clear()
 	m_symbolMap.clear();
 	m_anyTokenNode.m_firstArray.clear();
 	m_anyTokenNode.m_firstSet.clear();
+
+	m_tokenMap[0] = &m_eofTokenNode;
+	m_tokenMap[1] = &m_anyTokenNode;
 
 	m_pragmaStartSymbol.m_index = -1;
 	m_pragmaStartSymbol.m_masterIndex = -1;

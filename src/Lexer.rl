@@ -112,7 +112,8 @@ main := |*
 'catch'        { createToken(TokenKind_Catch); };
 'lookahead'    { createToken(TokenKind_Lookahead); };
 'resolver'     { createToken(TokenKind_Resolver); };
-'any'          { createToken(TokenKind_Any); };
+'eof'          { createToken(TokenKind_EofToken); };
+'any'          { createToken(TokenKind_AnyToken); };
 'epsilon'      { createToken(TokenKind_Epsilon); };
 'nullable'     { createToken(TokenKind_Nullable); };
 'true'         { createToken(TokenKind_True); };

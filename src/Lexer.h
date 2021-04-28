@@ -33,7 +33,8 @@ enum TokenKind
 	TokenKind_Catch,
 	TokenKind_Lookahead,
 	TokenKind_Resolver,
-	TokenKind_Any,
+	TokenKind_EofToken,
+	TokenKind_AnyToken,
 	TokenKind_Epsilon,
 	TokenKind_Nullable,
 	TokenKind_OpenBrace,
@@ -63,7 +64,8 @@ AXL_LEX_BEGIN_TOKEN_NAME_MAP(TokenName)
 	AXL_LEX_TOKEN_NAME(TokenKind_Catch,        "catch")
 	AXL_LEX_TOKEN_NAME(TokenKind_Lookahead,    "lookahead")
 	AXL_LEX_TOKEN_NAME(TokenKind_Resolver,     "resolver")
-	AXL_LEX_TOKEN_NAME(TokenKind_Any,          "any")
+	AXL_LEX_TOKEN_NAME(TokenKind_EofToken,     "eof")
+	AXL_LEX_TOKEN_NAME(TokenKind_AnyToken,     "any")
 	AXL_LEX_TOKEN_NAME(TokenKind_Epsilon,      "epsilon")
 	AXL_LEX_TOKEN_NAME(TokenKind_Nullable,     "nullable")
 	AXL_LEX_TOKEN_NAME(TokenKind_OpenBrace,    "{.")

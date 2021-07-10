@@ -359,13 +359,13 @@ Parser::resolverSpecifier(ProductionSpecifiers* specifiers)
 
 	token = expectToken('(');
 	if (!token)
-		return NULL;
+		return false;
 
 	nextToken();
 
 	specifiers->m_resolver = alternative();
 	if (!specifiers->m_resolver)
-		return NULL;
+		return false;
 
 	specifiers->m_resolverPriority = 0;
 
@@ -381,7 +381,7 @@ Parser::resolverSpecifier(ProductionSpecifiers* specifiers)
 
 	token = expectToken(')');
 	if (!token)
-		return NULL;
+		return false;
 
 	nextToken();
 	return true;

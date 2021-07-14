@@ -28,12 +28,22 @@ jobs:
             run: |
                 call ci\github-actions\set-env.bat ${{matrix.TARGET_CPU}}
                 call ci\github-actions\install-windows.bat
+                git clone --depth 1 https://github.com/vovkos/axl
 
         -   name: Build and test
             shell: cmd
             run: |
                 set CONFIGURATION=${{matrix.CONFIGURATION}}
+                set THIS_DIR=%CD%
                 call ci\github-actions\set-env.bat msvc15 ${{matrix.TARGET_CPU}}
+
+                mkdir axl\build
+                cd axl\build
+                cmake .. %CMAKE_CONFIGURE_FLAGS% || exit
+                cmake --build . %CMAKE_BUILD_FLAGS% || exit
+
+                cd %THIS_DIR%
+                echo set (AXL_CMAKE_DIR %THIS_DIR_CMAKE%/axl/cmake %THIS_DIR_CMAKE%/axl/build/cmake) >> paths.cmake
 
                 mkdir build
                 cd build
@@ -68,12 +78,21 @@ jobs:
             run: |
                 export TARGET_CPU=${{matrix.TARGET_CPU}}
                 source ./ci/github-actions/install-linux.sh
+                git clone --depth 1 https://github.com/vovkos/axl
 
         -   name: Build and test
             shell: bash
             run: |
                 export CC=$(which ${{matrix.COMPILER}})
                 export CXX=$(which ${{matrix.COMPILER}}++)
+
+                mkdir axl/build
+                pushd axl/build
+                cmake .. -DTARGET_CPU=${{matrix.TARGET_CPU}} -DCMAKE_BUILD_TYPE=${{matrix.CONFIGURATION}}
+                make
+                popd
+
+                echo "set (AXL_CMAKE_DIR $THIS_DIR/axl/cmake $THIS_DIR/axl/build/cmake)" >> paths.cmake
 
                 mkdir build
                 cd build
@@ -100,10 +119,19 @@ jobs:
             run: |
                 pwd
                 source ./ci/github-actions/install-osx.sh
+                git clone --depth 1 https://github.com/vovkos/axl
 
         -   name: Build and test
             shell: bash
             run: |
+                mkdir axl/build
+                pushd axl/build
+                cmake .. -DCMAKE_BUILD_TYPE=${{matrix.CONFIGURATION}}
+                make
+                popd
+
+                echo "set (AXL_CMAKE_DIR $THIS_DIR/axl/cmake $THIS_DIR/axl/build/cmake)" >> paths.cmake
+
                 mkdir build
                 cd build
                 cmake .. -DCMAKE_BUILD_TYPE=${{matrix.CONFIGURATION}}

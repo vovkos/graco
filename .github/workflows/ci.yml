@@ -35,6 +35,8 @@ jobs:
             run: |
                 set CONFIGURATION=${{matrix.CONFIGURATION}}
                 set THIS_DIR=%CD%
+                set THIS_DIR_CMAKE=%THIS_DIR:\=/%
+
                 call ci\github-actions\set-env.bat msvc15 ${{matrix.TARGET_CPU}}
 
                 mkdir axl\build
@@ -83,6 +85,7 @@ jobs:
         -   name: Build and test
             shell: bash
             run: |
+                THIS_DIR=$(pwd)
                 export CC=$(which ${{matrix.COMPILER}})
                 export CXX=$(which ${{matrix.COMPILER}}++)
 
@@ -124,6 +127,8 @@ jobs:
         -   name: Build and test
             shell: bash
             run: |
+                THIS_DIR=$(pwd)
+
                 mkdir axl/build
                 pushd axl/build
                 cmake .. -DCMAKE_BUILD_TYPE=${{matrix.CONFIGURATION}}

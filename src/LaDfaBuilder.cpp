@@ -237,7 +237,6 @@ LaDfaBuilder::build(ConflictNode* conflict)
 
 		if (!stateArray.isEmpty())
 		{
-			size_t count = stateArray.getCount();
 			LaDfaState* state = stateArray[0];
 			sl::BoxList<sl::String> tokenNameList;
 

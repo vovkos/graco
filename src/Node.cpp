@@ -182,8 +182,6 @@ GrammarNode::buildFirstFollowArrays(const sl::ArrayRef<SymbolNode*>& tokenArray)
 bool
 GrammarNode::propagateChildGrammarProps(GrammarNode* child)
 {
-	GrammarNode* parent = this;
-
 	bool hasChanged = false;
 
 	if (m_firstSet.merge(child->m_firstSet, sl::BitOpKind_Or))

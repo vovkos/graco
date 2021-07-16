@@ -483,8 +483,6 @@ NodeMgr::indexSequences()
 	size_t i = 0;
 	size_t j = m_masterCount;
 
-	size_t count = m_sequenceList.getCount();
-
 	sl::Iterator<SequenceNode> nodeIt = m_sequenceList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
@@ -505,7 +503,7 @@ NodeMgr::indexBeacons()
 	sl::Iterator<BeaconNode> nodeIt = m_beaconList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
-		BeaconNode* node = *nodeIt;
+s		BeaconNode* node = *nodeIt;
 		node->m_index = i;
 		node->m_masterIndex = j;
 	}

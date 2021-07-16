@@ -28,4 +28,4 @@ else
 	echo "set (EXPAT_INC_DIR DISABLED)" >> paths.cmake
 fi
 
-sudo apt-get install ragel
+sudo apt-get install -y ragel

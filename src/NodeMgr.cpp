@@ -503,7 +503,7 @@ NodeMgr::indexBeacons()
 	sl::Iterator<BeaconNode> nodeIt = m_beaconList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++)
 	{
-s		BeaconNode* node = *nodeIt;
+		BeaconNode* node = *nodeIt;
 		node->m_index = i;
 		node->m_masterIndex = j;
 	}

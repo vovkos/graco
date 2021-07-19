@@ -26,7 +26,7 @@ jobs:
         -   name: Install
             shell: cmd
             run: |
-                call ci\github-actions\set-env.bat ${{matrix.TARGET_CPU}}
+                call ci\github-actions\set-env.bat msvc15 ${{matrix.TARGET_CPU}}
                 call ci\github-actions\install-windows.bat
                 git clone --depth 1 https://github.com/vovkos/axl
 

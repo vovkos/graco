@@ -15,8 +15,7 @@
 
 //..............................................................................
 
-class NodeMgr
-{
+class NodeMgr {
 	friend class Module;
 	friend class Parser;
 	friend class LaDfaBuilder;
@@ -58,8 +57,7 @@ public:
 	NodeMgr();
 
 	bool
-	isEmpty()
-	{
+	isEmpty() {
 		return m_namedSymbolList.isEmpty();
 	}
 
@@ -94,8 +92,7 @@ public:
 	deleteBeaconNode(BeaconNode* node);
 
 	void
-	deleteLaDfaNode(LaDfaNode* node)
-	{
+	deleteLaDfaNode(LaDfaNode* node) {
 		m_laDfaList.erase(node);
 	}
 
@@ -118,7 +115,7 @@ public:
 	createQuantifierNode(
 		GrammarNode* node,
 		int kind
-		);
+	);
 
 	void
 	trace();
@@ -167,7 +164,7 @@ protected:
 		const sl::StringRef& name,
 		Node* const* node,
 		size_t count
-		);
+	);
 
 	void
 	luaExportSymbolNodeRefArray(
@@ -175,7 +172,7 @@ protected:
 		const sl::StringRef& name,
 		SymbolNode* const* node,
 		size_t count
-		);
+	);
 
 	void
 	luaExportNodeList(
@@ -183,7 +180,7 @@ protected:
 		const sl::StringRef& name,
 		sl::Iterator<Node> node,
 		size_t countHint = 1
-		);
+	);
 };
 
 

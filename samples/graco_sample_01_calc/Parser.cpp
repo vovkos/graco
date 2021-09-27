@@ -16,10 +16,8 @@
 //..............................................................................
 
 Parser::RecoverAction
-Parser::processError(ErrorKind errorKind)
-{
-	switch (errorKind)
-	{
+Parser::processError(ErrorKind errorKind) {
+	switch (errorKind) {
 	case ErrorKind_Syntax:
 		printf("syntax error: %s\n", err::getLastErrorDescription().sz());
 		return RecoverAction_Synchronize;
@@ -39,11 +37,9 @@ Parser::createVariable(
 	const sl::String& name,
 	const Value& initializer,
 	bool isConst
-	)
-{
+) {
 	sl::StringHashTableIterator<Variable*> it = m_variableMap.visit(name);
-	if (it->m_value)
-	{
+	if (it->m_value) {
 		err::setFormatStringError("'%s': identifier redefinition", name.sz());
 		return NULL;
 	}
@@ -62,11 +58,9 @@ bool
 Parser::lookupIdentifier(
 	const sl::StringRef& name,
 	Value* value
-	)
-{
+) {
 	sl::StringHashTableIterator<Variable*> it = m_variableMap.find(name);
-	if (!it)
-	{
+	if (!it) {
 		err::setFormatStringError("'%s': undeclared identifier", name.sz());
 		return false;
 	}
@@ -80,14 +74,12 @@ Parser::assertionCheck(
 	const Value& value,
 	const Token::Pos& openPos,
 	const Token::Pos& closePos
-	)
-{
-	if (!value.isTrue())
-	{
+) {
+	if (!value.isTrue()) {
 		err::setFormatStringError(
 			"Assertion failure: %s\n",
 			sl::StringRef(openPos.m_p, closePos.m_p + closePos.m_length - openPos.m_p).sz()
-			);
+		);
 		return false;
 	}
 

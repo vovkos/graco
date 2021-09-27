@@ -16,8 +16,7 @@
 //..............................................................................
 
 void
-Generator::prepare(Module* module)
-{
+Generator::prepare(Module* module) {
 	m_stringTemplate.create();
 	m_stringTemplate.m_luaState.setGlobalBoolean("NoPpLine", (m_cmdLine->m_flags & CmdLineFlag_NoPpLine) != 0);
 	module->luaExport(&m_stringTemplate.m_luaState);
@@ -27,12 +26,10 @@ bool
 Generator::generate(
 	const sl::StringRef& fileName,
 	const sl::StringRef& frameFileName
-	)
-{
+) {
 	sl::String frameFilePath;
 	frameFilePath = io::findFilePath(frameFileName, &m_cmdLine->m_frameDirList);
-	if (frameFilePath.isEmpty())
-	{
+	if (frameFilePath.isEmpty()) {
 		err::setFormatStringError("frame file '%s' not found", frameFileName.sz());
 		return false;
 	}

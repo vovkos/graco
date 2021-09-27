@@ -13,8 +13,7 @@
 
 //..............................................................................
 
-enum TokenKind
-{
+enum TokenKind {
 	TokenKind_Eof = 0,
 	TokenKind_Error = -1,
 	TokenKind_Identifier = 256,
@@ -80,8 +79,7 @@ typedef lex::RagelToken<TokenKind, TokenName> Token;
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum LexerMachine
-{
+enum LexerMachine {
 	LexerMachine_Main,
 	LexerMachine_UserCode,
 	LexerMachine_UserCode2ndPass,
@@ -89,8 +87,7 @@ enum LexerMachine
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Lexer: public lex::RagelLexer<Lexer, Token>
-{
+class Lexer: public lex::RagelLexer<Lexer, Token> {
 	friend class lex::RagelLexer<Lexer, Token>;
 
 public:
@@ -104,16 +101,14 @@ protected:
 		int tokenKind,
 		int left = 0,
 		int right = 0
-		)
-	{
+	) {
 		Token* token = createToken(tokenKind);
 		token->m_data.m_string = sl::StringRef(ts + left, token->m_pos.m_length - (left + right));
 		return token;
 	}
 
 	Token*
-	createCharToken(int tokenKind)
-	{
+	createCharToken(int tokenKind) {
 		Token* token = createToken(tokenKind);
 		token->m_data.m_integer = ts[1];
 		return token;
@@ -123,16 +118,14 @@ protected:
 	createIntegerToken(
 		int radix = 10,
 		int left = 0
-		)
-	{
+	) {
 		Token* token = createToken(TokenKind_Integer);
 		token->m_data.m_integer = strtol(ts + left, NULL, radix);
 		return token;
 	}
 
 	Token*
-	createConstIntegerToken(int value)
-	{
+	createConstIntegerToken(int value) {
 		Token* token = createToken(TokenKind_Integer);
 		token->m_data.m_integer = value;
 		return token;

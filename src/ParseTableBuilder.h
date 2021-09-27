@@ -15,8 +15,7 @@
 
 //..............................................................................
 
-class ParseTableBuilder
-{
+class ParseTableBuilder {
 protected:
 	NodeMgr* m_nodeMgr;
 	sl::Array<Node*>* m_parseTable;
@@ -25,8 +24,7 @@ public:
 	ParseTableBuilder(
 		NodeMgr* nodeMgr,
 		sl::Array<Node*>* parseTable
-		)
-	{
+	) {
 		m_nodeMgr = nodeMgr;
 		m_parseTable = parseTable;
 	}
@@ -42,20 +40,20 @@ protected:
 	addProductionToParseTable(
 		SymbolNode* symbol,
 		GrammarNode* production
-		);
+	);
 
 	void
 	addAnyTokenProductionToParseTable(
 		SymbolNode* symbol,
 		GrammarNode* production
-		);
+	);
 
 	size_t
 	addParseTableEntry(
 		SymbolNode* symbol,
 		SymbolNode* token,
 		GrammarNode* production
-		); // returns number of conflicting productions
+	); // returns number of conflicting productions
 };
 
 //..............................................................................

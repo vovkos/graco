@@ -58,22 +58,22 @@ add_subdirectory(test)
 install(
 	DIRECTORY include/
 	DESTINATION ${GRACO_INSTALL_INC_SUBDIR}
-	)
+)
 
 install(
 	DIRECTORY frame/
 	DESTINATION ${GRACO_INSTALL_FRAME_SUBDIR}
-	)
+)
 
 install(
 	DIRECTORY samples/
 	DESTINATION ${GRACO_INSTALL_SAMPLE_SUBDIR}
-	)
+)
 
 install(
 	DIRECTORY license/
 	DESTINATION ${GRACO_INSTALL_LICENSE_SUBDIR}
-	)
+)
 
 #...............................................................................
 

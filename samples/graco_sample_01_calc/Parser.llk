@@ -9,16 +9,14 @@
 //
 //..............................................................................
 
-HeaderFileBegin
-{
+HeaderFileBegin {
 	#pragma once
 
 	#include "Lexer.h"
 	#include "Value.h"
 }
 
-Members
-{
+Members {
 protected:
 	sl::List<Variable> m_variableList;
 	sl::StringHashTable<Variable*> m_variableMap;
@@ -29,20 +27,20 @@ protected:
 		const sl::String& name,
 		const Value& initializer,
 		bool isConst = false
-		);
+	);
 
 	bool
 	lookupIdentifier(
 		const sl::StringRef& name,
 		Value* value
-		);
+	);
 
 	bool
 	assertionCheck(
 		const Value& value,
 		const Token::Pos& openPos,
 		const Token::Pos& closePos
-		);
+	);
 
 	RecoverAction
 	processError(ErrorKind errorKind);
@@ -93,8 +91,7 @@ const_declarator
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 primary_expression
@@ -120,8 +117,7 @@ primary_expression
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 postfix_expression
@@ -138,8 +134,7 @@ postfix_expression
 		)*
 	;
 
-struct
-{
+struct {
 	BinOpKind m_opKind;
 }
 postfix_inc_operator
@@ -153,8 +148,7 @@ postfix_inc_operator
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 unary_expression
@@ -184,8 +178,7 @@ unary_expression
 			}
 	;
 
-struct
-{
+struct {
 	UnOpKind m_opKind;
 }
 unary_operator
@@ -199,8 +192,7 @@ unary_operator
 			}
 	;
 
-struct
-{
+struct {
 	BinOpKind m_opKind;
 }
 prefix_inc_operator
@@ -214,8 +206,7 @@ prefix_inc_operator
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 assignment_expression
@@ -227,12 +218,10 @@ assignment_expression
 	;
 
 assign <Value* $target>
-	enter
-	{
+	enter {
 		return $target->lvalueCheck();
 	}
-	leave
-	{
+	leave {
 		*$target = $target->m_variable; // reload variable
 	}
 	:	'=' assignment_expression
@@ -245,8 +234,7 @@ assign <Value* $target>
 			}
 	;
 
-struct
-{
+struct {
 	BinOpKind m_opKind;
 }
 op_assignment_operator
@@ -292,8 +280,7 @@ op_assignment_operator
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 multiplicative_expression
@@ -308,8 +295,7 @@ multiplicative_expression
 		)*
 	;
 
-struct
-{
+struct {
 	BinOpKind m_opKind;
 }
 multiplicative_operator
@@ -327,8 +313,7 @@ multiplicative_operator
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 additive_expression
@@ -343,8 +328,7 @@ additive_expression
 		)*
 	;
 
-struct
-{
+struct {
 	BinOpKind m_opKind;
 }
 additive_operator
@@ -358,8 +342,7 @@ additive_operator
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 shift_expression
@@ -374,8 +357,7 @@ shift_expression
 		)*
 	;
 
-struct
-{
+struct {
 	BinOpKind m_opKind;
 }
 shift_operator
@@ -389,8 +371,7 @@ shift_operator
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 relational_expression
@@ -405,8 +386,7 @@ relational_expression
 		)*
 	;
 
-struct
-{
+struct {
 	RelOpKind m_opKind;
 }
 relational_operator
@@ -428,8 +408,7 @@ relational_operator
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 equality_expression
@@ -444,8 +423,7 @@ equality_expression
 		)*
 	;
 
-struct
-{
+struct {
 	RelOpKind m_opKind;
 }
 equality_operator
@@ -459,8 +437,7 @@ equality_operator
 			}
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 and_expression
@@ -475,8 +452,7 @@ and_expression
 		)*
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 exclusive_or_expression
@@ -491,8 +467,7 @@ exclusive_or_expression
 		)*
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 inclusive_or_expression
@@ -509,8 +484,7 @@ inclusive_or_expression
 
 // for short-circuit-evaluation, control-flow-graph needs to be implemented
 
-struct
-{
+struct {
 	Value m_value;
 }
 logical_and_expression
@@ -525,8 +499,7 @@ logical_and_expression
 		)*
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 logical_or_expression
@@ -541,8 +514,7 @@ logical_or_expression
 		)*
 	;
 
-struct
-{
+struct {
 	Value m_value;
 }
 expression

@@ -20,8 +20,7 @@ Lexer::createStringToken(
 	int tokenKind,
 	size_t left,
 	size_t right
-	)
-{
+) {
 	Token* token = createToken(tokenKind);
 	ASSERT(token->m_pos.m_length >= left + right);
 
@@ -31,8 +30,7 @@ Lexer::createStringToken(
 }
 
 Token*
-Lexer::createCharToken(int tokenKind)
-{
+Lexer::createCharToken(int tokenKind) {
 	Token* token = createToken(tokenKind);
 	ASSERT(token->m_pos.m_length >= 2);
 
@@ -48,16 +46,14 @@ Token*
 Lexer::createIntegerToken(
 	int radix,
 	size_t left
-	)
-{
+) {
 	Token* token = createToken(TokenKind_Integer);
 	token->m_data.m_int64_u = _strtoui64(ts + left, NULL, radix);
 	return token;
 }
 
 Token*
-Lexer::createFpToken()
-{
+Lexer::createFpToken() {
 	Token* token = createToken(TokenKind_Fp);
 	token->m_data.m_double = strtod(ts, NULL);
 	return token;

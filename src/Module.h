@@ -17,16 +17,14 @@
 
 //..............................................................................
 
-enum BnfDialect
-{
+enum BnfDialect {
 	BnfDialect_Classic,
 	BnfDialect_Graco,
 };
 
 //..............................................................................
 
-class Module
-{
+class Module {
 	friend class Parser;
 
 protected:
@@ -46,14 +44,12 @@ public:
 	clear();
 
 	const sl::String&
-	cacheSource(const sl::StringRef& source)
-	{
+	cacheSource(const sl::StringRef& source) {
 		return *m_sourceCache.insertTail(source);
 	}
 
 	size_t
-	getMaxUsedLookahead()
-	{
+	getMaxUsedLookahead() {
 		return m_maxUsedLookahead;
 	}
 
@@ -73,7 +69,7 @@ public:
 	writeBnfFile(
 		const sl::StringRef& fileName,
 		BnfDialect dialect = BnfDialect_Classic
-		);
+	);
 
 protected:
 	void

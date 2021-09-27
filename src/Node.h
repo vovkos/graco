@@ -23,8 +23,7 @@ class LaDfaNode;
 
 //..............................................................................
 
-enum NodeKind
-{
+enum NodeKind {
 	NodeKind_Undefined = 0,
 	NodeKind_Epsilon,
 	NodeKind_Token,
@@ -40,16 +39,14 @@ enum NodeKind
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum NodeFlag
-{
+enum NodeFlag {
 	NodeFlag_RecursionStopper = 0x0001,
 	NodeFlag_Reachable        = 0x0002,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Node: public sl::ListLink
-{
+class Node: public sl::ListLink {
 public:
 	NodeKind m_nodeKind;
 	uint_t m_flags;
@@ -62,9 +59,7 @@ public:
 	Node();
 
 	virtual
-	~Node()
-	{
-	}
+	~Node() {}
 
 	virtual
 	void
@@ -72,9 +67,7 @@ public:
 
 	virtual
 	void
-	luaExport(lua::LuaState* luaState)
-	{
-	}
+	luaExport(lua::LuaState* luaState) {}
 
 	virtual
 	bool
@@ -82,23 +75,20 @@ public:
 
 	virtual
 	sl::String
-	getProductionString()
-	{
+	getProductionString() {
 		return m_name;
 	}
 
 	virtual
 	sl::String
-	getBnfString()
-	{
+	getBnfString() {
 		return m_name;
 	}
 };
 
 //..............................................................................
 
-enum GrammarNodeFlag
-{
+enum GrammarNodeFlag {
 	GrammarNodeFlag_Nullable        = 0x0010,
 	GrammarNodeFlag_Final           = 0x0020,
 	GrammarNodeFlag_WeaklyReachable = 0x0040, // remove from the grammar, but don't delete
@@ -106,8 +96,7 @@ enum GrammarNodeFlag
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class GrammarNode: public Node
-{
+class GrammarNode: public Node {
 public:
 	lex::SrcPos m_srcPos;
 	int m_quantifierKind; // '?' '*' '+'
@@ -127,14 +116,12 @@ public:
 	trace();
 
 	bool
-	isNullable()
-	{
+	isNullable() {
 		return (m_flags & GrammarNodeFlag_Nullable) != 0;
 	}
 
 	bool
-	isFinal()
-	{
+	isFinal() {
 		return (m_flags & GrammarNodeFlag_Final) != 0;
 	}
 
@@ -149,8 +136,7 @@ public:
 	markWeaklyReachable();
 
 	bool
-	initializeFirstFollowSets(size_t tokenCount)
-	{
+	initializeFirstFollowSets(size_t tokenCount) {
 		return m_firstSet.setBitCount(tokenCount) && m_followSet.setBitCount(tokenCount);
 	}
 
@@ -159,8 +145,7 @@ public:
 
 	virtual
 	bool
-	propagateGrammarProps()
-	{
+	propagateGrammarProps() {
 		return false;
 	}
 
@@ -179,13 +164,12 @@ protected:
 	luaExportSrcPos(
 		lua::LuaState* luaState,
 		const lex::LineCol& lineCol
-		);
+	);
 };
 
 //..............................................................................
 
-enum SymbolNodeFlag
-{
+enum SymbolNodeFlag {
 	SymbolNodeFlag_User         = 0x0100,
 	SymbolNodeFlag_EofToken     = 0x0200,
 	SymbolNodeFlag_AnyToken     = 0x0400,
@@ -197,8 +181,7 @@ enum SymbolNodeFlag
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class SymbolNode: public GrammarNode
-{
+class SymbolNode: public GrammarNode {
 public:
 	int m_charToken;
 
@@ -263,14 +246,12 @@ public:
 
 //..............................................................................
 
-class SequenceNode: public GrammarNode
-{
+class SequenceNode: public GrammarNode {
 public:
 	sl::Array<GrammarNode*> m_sequence;
 
 public:
-	SequenceNode()
-	{
+	SequenceNode() {
 		m_nodeKind = NodeKind_Sequence;
 	}
 
@@ -308,15 +289,13 @@ public:
 
 //..............................................................................
 
-enum UserNodeFlag
-{
+enum UserNodeFlag {
 	UserNodeFlag_UserCodeProcessed = 0x010000, // prevent double processing in '+' quantifier
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class UserNode: public GrammarNode
-{
+class UserNode: public GrammarNode {
 public:
 	SymbolNode* m_productionSymbol;
 	DispatcherNode* m_dispatcher;
@@ -326,14 +305,12 @@ public:
 
 //..............................................................................
 
-class ActionNode: public UserNode
-{
+class ActionNode: public UserNode {
 public:
 	sl::String m_userCode;
 
 public:
-	ActionNode()
-	{
+	ActionNode() {
 		m_nodeKind = NodeKind_Action;
 	}
 
@@ -347,16 +324,14 @@ public:
 
 	virtual
 	sl::String
-	getBnfString()
-	{
+	getBnfString() {
 		return sl::String();
 	}
 };
 
 //..............................................................................
 
-class ArgumentNode: public UserNode
-{
+class ArgumentNode: public UserNode {
 public:
 	SymbolNode* m_targetSymbol;
 	sl::BoxList<sl::String> m_argValueList;
@@ -374,24 +349,21 @@ public:
 
 	virtual
 	sl::String
-	getBnfString()
-	{
+	getBnfString() {
 		return sl::String();
 	}
 };
 
 //..............................................................................
 
-enum BeaconNodeFlag
-{
+enum BeaconNodeFlag {
 	BeaconNodeFlag_Added   = 0x0100,
 	BeaconNodeFlag_Deleted = 0x0200,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class BeaconNode: public GrammarNode
-{
+class BeaconNode: public GrammarNode {
 public:
 	sl::StringRef m_label;
 	size_t m_slotIndex;
@@ -419,8 +391,7 @@ public:
 
 	virtual
 	sl::String
-	getBnfString()
-	{
+	getBnfString() {
 		return m_target ? m_target->getBnfString() : m_name;
 	}
 
@@ -431,8 +402,7 @@ public:
 
 //..............................................................................
 
-class DispatcherNode: public Node
-{
+class DispatcherNode: public Node {
 public:
 	SymbolNode* m_symbol;
 	sl::Array<BeaconNode*> m_beaconArray;
@@ -451,8 +421,7 @@ public:
 
 //..............................................................................
 
-class ConflictNode: public Node
-{
+class ConflictNode: public Node {
 public:
 	SymbolNode* m_symbol;
 	SymbolNode* m_token;
@@ -468,34 +437,30 @@ public:
 
 	virtual
 	void
-	luaExport(lua::LuaState* luaState)
-	{
+	luaExport(lua::LuaState* luaState) {
 		ASSERT(false); // all the conflicts should be resolved
 	}
 
 	void
-	pushError()
-	{
+	pushError() {
 		err::pushFormatStringError(
 			"conflict at '%s':'%s'",
 			m_symbol->m_name.sz(),
 			m_token->m_name.sz()
-			);
+		);
 	}
 };
 
 //..............................................................................
 
-enum LaDfaNodeFlag
-{
+enum LaDfaNodeFlag {
 	LaDfaNodeFlag_Leaf     = 0x100,
 	LaDfaNodeFlag_Resolved = 0x200,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class LaDfaNode: public Node
-{
+class LaDfaNode: public Node {
 public:
 	SymbolNode* m_token;
 	GrammarNode* m_resolver;
@@ -528,12 +493,10 @@ void
 traceNodeList(
 	const sl::StringRef& name,
 	sl::Iterator<T> nodeIt
-	)
-{
+) {
 	printf("%s\n", name.sz());
 
-	for (; nodeIt; nodeIt++)
-	{
+	for (; nodeIt; nodeIt++) {
 		T* node = *nodeIt;
 
 		printf("%3d/%-3d\t", node->m_index, node->m_masterIndex);
@@ -548,13 +511,11 @@ void
 traceNodeArray(
 	const sl::StringRef& name,
 	const sl::Array<T*>* array
-	)
-{
+) {
 	printf("%s\n", name.sz());
 
 	size_t count = array->getCount();
-	for (size_t i = 0; i < count; i++)
-	{
+	for (size_t i = 0; i < count; i++) {
 		T* node = (*array) [i];
 
 		printf("%3d/%-3d ", node->m_index, node->m_masterIndex);
@@ -566,16 +527,14 @@ traceNodeArray(
 
 template <typename T>
 sl::String
-nodeArrayToString(const sl::Array<T*>* array)
-{
+nodeArrayToString(const sl::Array<T*>* array) {
 	size_t count = array->getCount();
 	if (!count)
 		return sl::String();
 
 	sl::String string = (*array) [0]->m_name;
 
-	for (size_t i = 1; i < count; i++)
-	{
+	for (size_t i = 1; i < count; i++) {
 		Node* node = (*array) [i];
 		string += ' ';
 		string += node->m_name;

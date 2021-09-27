@@ -16,8 +16,7 @@
 //..............................................................................
 
 bool
-parse(const sl::StringRef& p)
-{
+parse(const sl::StringRef& p) {
 	bool result;
 
 	Lexer lexer;
@@ -26,11 +25,9 @@ parse(const sl::StringRef& p)
 	Parser parser;
 	parser.create("my-source", Parser::StartSymbol);
 
-	for (;;)
-	{
+	for (;;) {
 		const Token* token = lexer.getToken();
-		if (token->m_token == TokenKind_Error)
-		{
+		if (token->m_token == TokenKind_Error) {
 			err::setFormatStringError("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
 			return false;
 		}
@@ -55,13 +52,13 @@ int
 wmain(
 	int argc,
 	wchar_t* argv[]
-	)
+)
 #else
 int
 main(
 	int argc,
 	char* argv[]
-	)
+)
 #endif
 {
 	g::getModule()->setTag("graco_test_cpp");
@@ -76,8 +73,7 @@ main(
   		"assert(x == 10);\n"
 		);
 
-	if (!result)
-	{
+	if (!result) {
 		printf("error: %s\n", err::getLastErrorDescription().sz());
 		return -1;
 	}

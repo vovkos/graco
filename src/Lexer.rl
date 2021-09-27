@@ -25,13 +25,11 @@ write data;
 # prepush / postpop (for fcall/fret)
 #
 
-prepush
-{
+prepush {
 	stack = prePush ();
 }
 
-postpop
-{
+postpop {
 	postPop ();
 }
 
@@ -140,22 +138,18 @@ any            { createErrorToken(ts[0]); };
 //..............................................................................
 
 void
-Lexer::init ()
-{
+Lexer::init () {
 	%% write init;
 }
 
 void
-Lexer::exec ()
-{
+Lexer::exec () {
 	%% write exec;
 }
 
 int
-Lexer::getMachineState (LexerMachine machine)
-{
-	switch (machine)
-	{
+Lexer::getMachineState (LexerMachine machine) {
+	switch (machine) {
 	case LexerMachine_Main:
 		return llkc_en_main;
 

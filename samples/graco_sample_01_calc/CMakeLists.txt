@@ -17,7 +17,7 @@ set(
 	APP_H_LIST
 	Lexer.h
 	Value.h
-	)
+)
 
 set(
 	APP_CPP_LIST
@@ -25,17 +25,17 @@ set(
 	Lexer.cpp
 	Parser.cpp
 	Value.cpp
-	)
+)
 
 set(
 	APP_RL_LIST
 	Lexer.rl
-	)
+)
 
 set(
 	APP_LLK_LIST
 	Parser.llk
-	)
+)
 
 source_group(
 	app
@@ -44,7 +44,7 @@ source_group(
 	${APP_CPP_LIST}
 	${APP_RL_LIST}
 	${APP_LLK_LIST}
-	)
+)
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
@@ -59,7 +59,7 @@ axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
 add_ragel_step(
 	Lexer.rl.cpp
 	Lexer.rl
-	)
+)
 
 add_graco_double_step(
 	Parser.llk.h
@@ -67,19 +67,19 @@ add_graco_double_step(
 	CppParser.h.in
 	CppParser.cpp.in
 	Parser.llk
-	)
+)
 
 axl_pop(CMAKE_CURRENT_BINARY_DIR)
 
 set(
 	GEN_LLK_H_LIST
 	${GEN_DIR}/Parser.llk.h
-	)
+)
 
 set(
 	GEN_LLK_CPP_LIST
 	${GEN_DIR}/Parser.llk.cpp
-	)
+)
 
 axl_exclude_from_build(${GEN_RL_CPP_LIST})  # include "*.rl.cpp" manually
 axl_exclude_from_build(${GEN_LLK_CPP_LIST}) # include "*.llk.cpp" manually
@@ -90,7 +90,7 @@ source_group(
 	${GEN_RL_CPP_LIST}
 	${GEN_LLK_H_LIST}
 	${GEN_LLK_CPP_LIST}
-	)
+)
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
@@ -105,7 +105,7 @@ source_group(
 	FILES
 	${PCH_H}
 	${PCH_CPP}
-	)
+)
 
 #...............................................................................
 #
@@ -117,7 +117,7 @@ include_directories(
 	${GRACO_INC_DIR}
 	${GEN_DIR}
 	${CMAKE_CURRENT_LIST_DIR}
-	)
+)
 
 link_directories(${AXL_LIB_DIR})
 
@@ -132,37 +132,37 @@ add_executable(
 	${GEN_RL_CPP_LIST}
 	${GEN_LLK_H_LIST}
 	# ${GEN_LLK_CPP_LIST} # currently, cmake can't handle double-file output
-	)
+)
 
 add_dependencies(
 	graco_sample_01_calc
 	graco
-	)
+)
 
 set_target_properties(
 	graco_sample_01_calc
 	PROPERTIES
 	FOLDER samples
-	)
+)
 
 target_link_libraries(
 	graco_sample_01_calc
 	axl_lex
 	axl_io
 	axl_core
-	)
+)
 
 if(UNIX)
 	target_link_libraries(
 		graco_sample_01_calc
 		pthread
-		)
+	)
 
 	if(NOT APPLE)
 		target_link_libraries(
 			graco_sample_01_calc
 			rt
-			)
+		)
 	endif()
 endif()
 
@@ -170,6 +170,6 @@ axl_set_pch(
 	graco_sample_01_calc
 	${PCH_H}
 	${PCH_CPP}
-	)
+)
 
 #...............................................................................

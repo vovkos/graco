@@ -13,8 +13,7 @@
 
 //..............................................................................
 
-enum CmdLineFlag
-{
+enum CmdLineFlag {
 	CmdLineFlag_Help     = 0x01,
 	CmdLineFlag_Version  = 0x02,
 	CmdLineFlag_Verbose  = 0x04,
@@ -24,8 +23,7 @@ enum CmdLineFlag
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-struct CmdLine
-{
+struct CmdLine {
 	uint_t m_flags;
 	size_t m_lookaheadLimit;
 	size_t m_conflictDepthLimit;
@@ -44,8 +42,7 @@ struct CmdLine
 
 //..............................................................................
 
-enum CmdLineSwitchKind
-{
+enum CmdLineSwitchKind {
 	CmdLineSwitchKind_Undefined = 0,
 	CmdLineSwitchKind_Help,
 	CmdLineSwitchKind_Version,
@@ -71,36 +68,36 @@ AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE(CmdLineSwitchTable, CmdLineSwitchKind)
 		CmdLineSwitchKind_Help,
 		"h", "help", NULL,
 		"Display this help"
-		)
+	)
 	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_Version,
 		"v", "version", NULL,
 		"Display Graco version"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_NoPpLine,
 		"l", "no-line", NULL,
 		"Suppress #line preprocessor directives"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH(
 		CmdLineSwitchKind_LookaheadLimit,
 		"lookahead-limit", "<limit>",
 		"Specify number of tokens used for conflict resolution (defaults to 2)"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH(
 		CmdLineSwitchKind_ConflictDepthLimit,
 		"conflict-depth-limit", "<limit>",
 		"Limit the depth of nested conflicts (defaults to 2)"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_Verbose,
 		"z", "verbose", NULL,
 		"Verbose mode"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH_GROUP("Files")
 
@@ -108,31 +105,31 @@ AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE(CmdLineSwitchTable, CmdLineSwitchKind)
 		CmdLineSwitchKind_OutputFileName,
 		"o", "output", "<file>",
 		"Specify output file (multiple allowed)"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_FrameFileName,
 		"f", "frame", "<file>",
 		"Specify Lua frame file (multiple allowed)"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_BnfFileName,
 		"b", "bnf", "<file>",
 		"Generate \"clean\" EBNF file (classic dialect)"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH(
 		CmdLineSwitchKind_GracoBnf,
 		"graco-bnf", NULL,
 		"Use the Graco EBNF dialect"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_TraceFileName,
 		"t", "trace", "<file>",
 		"Write verbose information into trace file"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH_GROUP("Directories")
 
@@ -140,25 +137,24 @@ AXL_SL_BEGIN_CMD_LINE_SWITCH_TABLE(CmdLineSwitchTable, CmdLineSwitchKind)
 		CmdLineSwitchKind_OutputDir,
 		"O", "output-dir", "<dir>",
 		"Specify output directory"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_FrameDir,
 		"F", "frame-dir", "<dir>",
 		"Add Lua frame directory (multiple allowed)"
-		)
+	)
 
 	AXL_SL_CMD_LINE_SWITCH_2(
 		CmdLineSwitchKind_ImportDir,
 		"I", "import-dir", "<dir>",
 		"Add import directory (multiple allowed)"
-		)
+	)
 AXL_SL_END_CMD_LINE_SWITCH_TABLE()
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class CmdLineParser: public sl::CmdLineParser<CmdLineParser, CmdLineSwitchTable>
-{
+class CmdLineParser: public sl::CmdLineParser<CmdLineParser, CmdLineSwitchTable> {
 	friend class sl::CmdLineParser<CmdLineParser, CmdLineSwitchTable>;
 
 protected:
@@ -166,8 +162,7 @@ protected:
 	size_t m_targetIdx;
 
 public:
-	CmdLineParser(CmdLine* cmdLine)
-	{
+	CmdLineParser(CmdLine* cmdLine) {
 		m_cmdLine = cmdLine;
 		m_targetIdx = 0;
 	}
@@ -180,7 +175,7 @@ protected:
 	onSwitch(
 		SwitchKind switchKind,
 		const sl::StringRef& value
-		);
+	);
 
 	bool
 	finalize();

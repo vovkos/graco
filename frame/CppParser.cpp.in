@@ -21,10 +21,8 @@ $CppFileBegin
 // parse tables
 
 const size_t*
-$ParserClassName::getParseTable()
-{
-	static const size_t parseTable[] =
-	{
+$ParserClassName::getParseTable() {
+	static const size_t parseTable[] = {
 %{
 for i = 1, SymbolCount do
 	local row = ParseTable[i]
@@ -47,12 +45,10 @@ end -- for
 }
 
 const size_t*
-$ParserClassName::getSequence(size_t index)
-{
+$ParserClassName::getSequence(size_t index) {
 	ASSERT(index < SequenceCount);
 
-	static const size_t sequenceTable[] =
-	{
+	static const size_t sequenceTable[] = {
 %{
 for i = 1, SequenceCount do
 	local sequence = SequenceTable[i].sequence
@@ -67,8 +63,7 @@ end -- for
 		-1
 	};
 
-	static const size_t sequenceIndexTable[] =
-	{
+	static const size_t sequenceIndexTable[] = {
 %{
 local j = 0;
 for i = 1, SequenceCount do
@@ -89,8 +84,7 @@ end -- for
 
 // tokens
 
-$(ParserClassName)::TokenMap::TokenMap()
-{
+$(ParserClassName)::TokenMap::TokenMap() {
 	add(0, $(ParserClassName)::EofToken);
 %{
 for i = 3, TokenCount do
@@ -103,18 +97,15 @@ end -- for
 }
 
 size_t
-$ParserClassName::getTokenIndex(int token)
-{
+$ParserClassName::getTokenIndex(int token) {
 	return axl::sl::getSingleton<TokenMap>()->findValue(token, AnyToken);
 }
 
 int
-$ParserClassName::getTokenFromIndex(size_t index)
-{
+$ParserClassName::getTokenFromIndex(size_t index) {
 	ASSERT(index < TokenCount);
 
-	static const int tokenTable[] =
-	{
+	static const int tokenTable[] = {
 		0,  // eof
 		0,  // any token
 %{
@@ -136,12 +127,10 @@ end -- for
 // symbols
 
 const char*
-$ParserClassName::getSymbolName(size_t index)
-{
+$ParserClassName::getSymbolName(size_t index) {
 	ASSERT(index < SymbolCount);
 
-	static const char* symbolNameTable[NamedSymbolCount + 1] =
-	{
+	static const char* symbolNameTable[NamedSymbolCount + 1] = {
 %{
 for i = 1, NamedSymbolCount do
 	local symbol = SymbolTable[i]
@@ -160,16 +149,14 @@ end -- for
 }
 
 $ParserClassName::SymbolNode*
-$ParserClassName::createSymbolNode(size_t index)
-{
+$ParserClassName::createSymbolNode(size_t index) {
 	ASSERT(index < NamedSymbolCount);
 
 	typedef
 	SymbolNode*
 	CreateFunc(size_t index);
 
-	static CreateFunc* const createFuncTable[NamedSymbolCount + 1] =
-	{
+	static CreateFunc* const createFuncTable[NamedSymbolCount + 1] = {
 %{
 for i = 1, NamedSymbolCount do
 	local symbol = SymbolTable[i]
@@ -196,8 +183,7 @@ for i = 1, NamedSymbolCount do
 	if symbol.isCustomClass or symbol.enterBlock or symbol.leaveBlock then
 }
 $ParserClassName::SymbolNode*
-$ParserClassName::createSymbolNode_$(symbol.name)(size_t index)
-{
+$ParserClassName::createSymbolNode_$(symbol.name)(size_t index) {
 %{
 		if symbol.isCustomClass then
 }
@@ -231,8 +217,7 @@ $ParserClassName::createSymbolNode_$(symbol.name)(size_t index)
 end -- for
 }
 $ParserClassName::SymbolNode*
-$ParserClassName::createStdSymbolNode(size_t index)
-{
+$ParserClassName::createStdSymbolNode(size_t index) {
 	SymbolNode* node = llk::allocateNode<$ParserClassName, StdSymbolNode>();
 	node->m_index = index;
 	return node;
@@ -243,12 +228,10 @@ $ParserClassName::createStdSymbolNode(size_t index)
 // beacons
 
 const size_t*
-$ParserClassName::getBeacon(size_t index)
-{
+$ParserClassName::getBeacon(size_t index) {
 	ASSERT(index < BeaconCount);
 
-	static const size_t beaconTable[BeaconCount + 1][2] =
-	{
+	static const size_t beaconTable[BeaconCount + 1][2] = {
 %{
 for i = 1, BeaconCount do
 	local beacon = BeaconTable[i]
@@ -268,16 +251,14 @@ end -- for
 // actions
 
 bool
-$ParserClassName::action(size_t index)
-{
+$ParserClassName::action(size_t index) {
 	ASSERT(index < ActionCount);
 
 	typedef
 	bool
 	($ParserClassName::*ActionFunc)();
 
-	static const ActionFunc actionFuncTable[ActionCount + 1]  =
-	{
+	static const ActionFunc actionFuncTable[ActionCount + 1]  = {
 %{
 for i = 1, ActionCount do
 }
@@ -297,8 +278,7 @@ for i = 1, ActionCount do
 	local productionSymbol = action.productionSymbol;
 }
 bool
-$ParserClassName::action_$(i - 1)()
-{
+$ParserClassName::action_$(i - 1)() {
 	$(getSymbolDeclaration(productionSymbol, SymbolVariableName, "getSymbolTop()"))
 $(getPpLine(action.srcPos.filePath, action.srcPos.line))
 $(processActionUserCode(action.userCode, action.dispatcher, SymbolVariableName));
@@ -317,16 +297,14 @@ void
 $ParserClassName::argument(
 	size_t index,
 	SymbolNode* symbol
-	)
-{
+) {
 	ASSERT(index < ArgumentCount);
 
 	typedef
 	void
 	($ParserClassName::*ArgumentFunc)(SymbolNode* symbol);
 
-	static const ArgumentFunc argumentFuncTable[ArgumentCount + 1]  =
-	{
+	static const ArgumentFunc argumentFuncTable[ArgumentCount + 1]  = {
 %{
 for i = 1, ArgumentCount do
 }
@@ -348,8 +326,7 @@ for i = 1, ArgumentCount do
 	local valueTable = argument.valueTable
 }
 void
-$ParserClassName::argument_$(i - 1)(SymbolNode* symbol)
-{
+$ParserClassName::argument_$(i - 1)(SymbolNode* symbol) {
 	$(getSymbolDeclaration(targetSymbol, TargetVariableName, "symbol"))
 	$(getSymbolDeclaration(productionSymbol, SymbolVariableName, "getSymbolTop()"))
 %{
@@ -373,16 +350,14 @@ end -- for
 // enter blocks
 
 bool
-$ParserClassName::enter(size_t index)
-{
+$ParserClassName::enter(size_t index) {
 	ASSERT(index < EnterCount);
 
 	typedef
 	bool
 	($ParserClassName::*EnterFunc)();
 
-	static const EnterFunc enterFuncTable[EnterCount + 1]  =
-	{
+	static const EnterFunc enterFuncTable[EnterCount + 1]  = {
 %{
 for i = 1, EnterCount do
 	local symbol = EnterTable[i];
@@ -402,8 +377,7 @@ for i = 1, EnterCount do
 	local symbol = EnterTable[i]
 }
 bool
-$ParserClassName::enter_$(symbol.name)()
-{
+$ParserClassName::enter_$(symbol.name)() {
 	$(getSymbolDeclaration(symbol, SymbolVariableName, "getSymbolTop()"))
 $(getPpLine(symbol.srcPos.filePath, symbol.enterLine))
 $(processActionUserCode(symbol.enterBlock, nil, SymbolVariableName));
@@ -419,16 +393,14 @@ end -- for
 // leave blocks
 
 bool
-$ParserClassName::leave(size_t index)
-{
+$ParserClassName::leave(size_t index) {
 	ASSERT(index < LeaveCount);
 
 	typedef
 	bool
 	($ParserClassName::*LeaveFunc)();
 
-	static const LeaveFunc leaveFuncTable[LeaveCount + 1]  =
-	{
+	static const LeaveFunc leaveFuncTable[LeaveCount + 1]  = {
 %{
 for i = 1, LeaveCount do
 	local symbol = LeaveTable[i];
@@ -448,8 +420,7 @@ for i = 1, LeaveCount do
 	local symbol = LeaveTable[i]
 }
 bool
-$ParserClassName::leave_$(symbol.name)()
-{
+$ParserClassName::leave_$(symbol.name)() {
 	$(getSymbolDeclaration(symbol, SymbolVariableName, "getSymbolTop()"))
 $(getPpLine(symbol.srcPos.filePath, symbol.leaveLine))
 $(processActionUserCode(symbol.leaveBlock, nil, SymbolVariableName));
@@ -469,8 +440,7 @@ $ParserClassName::laDfa(
 	size_t index,
 	int lookaheadToken,
 	LaDfaTransition* transition
-	)
-{
+) {
 	ASSERT(index < LaDfaCount);
 
 	typedef
@@ -478,10 +448,9 @@ $ParserClassName::laDfa(
 	($ParserClassName::*LaDfaFunc)(
 		int lookaheadToken,
 		LaDfaTransition* transition
-		);
+	);
 
-	static const LaDfaFunc laDfaFuncTable[LaDfaCount + 1] =
-	{
+	static const LaDfaFunc laDfaFuncTable[LaDfaCount + 1] = {
 %{
 for i = 1, LaDfaCount do
 }
@@ -503,8 +472,7 @@ $ParserClassName::LaDfaResult
 $ParserClassName::laDfa_$(i - 1)(
 	int lookaheadToken,
 	LaDfaTransition* transition
-	)
-{
+) {
 %{
 	if dfaNode.resolver then
 }
@@ -522,8 +490,7 @@ $ParserClassName::laDfa_$(i - 1)(
 %{
 	else
 }
-	switch (lookaheadToken)
-	{
+	switch (lookaheadToken) {
 %{
 		local transitionTable = dfaNode.transitionTable
 		for j = 1, #transitionTable do
@@ -582,12 +549,10 @@ end -- for
 // synchornization tokens
 
 const int*
-$ParserClassName::getSyncTokenSet(size_t index)
-{
+$ParserClassName::getSyncTokenSet(size_t index) {
 	ASSERT(index >= NamedSymbolCount && index < NamedSymbolCount + CatchSymbolCount);
 
-	static const int syncTokenTable[] =
-	{
+	static const int syncTokenTable[] = {
 %{
 for i = NamedSymbolCount + 1, NamedSymbolCount + CatchSymbolCount do
 	local tokenTable = SymbolTable[i].syncTokenTable
@@ -603,8 +568,7 @@ end -- for
 		-1
 	};
 
-	static const size_t syncTokenIndexTable[] =
-	{
+	static const size_t syncTokenIndexTable[] = {
 %{
 local j = 0;
 for i = NamedSymbolCount + 1, NamedSymbolCount + CatchSymbolCount do

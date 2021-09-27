@@ -15,8 +15,7 @@ struct Variable;
 
 //..............................................................................
 
-enum Type
-{
+enum Type {
 	Type_Null,
 	Type_Int,
 	Type_Fp,
@@ -25,8 +24,7 @@ enum Type
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum UnOpKind
-{
+enum UnOpKind {
 	UnOpKind_Minus,
 	UnOpKind_BitwiseNot,
 	UnOpKind__Count
@@ -37,8 +35,7 @@ getUnOpKindString(UnOpKind opKind);
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum BinOpKind
-{
+enum BinOpKind {
 	BinOpKind_Add,
 	BinOpKind_Sub,
 	BinOpKind_Mul,
@@ -57,8 +54,7 @@ getBinOpKindString(BinOpKind opKind);
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum RelOpKind
-{
+enum RelOpKind {
 	RelOpKind_Eq,
 	RelOpKind_Ne,
 	RelOpKind_Lt,
@@ -73,13 +69,11 @@ getRelOpKindString(RelOpKind opKind);
 
 //..............................................................................
 
-struct Value
-{
+struct Value {
 	Type m_type;
 	Variable* m_variable;
 
-	union
-	{
+	union {
 		int m_integer;
 		double m_fp;
 	};
@@ -96,8 +90,7 @@ struct Value
 	isTrue() const;
 
 	double
-	getFp() const
-	{
+	getFp() const {
 		return m_type == Type_Int ? (double)m_integer : m_fp;
 	}
 
@@ -111,25 +104,23 @@ struct Value
 	binaryOperator(
 		BinOpKind opKind,
 		const Value& value
-		);
+	);
 
 	bool
 	relationalOperator(
 		RelOpKind opKind,
 		const Value& value
-		);
+	);
 };
 
 //..............................................................................
 
-struct Variable: sl::ListLink
-{
+struct Variable: sl::ListLink {
 	sl::String m_name;
 	Value m_value;
 	bool m_isConst;
 
-	Variable()
-	{
+	Variable() {
 		m_isConst = false;
 	}
 };

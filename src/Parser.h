@@ -17,11 +17,9 @@
 
 //..............................................................................
 
-class Parser: protected Lexer
-{
+class Parser: protected Lexer {
 protected:
-	struct ProductionSpecifiers
-	{
+	struct ProductionSpecifiers {
 		sl::StringRef m_valueBlock;
 		lex::LineCol m_valueLineCol;
 		GrammarNode* m_resolver;
@@ -41,8 +39,7 @@ public:
 	Parser(
 		CmdLine* cmdLine,
 		Module* module
-		)
-	{
+	) {
 		m_cmdLine = cmdLine;
 		m_module = module;
 	}
@@ -51,7 +48,7 @@ public:
 	parse(
 		const sl::StringRef& filePath,
 		const sl::StringRef& source
-		);
+	);
 
 	bool
 	parseFile(const sl::StringRef& filePath);
@@ -109,14 +106,14 @@ protected:
 		int openBracket,
 		sl::StringRef* string,
 		lex::SrcPos* srcPos
-		);
+	);
 
 	bool
 	userCode(
 		int openBracket,
 		sl::StringRef* string,
 		lex::LineCol* lineCol
-		);
+	);
 
 	bool
 	customizeSymbol(SymbolNode* node);
@@ -131,23 +128,22 @@ protected:
 	processEnterLeaveBlock(
 		SymbolNode* node,
 		sl::StringRef* string
-		);
+	);
 
 	bool
 	processActualArgList(
 		ArgumentNode* node,
 		const sl::StringRef& string
-		);
+	);
 
 	void
 	setGrammarNodeSrcPos(
 		GrammarNode* node,
 		const lex::LineCol& lineCol
-		);
+	);
 
 	void
-	setGrammarNodeSrcPos(GrammarNode* node)
-	{
+	setGrammarNodeSrcPos(GrammarNode* node) {
 		setGrammarNodeSrcPos(node, m_lastTokenPos);
 	}
 };

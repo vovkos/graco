@@ -14,8 +14,7 @@
 
 //..............................................................................
 
-LaDfaThread::LaDfaThread()
-{
+LaDfaThread::LaDfaThread() {
 	m_match = LaDfaThreadMatchKind_None;
 	m_state = NULL;
 	m_production = NULL;
@@ -25,8 +24,7 @@ LaDfaThread::LaDfaThread()
 
 //..............................................................................
 
-LaDfaState::LaDfaState()
-{
+LaDfaState::LaDfaState() {
 	m_index = -1;
 	m_lookahead = 0;
 	m_flags = 0;
@@ -36,13 +34,11 @@ LaDfaState::LaDfaState()
 }
 
 LaDfaThread*
-LaDfaState::createThread(LaDfaThread* src)
-{
+LaDfaState::createThread(LaDfaThread* src) {
 	LaDfaThread* thread = AXL_MEM_NEW(LaDfaThread);
 	thread->m_state = this;
 
-	if (src)
-	{
+	if (src) {
 		ASSERT(!src->m_resolver);
 
 		thread->m_production = src->m_production;
@@ -54,12 +50,10 @@ LaDfaState::createThread(LaDfaThread* src)
 }
 
 bool
-LaDfaState::calcResolved()
-{
+LaDfaState::calcResolved() {
 	sl::Iterator<LaDfaThread> thread;
 
-	if (m_activeThreadList.isEmpty())
-	{
+	if (m_activeThreadList.isEmpty()) {
 		m_dfaNode->m_flags |= LaDfaNodeFlag_Resolved;
 		return true;
 	}
@@ -68,15 +62,13 @@ LaDfaState::calcResolved()
 
 	Node* originalProduction = thread->m_production;
 
-	for (thread++; thread; thread++)
-	{
+	for (thread++; thread; thread++) {
 		if (thread->m_production != originalProduction)
 			return false;
 	}
 
 	thread = m_completeThreadList.getHead();
-	for (; thread; thread++)
-	{
+	for (; thread; thread++) {
 		if (thread->m_production != originalProduction)
 			return false;
 	}
@@ -86,8 +78,7 @@ LaDfaState::calcResolved()
 }
 
 Node*
-LaDfaState::getResolvedProduction()
-{
+LaDfaState::getResolvedProduction() {
 	LaDfaThread* activeThread = *m_activeThreadList.getHead();
 	LaDfaThread* completeThread = *m_completeThreadList.getHead();
 	LaDfaThread* epsilonThread = *m_epsilonThreadList.getHead();
@@ -106,8 +97,7 @@ LaDfaState::getResolvedProduction()
 }
 
 Node*
-LaDfaState::getDefaultProduction()
-{
+LaDfaState::getDefaultProduction() {
 	LaDfaThread* completeThread = *m_completeThreadList.getHead();
 	LaDfaThread* epsilonThread = *m_epsilonThreadList.getHead();
 
@@ -123,8 +113,7 @@ LaDfaBuilder::LaDfaBuilder(
 	const CmdLine* cmdLine,
 	NodeMgr* nodeMgr,
 	const sl::Array<Node*>* parseTable
-	)
-{
+) {
 	m_cmdLine = cmdLine;
 	m_nodeMgr = nodeMgr;
 	m_parseTable = parseTable;
@@ -137,8 +126,7 @@ int
 cmpResolverThreadPriority(
 	const void* p1,
 	const void* p2
-	)
-{
+) {
 	LaDfaThread* thread1 = *(LaDfaThread**) p1;
 	LaDfaThread* thread2 = *(LaDfaThread**) p2;
 
@@ -150,8 +138,7 @@ cmpResolverThreadPriority(
 }
 
 Node*
-LaDfaBuilder::build(ConflictNode* conflict)
-{
+LaDfaBuilder::build(ConflictNode* conflict) {
 	ASSERT(conflict->m_nodeKind == NodeKind_Conflict);
 
 	m_conflict = conflict;
@@ -164,8 +151,7 @@ LaDfaBuilder::build(ConflictNode* conflict)
 	state0->m_dfaNode = m_nodeMgr->createLaDfaNode();
 
 	size_t count = conflict->m_productionArray.getCount();
-	for (size_t i = 0; i < count; i++)
-	{
+	for (size_t i = 0; i < count; i++) {
 		GrammarNode* production = conflict->m_productionArray[i];
 
 		LaDfaThread* thread = state0->createThread();
@@ -179,13 +165,12 @@ LaDfaBuilder::build(ConflictNode* conflict)
 
 	LaDfaState* state1;
 	bool result = transition(&state1, state0, conflict->m_token);
-	if (!result)
-	{
+	if (!result) {
 		err::setFormatStringError(
 			"conflict at %s:%s causes depth overflow, check for left recursion",
 			conflict->m_symbol->m_name.sz(),
 			conflict->m_token->m_name.sz()
-			);
+		);
 
 		lex::pushSrcPosError(conflict->m_symbol->m_srcPos);
 		return NULL;
@@ -193,35 +178,30 @@ LaDfaBuilder::build(ConflictNode* conflict)
 
 	size_t lookahead = 1;
 
-	if (!state1->isResolved())
-	{
+	if (!state1->isResolved()) {
 		sl::Array<LaDfaState*> stateArray;
 		stateArray.append(state1);
 
-		while (!stateArray.isEmpty() && lookahead < conflict->m_symbol->m_lookaheadLimit)
-		{
+		while (!stateArray.isEmpty() && lookahead < conflict->m_symbol->m_lookaheadLimit) {
 			lookahead++;
 
 			sl::Array<LaDfaState*> nextStateArray;
 
 			size_t stateCount = stateArray.getCount();
-			for (size_t j = 0; j < stateCount; j++)
-			{
+			for (size_t j = 0; j < stateCount; j++) {
 				LaDfaState* state = stateArray[j];
 
-				for (size_t k = 0; k < tokenCount; k++)
-				{
+				for (size_t k = 0; k < tokenCount; k++) {
 					SymbolNode* token = m_nodeMgr->m_tokenArray[k];
 
 					LaDfaState* newState;
 					result = transition(&newState, state, token);
-					if (!result)
-					{
+					if (!result) {
 						err::setFormatStringError(
 							"conflict at %s:%s causes depth overflow, check for left recursion",
 							conflict->m_symbol->m_name.sz(),
 							conflict->m_token->m_name.sz()
-							);
+						);
 
 						lex::pushSrcPosError(conflict->m_symbol->m_srcPos);
 						return NULL;
@@ -235,8 +215,7 @@ LaDfaBuilder::build(ConflictNode* conflict)
 			stateArray = nextStateArray;
 		}
 
-		if (!stateArray.isEmpty())
-		{
+		if (!stateArray.isEmpty()) {
 			LaDfaState* state = stateArray[0];
 			sl::BoxList<sl::String> tokenNameList;
 
@@ -245,8 +224,7 @@ LaDfaBuilder::build(ConflictNode* conflict)
 
 			sl::String tokenSeqString;
 			sl::BoxIterator<sl::String> tokenName = tokenNameList.getHead();
-			for (; tokenName; tokenName++)
-			{
+			for (; tokenName; tokenName++) {
 				tokenSeqString.append(*tokenName);
 				tokenSeqString.append(' ');
 			}
@@ -257,7 +235,7 @@ LaDfaBuilder::build(ConflictNode* conflict)
 				conflict->m_token->m_name.sz(),
 				conflict->m_symbol->m_lookaheadLimit,
 				tokenSeqString.sz()
-				);
+			);
 
 			lex::pushSrcPosError(conflict->m_symbol->m_srcPos);
 			return NULL;
@@ -268,25 +246,22 @@ LaDfaBuilder::build(ConflictNode* conflict)
 		m_maxUsedLookahead = lookahead;
 
 	sl::Iterator<LaDfaState> it = m_stateList.getHead();
-	for (; it; it++)
-	{
+	for (; it; it++) {
 		LaDfaState* state = *it;
 
 		if (state->m_completeThreadList.getCount() > 1 ||
-			state->m_epsilonThreadList.getCount() > 1)
-		{
+			state->m_epsilonThreadList.getCount() > 1) {
 			err::setFormatStringError(
 				"conflict at %s:%s: multiple productions complete with %s",
 				conflict->m_symbol->m_name.sz(),
 				conflict->m_token->m_name.sz(),
 				state->m_token->m_name.sz()
-				);
+			);
 			lex::pushSrcPosError(conflict->m_symbol->m_srcPos);
 			return NULL;
 		}
 
-		if (!state->m_resolverThreadList.isEmpty()) // chain all resolvers
-		{
+		if (!state->m_resolverThreadList.isEmpty()) { // chain all resolvers
 			size_t count = state->m_resolverThreadList.getCount();
 
 			sl::Array<LaDfaThread*> resolverThreadArray;
@@ -298,8 +273,7 @@ LaDfaBuilder::build(ConflictNode* conflict)
 
 			qsort(resolverThreadArray, count, sizeof(LaDfaThread*), cmpResolverThreadPriority);
 
-			for (size_t i = 0; i < count; i++)
-			{
+			for (size_t i = 0; i < count; i++) {
 				LaDfaThread* resolverThread = resolverThreadArray[i];
 
 				LaDfaNode* dfaElse = m_nodeMgr->createLaDfaNode();
@@ -318,18 +292,15 @@ LaDfaBuilder::build(ConflictNode* conflict)
 
 		ASSERT(!state->m_dfaNode->m_resolver);
 
-		if (state->isResolved())
-		{
+		if (state->isResolved()) {
 			state->m_dfaNode->m_flags |= LaDfaNodeFlag_Leaf;
 			state->m_dfaNode->m_production = state->getResolvedProduction();
 
-			if (state->m_dfaNode->m_resolverUplink)
-			{
+			if (state->m_dfaNode->m_resolverUplink) {
 				LaDfaNode* uplink = state->m_dfaNode->m_resolverUplink;
 
 				if (!state->m_dfaNode->m_production ||
-					state->m_dfaNode->m_production == uplink->m_production)
-				{
+					state->m_dfaNode->m_production == uplink->m_production) {
 					// here we handle situation like
 					// 1) sym: resolver ({1}) 'a' | resolver ({2}) 'b' (we have a chain of 2 resolver with empty tail)
 					// or
@@ -344,9 +315,7 @@ LaDfaBuilder::build(ConflictNode* conflict)
 					state->m_dfaNode = uplink;
 				}
 			}
-		}
-		else
-		{
+		} else {
 			state->m_dfaNode->m_production = state->getDefaultProduction();
 		}
 	}
@@ -355,8 +324,7 @@ LaDfaBuilder::build(ConflictNode* conflict)
 		trace();
 
 	if (state1->m_resolverThreadList.isEmpty() &&
-		(state1->m_dfaNode->m_flags & LaDfaNodeFlag_Leaf))
-	{
+		(state1->m_dfaNode->m_flags & LaDfaNodeFlag_Leaf)) {
 		// can happen on active-vs-complete-vs-epsion conflicts
 
 		state0->m_dfaNode->m_flags |= LaDfaNodeFlag_Leaf; // don't index state0
@@ -367,11 +335,9 @@ LaDfaBuilder::build(ConflictNode* conflict)
 }
 
 void
-LaDfaBuilder::trace()
-{
+LaDfaBuilder::trace() {
 	sl::Iterator<LaDfaState> it = m_stateList.getHead();
-	for (; it; it++)
-	{
+	for (; it; it++) {
 		LaDfaState* state = *it;
 
 		printf(
@@ -382,12 +348,11 @@ LaDfaBuilder::trace()
 			state->m_resolverThreadList.getCount(),
 			state->m_completeThreadList.getCount(),
 			state->m_epsilonThreadList.getCount()
-			);
+		);
 
 		sl::Iterator<LaDfaThread> thread;
 
-		if (!state->m_activeThreadList.isEmpty())
-		{
+		if (!state->m_activeThreadList.isEmpty()) {
 			printf("\tACTIVE:   ");
 
 			thread = state->m_activeThreadList.getHead();
@@ -397,8 +362,7 @@ LaDfaBuilder::trace()
 			printf("\n");
 		}
 
-		if (!state->m_resolverThreadList.isEmpty())
-		{
+		if (!state->m_resolverThreadList.isEmpty()) {
 			printf("\tRESOLVER: ");
 
 			thread = state->m_resolverThreadList.getHead();
@@ -408,8 +372,7 @@ LaDfaBuilder::trace()
 			printf("\n");
 		}
 
-		if (!state->m_completeThreadList.isEmpty())
-		{
+		if (!state->m_completeThreadList.isEmpty()) {
 			printf("\tCOMPLETE: ");
 
 			thread = state->m_completeThreadList.getHead();
@@ -419,8 +382,7 @@ LaDfaBuilder::trace()
 			printf("\n");
 		}
 
-		if (!state->m_epsilonThreadList.isEmpty())
-		{
+		if (!state->m_epsilonThreadList.isEmpty()) {
 			printf("\tEPSILON: ");
 
 			thread = state->m_epsilonThreadList.getHead();
@@ -430,25 +392,22 @@ LaDfaBuilder::trace()
 			printf("\n");
 		}
 
-		if (!state->isResolved())
-		{
+		if (!state->isResolved()) {
 			size_t moveCount = state->m_transitionArray.getCount();
-			for (size_t i = 0; i < moveCount; i++)
-			{
+			for (size_t i = 0; i < moveCount; i++) {
 				LaDfaState* moveTo = state->m_transitionArray[i];
 				printf(
 					"\t%s -> %d\n",
 					moveTo->m_token->m_name.sz(),
 					moveTo->m_index
-					);
+				);
 			}
 		}
 	}
 }
 
 LaDfaState*
-LaDfaBuilder::createState()
-{
+LaDfaBuilder::createState() {
 	LaDfaState* state = AXL_MEM_NEW(LaDfaState);
 	state->m_index = m_stateList.getCount();
 	m_stateList.insertTail(state);
@@ -461,8 +420,7 @@ LaDfaBuilder::transition(
 	LaDfaState** resultState,
 	LaDfaState* state,
 	SymbolNode* token
-	)
-{
+) {
 	bool result;
 
 	LaDfaState* newState = createState();
@@ -472,8 +430,7 @@ LaDfaBuilder::transition(
 	newState->m_flags = state->m_flags & LaDfaStateFlag_EpsilonProduction; // propagate epsilon
 
 	sl::Iterator<LaDfaThread> threadIt = state->m_activeThreadList.getHead();
-	for (; threadIt; threadIt++)
-	{
+	for (; threadIt; threadIt++) {
 		LaDfaThread* newThread = newState->createThread(*threadIt);
 		result = processThread(newThread, 0);
 		if (!result)
@@ -481,16 +438,12 @@ LaDfaBuilder::transition(
 	}
 
 	threadIt = newState->m_activeThreadList.getHead();
-	while (threadIt)
-	{
+	while (threadIt) {
 		LaDfaThread* thread = *threadIt++;
 
-		if (thread->m_match == LaDfaThreadMatchKind_AnyToken && newState->isAnyTokenIgnored())
-		{
+		if (thread->m_match == LaDfaThreadMatchKind_AnyToken && newState->isAnyTokenIgnored()) {
 			newState->m_activeThreadList.erase(thread); // delete anytoken thread in favor of concrete token
-		}
-		else if (thread->m_stack.isEmpty())
-		{
+		} else if (thread->m_stack.isEmpty()) {
 			newState->m_activeThreadList.remove(thread);
 
 			if (thread->m_match)
@@ -500,8 +453,7 @@ LaDfaBuilder::transition(
 		}
 	}
 
-	if (newState->isEmpty())
-	{
+	if (newState->isEmpty()) {
 		m_stateList.erase(newState);
 		*resultState = NULL;
 		return true;
@@ -522,8 +474,7 @@ bool
 LaDfaBuilder::processThread(
 	LaDfaThread* thread,
 	size_t depth
-	)
-{
+) {
 	if (depth > m_cmdLine->m_conflictDepthLimit)
 		return false;
 
@@ -532,8 +483,7 @@ LaDfaBuilder::processThread(
 	thread->m_match = LaDfaThreadMatchKind_None;
 
 	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount();
-	for (;;)
-	{
+	for (;;) {
 		if (thread->m_stack.isEmpty())
 			break;
 
@@ -544,23 +494,20 @@ LaDfaBuilder::processThread(
 		SequenceNode* sequence;
 		size_t childrenCount;
 
-		switch (node->m_nodeKind)
-		{
+		switch (node->m_nodeKind) {
 		case NodeKind_Token:
 			if (thread->m_match)
 				return true;
 
 			ASSERT(node->m_masterIndex);
 
-			if ((node->m_flags & SymbolNodeFlag_AnyToken) && token->m_masterIndex != 0) // EOF does not match ANY
-			{
+			if ((node->m_flags & SymbolNodeFlag_AnyToken) && token->m_masterIndex != 0) { // EOF does not match ANY
 				thread->m_stack.pop();
 				thread->m_match = LaDfaThreadMatchKind_AnyToken;
 				break;
 			}
 
-			if (node != token) // could happen after epsilon production
-			{
+			if (node != token) { // could happen after epsilon production
 				thread->m_state->m_activeThreadList.erase(thread);
 				return true;
 			}
@@ -575,8 +522,7 @@ LaDfaBuilder::processThread(
 				return true;
 
 			production = (*m_parseTable)[node->m_index * tokenCount + token->m_index];
-			if (!production)  // could happen after epsilon production
-			{
+			if (!production) { // could happen after epsilon production
 				thread->m_state->m_activeThreadList.erase(thread);
 				return true;
 			}
@@ -584,15 +530,14 @@ LaDfaBuilder::processThread(
 			// ok this thread seems to stay active, let's check if we can eliminate it with resolver
 
 			symbol = (SymbolNode*)node;
-			if (symbol->m_resolver && thread->m_state->m_lookahead == 1) // only use resolvers at the first step
-			{
+			if (symbol->m_resolver && thread->m_state->m_lookahead == 1) { // only use resolvers at the first step
 				if (m_cmdLine->m_flags & CmdLineFlag_Verbose)
 					printf(
 						"  RESOLVER of %s is used for conflict at %s:%s\n",
 						symbol->m_name.sz(),
 						m_conflict->m_symbol->m_name.sz(),
 						m_conflict->m_token->m_name.sz()
-						);
+					);
 
 				symbol->m_flags |= SymbolNodeFlag_ResolverUsed;
 				thread->m_resolver = symbol->m_resolver;
@@ -619,8 +564,7 @@ LaDfaBuilder::processThread(
 
 			sequence = (SequenceNode*)node;
 			childrenCount = sequence->m_sequence.getCount();
-			for (intptr_t i = childrenCount - 1; i >= 0; i--)
-			{
+			for (intptr_t i = childrenCount - 1; i >= 0; i--) {
 				Node* child = sequence->m_sequence[i];
 				thread->m_stack.append(child);
 			}
@@ -643,8 +587,7 @@ LaDfaBuilder::processThread(
 			conflict = (ConflictNode*)node;
 			childrenCount = conflict->m_productionArray.getCount();
 			depth++;
-			for (size_t i = 0; i < childrenCount; i++)
-			{
+			for (size_t i = 0; i < childrenCount; i++) {
 				Node* child = conflict->m_productionArray[i];
 				LaDfaThread* newThread = thread->m_state->createThread(thread);
 

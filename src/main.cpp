@@ -17,8 +17,7 @@
 
 //..............................................................................
 
-enum ErrorCode
-{
+enum ErrorCode {
 	ErrorCode_Success         =  0,
 	ErrorCode_InvalidCmdLine  = -1,
 	ErrorCode_ParseFailure    = -2,
@@ -29,8 +28,7 @@ enum ErrorCode
 //..............................................................................
 
 void
-printVersion()
-{
+printVersion() {
 	printf(
 		"Graco Grammar Compiler v%d.%d.%d (%s%s)\n",
 		VERSION_MAJOR,
@@ -38,12 +36,11 @@ printVersion()
 		VERSION_REVISION,
 		AXL_CPU_STRING,
 		AXL_DEBUG_SUFFIX
-		);
+	);
 }
 
 void
-printUsage()
-{
+printUsage() {
 	printVersion();
 
 	sl::String helpString = CmdLineSwitchTable::getHelpString();
@@ -57,13 +54,13 @@ int
 wmain(
 	int argc,
 	wchar_t* argv[]
-	)
+)
 #else
 int
 main(
 	int argc,
 	char* argv[]
-	)
+)
 #endif
 {
 	bool result;
@@ -77,20 +74,18 @@ main(
 	if (!result)
 		return ErrorCode_InvalidCmdLine;
 
-	if (cmdLine.m_inputFileName.isEmpty())
-	{
+	if (cmdLine.m_inputFileName.isEmpty()) {
 		printUsage();
 		return ErrorCode_Success;
 	}
 
 	sl::String srcFilePath = io::getFullFilePath(cmdLine.m_inputFileName);
-	if (srcFilePath.isEmpty())
-	{
+	if (srcFilePath.isEmpty()) {
 		printf(
 			"Cannot get full file path of '%s': %s\n",
 			cmdLine.m_inputFileName.sz(),
 			err::getLastErrorDescription().sz()
-			);
+		);
 		return ErrorCode_ParseFailure;
 	}
 
@@ -101,27 +96,23 @@ main(
 	Module module;
 	Parser parser(&cmdLine, &module);
 	result = parser.parseFile(srcFilePath);
-	if (!result)
-	{
+	if (!result) {
 		printf("%s\n", err::getLastErrorDescription().sz());
 		return ErrorCode_ParseFailure;
 	}
 
-	if (!module.m_importList.isEmpty())
-	{
+	if (!module.m_importList.isEmpty()) {
 		sl::StringHashTable<bool> filePathSet;
 		filePathSet.visit(srcFilePath);
 
 		sl::BoxIterator<sl::String> import = module.m_importList.getHead();
-		for (; import; import++)
-		{
+		for (; import; import++) {
 			sl::String importFilePath = *import;
 			if (filePathSet.find(importFilePath))
 				continue;
 
 			result = parser.parseFile(importFilePath);
-			if (!result)
-			{
+			if (!result) {
 				printf("%s\n", err::getLastErrorDescription().sz());
 				return ErrorCode_ParseFailure;
 			}
@@ -130,8 +121,7 @@ main(
 		}
 	}
 
-	if (!cmdLine.m_bnfFileName.isEmpty())
-	{
+	if (!cmdLine.m_bnfFileName.isEmpty()) {
 		result = module.writeBnfFile(
 			cmdLine.m_bnfFileName,
 			(cmdLine.m_flags & CmdLineFlag_GracoBnf) ?
@@ -139,16 +129,14 @@ main(
 				BnfDialect_Classic
 			);
 
-		if (!result)
-		{
+		if (!result) {
 			printf("%s\n", err::getLastErrorDescription().sz());
 			return ErrorCode_BuildFailure;
 		}
 	}
 
 	result = module.build(&cmdLine);
-	if (!result)
-	{
+	if (!result) {
 		printf("%s\n", err::getLastErrorDescription().sz());
 		return ErrorCode_BuildFailure;
 	}
@@ -163,11 +151,9 @@ main(
 	sl::BoxIterator<sl::String> outputFileNameIt = cmdLine.m_outputFileNameList.getHead();
 	sl::BoxIterator<sl::String> frameFileNameIt = cmdLine.m_frameFileNameList.getHead();
 
-	for (; outputFileNameIt && frameFileNameIt; outputFileNameIt++, frameFileNameIt++)
-	{
+	for (; outputFileNameIt && frameFileNameIt; outputFileNameIt++, frameFileNameIt++) {
 		result = generator.generate(*outputFileNameIt, *frameFileNameIt);
-		if (!result)
-		{
+		if (!result) {
 			printf("%s\n", err::getLastErrorDescription().sz());
 			return ErrorCode_GenerateFailure;
 		}

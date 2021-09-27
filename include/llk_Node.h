@@ -21,8 +21,7 @@ namespace llk {
 
 //..............................................................................
 
-enum NodeKind
-{
+enum NodeKind {
 	NodeKind_Undefined = 0,
 	NodeKind_Token,
 	NodeKind_Symbol,
@@ -38,10 +37,8 @@ enum NodeKind
 
 inline
 const char*
-getNodeKindString(NodeKind nodeKind)
-{
-	static const char* stringTable[NodeKind__Count] =
-	{
+getNodeKindString(NodeKind nodeKind) {
+	static const char* stringTable[NodeKind__Count] = {
 		"undefined-node-kind", // NodeKind_Undefined
 		"token-node",          // NodeKind_Token,
 		"symbol-node",         // NodeKind_Symbol,
@@ -58,35 +55,29 @@ getNodeKindString(NodeKind nodeKind)
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-enum NodeFlag
-{
+enum NodeFlag {
 	NodeFlag_Locator = 0x0001, // used to locate token/value from actions (applies to token & symbol nodes)
 	NodeFlag_Matched = 0x0002, // applies to token & symbol & argument nodes
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-struct Node: axl::sl::ListLink
-{
+struct Node: axl::sl::ListLink {
 	NodeKind m_nodeKind;
 	uint_t m_flags;
 	size_t m_index;
 
-	Node()
-	{
+	Node() {
 		m_nodeKind = NodeKind_Undefined;
 		m_flags = 0;
 		m_index = -1;
 	}
 
 	virtual
-	~Node()
-	{
-	}
+	~Node() {}
 
 	const char*
-	getNodeKindString()
-	{
+	getNodeKindString() {
 		return llk::getNodeKindString(m_nodeKind);
 	}
 };
@@ -94,42 +85,35 @@ struct Node: axl::sl::ListLink
 //..............................................................................
 
 template <class Token>
-struct TokenNode: Node
-{
+struct TokenNode: Node {
 	Token m_token;
 
-	TokenNode()
-	{
+	TokenNode() {
 		m_nodeKind = NodeKind_Token;
 	}
 };
 
 //..............................................................................
 
-enum SymbolNodeFlag
-{
+enum SymbolNodeFlag {
 	SymbolNodeFlag_Stacked = 0x0010,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-struct SymbolNodeValue
-{
+struct SymbolNodeValue {
 	axl::lex::LineCol m_firstTokenPos;
 	axl::lex::LineCol m_lastTokenPos;
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-struct SymbolNode: Node
-{
+struct SymbolNode: Node {
 	axl::sl::List<Node> m_locatorList;
 	axl::sl::Array<Node*> m_locatorArray;
 
-	union
-	{
-		struct
-		{
+	union {
+		struct {
 			size_t m_enterIndex;
 			size_t m_leaveIndex;
 		};
@@ -137,16 +121,14 @@ struct SymbolNode: Node
 		size_t m_catchSymbolCount;
 	};
 
-	SymbolNode()
-	{
+	SymbolNode() {
 		m_nodeKind = NodeKind_Symbol;
 		m_enterIndex = -1;
 		m_leaveIndex = -1;
 	}
 
 	SymbolNodeValue*
-	getValue()
-	{
+	getValue() {
 		return (SymbolNodeValue*)(this + 1);
 	}
 };
@@ -154,12 +136,10 @@ struct SymbolNode: Node
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 template <typename Value>
-struct SymbolNodeImpl: SymbolNode
-{
+struct SymbolNodeImpl: SymbolNode {
 	Value m_value;
 
-	SymbolNodeImpl()
-	{
+	SymbolNodeImpl() {
 		ASSERT(getValue() == &m_value);
 	}
 };
@@ -170,8 +150,7 @@ typedef SymbolNodeImpl<SymbolNodeValue> StdSymbolNode;
 
 //..............................................................................
 
-enum LaDfaNodeFlag
-{
+enum LaDfaNodeFlag {
 	LaDfaNodeFlag_PreResolver        = 0x0010,
 	LaDfaNodeFlag_HasChainedResolver = 0x0020,
 };
@@ -179,15 +158,13 @@ enum LaDfaNodeFlag
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 template <class Token>
-struct LaDfaNode: Node
-{
+struct LaDfaNode: Node {
 	size_t m_resolverThenIndex;
 	size_t m_resolverElseIndex;
 	axl::sl::BoxIterator<Token> m_reparseLaDfaTokenCursor;
 	axl::sl::BoxIterator<Token> m_reparseResolverTokenCursor;
 
-	LaDfaNode()
-	{
+	LaDfaNode() {
 		m_nodeKind = NodeKind_LaDfa;
 		m_resolverThenIndex = -1;
 		m_resolverElseIndex = -1;
@@ -197,11 +174,9 @@ struct LaDfaNode: Node
 //..............................................................................
 
 template <typename Parser>
-class NodeAllocator: public axl::rc::RefCount
-{
+class NodeAllocator: public axl::rc::RefCount {
 public:
-	enum
-	{
+	enum {
 		MaxNodeSize = Parser::MaxNodeSize,
 	};
 
@@ -211,8 +186,7 @@ protected:
 public:
 	template <typename T>
 	T*
-	allocate()
-	{
+	allocate() {
 		ASSERT(sizeof(T) <= MaxNodeSize);
 
 		Node* node = !m_freeList.isEmpty() ?
@@ -223,8 +197,7 @@ public:
 	}
 
 	void
-	free(Node* node)
-	{
+	free(Node* node) {
 		node->~Node();
 		m_freeList.insertHead(node);
 	}
@@ -234,8 +207,7 @@ public:
 
 template <typename Parser>
 NodeAllocator<Parser>*
-createCurrentThreadNodeAllocator()
-{
+createCurrentThreadNodeAllocator() {
 	axl::rc::Ptr<NodeAllocator<Parser> > allocator = AXL_RC_NEW(NodeAllocator<Parser>);
 	axl::sys::setTlsPtrSlotValue<NodeAllocator<Parser> >(allocator);
 	return allocator;
@@ -243,8 +215,7 @@ createCurrentThreadNodeAllocator()
 
 template <typename Parser>
 NodeAllocator<Parser>*
-getCurrentThreadNodeAllocator()
-{
+getCurrentThreadNodeAllocator() {
 	NodeAllocator<Parser>* allocator = axl::sys::getTlsPtrSlotValue<NodeAllocator<Parser> >();
 	return allocator ? allocator : createCurrentThreadNodeAllocator<Parser>();
 }
@@ -254,22 +225,19 @@ getCurrentThreadNodeAllocator()
 template <
 	typename Parser,
 	typename T
-	>
+>
 T*
-allocateNode()
-{
+allocateNode() {
 	return getCurrentThreadNodeAllocator<Parser>()->template allocate<T>();
 }
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 template <typename Parser>
-class DeleteNode
-{
+class DeleteNode {
 public:
 	void
-	operator () (Node* node)
-	{
+	operator () (Node* node) {
 		getCurrentThreadNodeAllocator<Parser>()->free(node);
 	}
 };

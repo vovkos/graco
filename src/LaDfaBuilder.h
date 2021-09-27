@@ -18,8 +18,7 @@ class LaDfaState;
 
 //..............................................................................
 
-enum LaDfaThreadMatchKind
-{
+enum LaDfaThreadMatchKind {
 	LaDfaThreadMatchKind_None,
 	LaDfaThreadMatchKind_Token,
 	LaDfaThreadMatchKind_AnyToken,
@@ -27,8 +26,7 @@ enum LaDfaThreadMatchKind
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class LaDfaThread: public sl::ListLink
-{
+class LaDfaThread: public sl::ListLink {
 public:
 	LaDfaThreadMatchKind m_match;
 	LaDfaState* m_state;
@@ -43,16 +41,14 @@ public:
 
 //..............................................................................
 
-enum LaDfaStateFlag
-{
+enum LaDfaStateFlag {
 	LaDfaStateFlag_TokenMatch        = 1,
 	LaDfaStateFlag_EpsilonProduction = 2,
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class LaDfaState: public sl::ListLink
-{
+class LaDfaState: public sl::ListLink {
 public:
 	size_t m_index;
 	size_t m_lookahead;
@@ -72,20 +68,17 @@ public:
 	LaDfaState();
 
 	bool
-	isResolved()
-	{
+	isResolved() {
 		return (m_dfaNode->m_flags & LaDfaNodeFlag_Resolved) != 0;
 	}
 
 	bool
-	isAnyTokenIgnored()
-	{
+	isAnyTokenIgnored() {
 		return (m_flags & LaDfaStateFlag_TokenMatch) || (m_flags & LaDfaStateFlag_EpsilonProduction);
 	}
 
 	bool
-	isEmpty()
-	{
+	isEmpty() {
 		return
 			m_activeThreadList.isEmpty() &&
 			m_resolverThreadList.isEmpty() &&
@@ -108,8 +101,7 @@ public:
 
 //..............................................................................
 
-class LaDfaBuilder
-{
+class LaDfaBuilder {
 protected:
 	const CmdLine* m_cmdLine;
 	NodeMgr* m_nodeMgr;
@@ -123,7 +115,7 @@ public:
 		const CmdLine* cmdLine,
 		NodeMgr* nodeMgr,
 		const sl::Array<Node*>* parseTable
-		);
+	);
 
 	Node*
 	build(ConflictNode* conflict); // returns DFA or immediate production
@@ -132,8 +124,7 @@ public:
 	trace();
 
 	size_t
-	getMaxUsedLookahead()
-	{
+	getMaxUsedLookahead() {
 		return m_maxUsedLookahead;
 	}
 
@@ -146,13 +137,13 @@ protected:
 		LaDfaState** resultState,
 		LaDfaState* state,
 		SymbolNode* token
-		);
+	);
 
 	bool
 	processThread(
 		LaDfaThread* thread,
 		size_t depth
-		);
+	);
 };
 
 //..............................................................................

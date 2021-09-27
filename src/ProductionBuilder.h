@@ -20,11 +20,9 @@
 // removes unnecessary locators,
 // assigns slot indexes
 
-class ProductionBuilder: public Lexer
-{
+class ProductionBuilder: public Lexer {
 protected:
-	enum VariableKind
-	{
+	enum VariableKind {
 		VariableKind_Undefined = 0,
 		VariableKind_TokenBeacon,
 		VariableKind_SymbolBeacon,
@@ -51,13 +49,13 @@ public:
 	build(
 		SymbolNode* symbol,
 		GrammarNode* production
-		);
+	);
 
 	bool
 	build(
 		SymbolNode* symbol,
 		GrammarNode** production
-		);
+	);
 
 protected:
 	bool
@@ -76,19 +74,19 @@ protected:
 	processUserCode(
 		lex::SrcPos& srcPos,
 		sl::String* userCode
-		);
+	);
 
 	VariableKind
 	findVariable(
 		int index,
 		BeaconNode** beacon
-		);
+	);
 
 	VariableKind
 	findVariable(
 		const sl::StringRef& name,
 		BeaconNode** beacon
-		);
+	);
 };
 
 //..............................................................................

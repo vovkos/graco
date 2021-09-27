@@ -9,17 +9,14 @@
 //
 //..............................................................................
 
-struct
-{
+struct {
 	TypeSpecifier m_typeSpecifier;
 }
 declaration_specifier_list
-	enter
-	{
+	enter {
 		pushTypeSpecifier(&$.m_typeSpecifier);
 	}
-	leave
-	{
+	leave {
 		popTypeSpecifier(&$.m_typeSpecifier);
 	}
 	:	declaration_specifier<&$.m_typeSpecifier>+
@@ -46,17 +43,14 @@ declaration_specifier<TypeSpecifier* $typeSpecifier>
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-struct
-{
+struct {
 	TypeSpecifier m_typeSpecifier;
 }
 type_specifier_modifier_list
-	enter
-	{
+	enter {
 		pushTypeSpecifier(&$.m_typeSpecifier);
 	}
-	leave
-	{
+	leave {
 		popTypeSpecifier(&$.m_typeSpecifier);
 	}
 	: type_specifier_modifier<&$.m_typeSpecifier>+
@@ -75,8 +69,7 @@ type_specifier_modifier<TypeSpecifier* $typeSpecifier>
 
 //..............................................................................
 
-struct
-{
+struct {
 	StorageKind m_storageKind;
 }
 storage_specifier
@@ -120,8 +113,7 @@ storage_specifier
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-struct
-{
+struct {
 	AccessKind m_accessKind;
 }
 access_specifier
@@ -137,8 +129,7 @@ access_specifier
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-struct
-{
+struct {
 	Type* m_type;
 }
 type_specifier
@@ -200,8 +191,7 @@ type_specifier
 			}
 	;
 
-struct
-{
+struct {
 	size_t m_baseTypeIdx;
 	QualifiedName m_name;
 }
@@ -223,8 +213,7 @@ basetype_qualified_name
 // the main conflict of C-family: expression vs declaration
 
 qualified_type_name_rslv
-	enter
-	{
+	enter {
 		if (isTypeSpecified())
 			return false;
 	}
@@ -245,8 +234,7 @@ qualified_type_name_rslv
 		)?
 	;
 
-struct
-{
+struct {
 	Type* m_type;
 }
 resolver(qualified_type_name_rslv)
@@ -263,13 +251,11 @@ qualified_type_name
 			}
 	;
 
-struct
-{
+struct {
 	PropertyType* m_type;
 }
 property_template_specifier
-	local
-	{
+	local {
 		PropertyTemplate* $propertyTemplate;
 	}
 	:	TokenKind_Property
@@ -287,8 +273,7 @@ property_template_specifier
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-struct
-{
+struct {
 	TypeModifier m_typeModifier;
 }
 type_modifier

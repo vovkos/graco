@@ -30,9 +30,8 @@ namespace llk {
 template <
 	typename T,
 	typename Token0
-	>
-class Parser
-{
+>
+class Parser {
 public:
 	typedef Token0 Token;
 	typedef typename Token::TokenKind TokenKind;
@@ -42,8 +41,7 @@ public:
 	typedef llk::LaDfaNode<Token> LaDfaNode;
 
 protected:
-	enum Flag
-	{
+	enum Flag {
 		Flag_TokenMatch      = 0x0001,
 		Flag_Synchronize     = 0x0010,
 		Flag_PostSynchronize = 0x0020,
@@ -52,36 +50,31 @@ protected:
 #endif
 	};
 
-	enum ErrorKind
-	{
+	enum ErrorKind {
 		ErrorKind_Syntax,
 		ErrorKind_Semantic,
 	};
 
-	enum RecoverAction
-	{
+	enum RecoverAction {
 		RecoverAction_Fail,
 		RecoverAction_Synchronize,
 		RecoverAction_Continue,
 	};
 
-	enum MatchResult
-	{
+	enum MatchResult {
 		MatchResult_Fail,
 		MatchResult_NextToken,
 		MatchResult_NextTokenNoAdvance,
 		MatchResult_Continue,
 	};
 
-	enum LaDfaResult
-	{
+	enum LaDfaResult {
 		LaDfaResult_Fail,
 		LaDfaResult_Production,
 		LaDfaResult_Resolver,
 	};
 
-	struct LaDfaTransition
-	{
+	struct LaDfaTransition {
 		uint_t m_flags;
 		size_t m_productionIndex;
 		size_t m_resolverIndex;
@@ -105,8 +98,7 @@ protected:
 	uint_t m_flags;
 
 public:
-	Parser()
-	{
+	Parser() {
 		m_flags = 0;
 	}
 
@@ -114,16 +106,14 @@ public:
 	create(
 		const axl::sl::StringRef& fileName,
 		int symbol = T::StartSymbol
-		)
-	{
+	) {
 		clear();
 		m_fileName = fileName;
 		return (SymbolNode*)pushPrediction(T::SymbolFirst + symbol);
 	}
 
 	void
-	clear()
-	{
+	clear() {
 		m_fileName.clear();
 		m_nodeList.clear();
 		m_predictionStack.clear();
@@ -136,19 +126,16 @@ public:
 
 #if (_LLK_RANDOM_ERRORS)
 	void
-	disableRandomErrors()
-	{
+	disableRandomErrors() {
 		m_flags |= Flag_NoRandomErrors;
 	}
 #endif
 
 	bool
-	parseToken(const Token* token)
-	{
+	parseToken(const Token* token) {
 		bool result;
 
-		if (m_flags & Flag_Synchronize)
-		{
+		if (m_flags & Flag_Synchronize) {
 			MatchResult matchResult = synchronize(token);
 			if (matchResult == MatchResult_NextToken)
 				return true;
@@ -165,8 +152,7 @@ public:
 
 		// first check for pragma productions out of band
 
-		if (T::PragmaStartSymbol != -1)
-		{
+		if (T::PragmaStartSymbol != -1) {
 			size_t productionIndex = parseTable[T::PragmaStartSymbol * T::TokenCount + tokenIndex];
 			if (productionIndex != -1 && productionIndex != 0)
 				pushPrediction(productionIndex);
@@ -174,13 +160,10 @@ public:
 
 		m_flags &= ~Flag_TokenMatch;
 
-		for (;;)
-		{
-			if (m_flags & Flag_Synchronize)
-			{
+		for (;;) {
+			if (m_flags & Flag_Synchronize) {
 				MatchResult matchResult = synchronize(&m_currentToken);
-				switch (matchResult)
-				{
+				switch (matchResult) {
 				case MatchResult_Continue:
 					break;
 
@@ -206,14 +189,10 @@ public:
 			MatchResult matchResult;
 
 			Node* node = getPredictionTop();
-			if (!node)
-			{
+			if (!node) {
 				matchResult = matchEmptyPredictionStack();
-			}
-			else
-			{
-				switch (node->m_nodeKind)
-				{
+			} else {
+				switch (node->m_nodeKind) {
 				case NodeKind_Token:
 					matchResult = matchTokenNode((TokenNode*)node, tokenIndex);
 					break;
@@ -247,8 +226,7 @@ public:
 
 			m_flags &= ~Flag_PostSynchronize;
 
-			if (matchResult == MatchResult_Fail)
-			{
+			if (matchResult == MatchResult_Fail) {
 				if (m_resolverStack.isEmpty())
 					return false;
 
@@ -256,8 +234,7 @@ public:
 				ASSERT(matchResult != MatchResult_Fail); // failed resolver means there is another possibility!
 			}
 
-			switch (matchResult)
-			{
+			switch (matchResult) {
 			case MatchResult_Continue:
 				break;
 
@@ -284,13 +261,11 @@ public:
 	// debug
 
 	void
-	traceSymbolStack()
-	{
+	traceSymbolStack() {
 		intptr_t count = m_symbolStack.getCount();
 		TRACE("SYMBOL STACK (%d symbols):\n", count);
 
-		for (intptr_t i = count - 1; i >= 0; i--)
-		{
+		for (intptr_t i = count - 1; i >= 0; i--) {
 			SymbolNode* node = m_symbolStack[i];
 			SymbolNodeValue* value = node->getValue();
 			TRACE("%p %s", node, static_cast<T*>(this)->getSymbolName(node->m_index));
@@ -300,13 +275,11 @@ public:
 	}
 
 	void
-	tracePredictionStack()
-	{
+	tracePredictionStack() {
 		intptr_t count = m_predictionStack.getCount();
 		TRACE("PREDICTION STACK (%d nodes):\n", count);
 
-		for (intptr_t i = count - 1; i >= 0; i--)
-		{
+		for (intptr_t i = count - 1; i >= 0; i--) {
 			Node* node = m_predictionStack[i];
 
 			const char* extra = node->m_nodeKind == NodeKind_Symbol ?
@@ -318,13 +291,11 @@ public:
 	}
 
 	void
-	traceTokenList()
-	{
+	traceTokenList() {
 		axl::sl::BoxIterator<Token> token = m_tokenList.getHead();
 
 		TRACE("TOKEN LIST (%d tokens):\n", m_tokenList.getCount());
-		for (; token; token++)
-		{
+		for (; token; token++) {
 			TRACE("%s '%s' %s\n", token->getName(), token->getText(), token == m_tokenCursor ? "<--" : "");
 		}
 	}
@@ -332,32 +303,27 @@ public:
 	// public info
 
 	const Token&
-	getLastMatchedToken()
-	{
+	getLastMatchedToken() {
 		return m_lastMatchedToken;
 	}
 
 	const Token&
-	getCurrentToken()
-	{
+	getCurrentToken() {
 		return m_currentToken;
 	}
 
 	Node*
-	getPredictionTop()
-	{
+	getPredictionTop() {
 		return !m_predictionStack.isEmpty() ? m_predictionStack.getBack() : NULL;
 	}
 
 	SymbolNode*
-	getSymbolTop()
-	{
+	getSymbolTop() {
 		return !m_symbolStack.isEmpty() ? m_symbolStack.getBack() : NULL;
 	}
 
 	SymbolNode*
-	getCatchTop()
-	{
+	getCatchTop() {
 		return !m_catchStack.isEmpty() ? m_catchStack.getBack() : NULL;
 	}
 
@@ -365,8 +331,7 @@ protected:
 	// default recover action: fail on semantic error, synchronize on syntax error
 
 	RecoverAction
-	processError(ErrorKind errorKind)
-	{
+	processError(ErrorKind errorKind) {
 		if (errorKind != ErrorKind_Syntax)
 			return RecoverAction_Fail;
 
@@ -375,40 +340,32 @@ protected:
 	}
 
 	void
-	onSynchronizeSkipToken(const Token* token)
-	{
-	}
+	onSynchronizeSkipToken(const Token* token) {}
 
 	void
-	onSynchronized(const Token* token)
-	{
-	}
+	onSynchronized(const Token* token) {}
 
 	bool
-	isNamedSymbol(const SymbolNode* symbol)
-	{
+	isNamedSymbol(const SymbolNode* symbol) {
 		return symbol->m_index < T::NamedSymbolCount;
 	}
 
 	bool
-	isCatchSymbol(const SymbolNode* symbol)
-	{
+	isCatchSymbol(const SymbolNode* symbol) {
 		return
 			symbol->m_index >= T::NamedSymbolCount &&
 			symbol->m_index < T::NamedSymbolCount + T::CatchSymbolCount;
 	}
 
 	RecoverAction
-	recover(ErrorKind errorKind)
-	{
-		if (errorKind == ErrorKind_Syntax && (m_flags & Flag_PostSynchronize))
-		{
+	recover(ErrorKind errorKind) {
+		if (errorKind == ErrorKind_Syntax && (m_flags & Flag_PostSynchronize)) {
 			// synchronizer token must match (otherwise, it's a bad choice of sync tokens)
 
 			axl::err::setFormatStringError(
 				"synchronizer token '%s' didn't match (adjust the 'catch' clause in the grammar)",
 				m_currentToken.getName()
-				);
+			);
 
 			axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
 			return RecoverAction_Fail;
@@ -424,16 +381,14 @@ protected:
 		m_syncTokenSet.clear();
 
 		size_t count = m_catchStack.getCount();
-		for (intptr_t i = count - 1; i >= 0; i--)
-		{
+		for (intptr_t i = count - 1; i >= 0; i--) {
 			SymbolNode* node = m_catchStack[i];
 			int const* p = static_cast<T*>(this)->getSyncTokenSet(node->m_index);
 			for (; *p != -1; p++)
 				m_syncTokenSet.addIfNotExists(*p, i);
 		}
 
-		if (m_syncTokenSet.isEmpty())
-		{
+		if (m_syncTokenSet.isEmpty()) {
 			axl::err::setError("unable to recover from previous error(s)");
 			axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
 			return RecoverAction_Fail;
@@ -449,13 +404,11 @@ protected:
 	}
 
 	MatchResult
-	synchronize(const Token* token)
-	{
+	synchronize(const Token* token) {
 		ASSERT((m_flags & Flag_Synchronize) && !m_syncTokenSet.isEmpty());
 
 		size_t i = m_syncTokenSet.findValue(token->m_token, -1);
-		if (i == -1)
-		{
+		if (i == -1) {
 			static_cast<T*>(this)->onSynchronizeSkipToken(token);
 			return MatchResult_NextToken;
 		}
@@ -470,12 +423,10 @@ protected:
 		// call leave() on symbols above the catcher
 
 		size_t k = m_symbolStack.getCount() - 1;
-		for (; k >= catcher->m_catchSymbolCount; k--)
-		{
+		for (; k >= catcher->m_catchSymbolCount; k--) {
 			SymbolNode* symbol = m_symbolStack[k];
 			ASSERT(symbol->m_flags & SymbolNodeFlag_Stacked);
-			if (symbol->m_leaveIndex != -1)
-			{
+			if (symbol->m_leaveIndex != -1) {
 				m_symbolStack.setCount(k + 1); // leave() uses the top of the stack
 				static_cast<T*>(this)->leave(symbol->m_leaveIndex); // ignore result
 			}
@@ -486,8 +437,7 @@ protected:
 		// pop everything above the catcher off prediction stack
 
 		intptr_t j = m_predictionStack.getCount() - 1;
-		for (; j >= 0; j--)
-		{
+		for (; j >= 0; j--) {
 			Node* node = m_predictionStack[j];
 			if (node == catcher)
 				break;
@@ -497,8 +447,7 @@ protected:
 		}
 
 		bool isEof = token->m_token == T::EofToken;
-		if (!isEof)
-		{
+		if (!isEof) {
 			j++; // keep the catcher on prediction stack (otherwise, pop the eof-catcher)
 			m_flags |= Flag_PostSynchronize; // synchronizer token *must* match
 		}
@@ -511,8 +460,7 @@ protected:
 
 #if (_LLK_RANDOM_ERRORS)
 	bool
-	isRandomError(const char* description)
-	{
+	isRandomError(const char* description) {
 		if ((m_flags & Flag_NoRandomErrors) ||
 			m_resolverStack.isEmpty() ||
 			rand() % _LLK_RANDOM_ERRORS_PROBABILITY)
@@ -525,13 +473,11 @@ protected:
 #endif
 
 	bool
-	advanceTokenCursor()
-	{
+	advanceTokenCursor() {
 		m_tokenCursor++;
 
 		Node* node = getPredictionTop();
-		if (m_resolverStack.isEmpty() && (!node || node->m_nodeKind != NodeKind_LaDfa))
-		{
+		if (m_resolverStack.isEmpty() && (!node || node->m_nodeKind != NodeKind_LaDfa)) {
 			m_tokenList.removeHead(); // nobody gonna reparse this token
 			ASSERT(m_tokenCursor == m_tokenList.getHead());
 		}
@@ -545,8 +491,7 @@ protected:
 	// match against different kinds of nodes on top of prediction stack
 
 	MatchResult
-	matchEmptyPredictionStack()
-	{
+	matchEmptyPredictionStack() {
 		if ((m_flags & Flag_TokenMatch) || m_currentToken.m_token == T::EofToken)
 			return MatchResult_NextToken;
 
@@ -558,8 +503,7 @@ protected:
 	matchTokenNode(
 		TokenNode* node,
 		size_t tokenIndex
-		)
-	{
+	) {
 		if (m_flags & Flag_TokenMatch)
 			return MatchResult_NextToken;
 
@@ -568,8 +512,7 @@ protected:
 			return recover(ErrorKind_Syntax) ? MatchResult_Continue : MatchResult_Fail;
 #endif
 
-		if (node->m_index != T::AnyToken && node->m_index != tokenIndex)
-		{
+		if (node->m_index != T::AnyToken && node->m_index != tokenIndex) {
 			if (!m_resolverStack.isEmpty())
 				return MatchResult_Fail; // rollback resolver
 
@@ -578,8 +521,7 @@ protected:
 			return recover(ErrorKind_Syntax) ? MatchResult_Continue : MatchResult_Fail;
 		}
 
-		if (node->m_flags & NodeFlag_Locator)
-		{
+		if (node->m_flags & NodeFlag_Locator) {
 			node->m_token = m_currentToken;
 			node->m_flags |= NodeFlag_Matched;
 		}
@@ -596,14 +538,11 @@ protected:
 		SymbolNode* node,
 		const size_t* parseTable,
 		size_t tokenIndex
-		)
-	{
+	) {
 		bool result;
 
-		if (node->m_flags & SymbolNodeFlag_Stacked)
-		{
-			if (isCatchSymbol(node))
-			{
+		if (node->m_flags & SymbolNodeFlag_Stacked) {
+			if (isCatchSymbol(node)) {
 				popCatch();
 				popPrediction();
 				return MatchResult_Continue;
@@ -613,8 +552,7 @@ protected:
 			node->getValue()->m_lastTokenPos = m_lastMatchedToken.m_pos;
 			node->m_flags |= NodeFlag_Matched;
 
-			if (node->m_leaveIndex != -1)
-			{
+			if (node->m_leaveIndex != -1) {
 				result = static_cast<T*>(this)->leave(node->m_leaveIndex);
 
 #if (_LLK_RANDOM_SEMANTIC_ERRORS)
@@ -622,8 +560,7 @@ protected:
 					result = false;
 #endif
 
-				if (!result)
-				{
+				if (!result) {
 					if (!m_resolverStack.isEmpty())
 						return MatchResult_Fail; // rollback resolver
 
@@ -643,19 +580,16 @@ protected:
 		if (m_flags & Flag_TokenMatch)
 			return MatchResult_NextToken;
 
-		if (node->m_index < T::NamedSymbolCount)
-		{
+		if (node->m_index < T::NamedSymbolCount) {
 			Node* argument = getArgument();
-			if (argument)
-			{
+			if (argument) {
 				static_cast<T*>(this)->argument(argument->m_index, node);
 				argument->m_flags |= NodeFlag_Matched;
 			}
 
 			pushSymbol(node);
 
-			if (node->m_enterIndex != -1)
-			{
+			if (node->m_enterIndex != -1) {
 				result = static_cast<T*>(this)->enter(node->m_enterIndex);
 
 #if (_LLK_RANDOM_SEMANTIC_ERRORS)
@@ -663,8 +597,7 @@ protected:
 					result = false;
 #endif
 
-				if (!result )
-				{
+				if (!result ) {
 					if (!m_resolverStack.isEmpty())
 						return MatchResult_Fail; // rollback resolver
 
@@ -675,9 +608,7 @@ protected:
 						return MatchResult_Continue;
 				}
 			}
-		}
-		else if (node->m_index < T::NamedSymbolCount + T::CatchSymbolCount)
-		{
+		} else if (node->m_index < T::NamedSymbolCount + T::CatchSymbolCount) {
 			pushCatch(node);
 		}
 
@@ -687,8 +618,7 @@ protected:
 #endif
 
 		size_t productionIndex = parseTable[node->m_index * T::TokenCount + tokenIndex];
-		if (productionIndex == -1)
-		{
+		if (productionIndex == -1) {
 			if (!m_resolverStack.isEmpty())
 				return MatchResult_Fail; // rollback resolver
 
@@ -698,7 +628,7 @@ protected:
 				"unexpected '%s' in '%s'",
 				m_currentToken.getName(),
 				static_cast<T*>(this)->getSymbolName(symbol->m_index)
-				);
+			);
 
 			return recover(ErrorKind_Syntax) ? MatchResult_Continue : MatchResult_Fail;
 		}
@@ -713,8 +643,7 @@ protected:
 	}
 
 	MatchResult
-	matchSequenceNode(Node* node)
-	{
+	matchSequenceNode(Node* node) {
 		if (m_flags & Flag_TokenMatch)
 			return MatchResult_NextToken;
 
@@ -728,8 +657,7 @@ protected:
 	}
 
 	MatchResult
-	matchActionNode(Node* node)
-	{
+	matchActionNode(Node* node) {
 		bool result = static_cast<T*>(this)->action(node->m_index);
 
 #if (_LLK_RANDOM_SEMANTIC_ERRORS)
@@ -737,8 +665,7 @@ protected:
 			result = false;
 #endif
 
-		if (!result)
-		{
+		if (!result) {
 			if (!m_resolverStack.isEmpty())
 				return MatchResult_Fail; // rollback resolver
 
@@ -754,10 +681,8 @@ protected:
 	}
 
 	MatchResult
-	matchLaDfaNode(LaDfaNode* node)
-	{
-		if (node->m_flags & LaDfaNodeFlag_PreResolver)
-		{
+	matchLaDfaNode(LaDfaNode* node) {
+		if (node->m_flags & LaDfaNodeFlag_PreResolver) {
 			ASSERT(getPreResolverTop() == node);
 
 			// successful match of resolver
@@ -783,20 +708,16 @@ protected:
 			node->m_index,
 			m_currentToken.m_token,
 			&transition
-			);
+		);
 
-		switch (laDfaResult)
-		{
+		switch (laDfaResult) {
 		case LaDfaResult_Production:
 			if (transition.m_productionIndex >= T::LaDfaFirst &&
-				transition.m_productionIndex < T::LaDfaEnd)
-			{
+				transition.m_productionIndex < T::LaDfaEnd) {
 				// stil in lookahead DFA, need more tokens...
 				node->m_index = transition.m_productionIndex - T::LaDfaFirst;
 				return MatchResult_NextToken;
-			}
-			else
-			{
+			} else {
 				// resolved! continue parsing
 				m_tokenCursor = node->m_reparseLaDfaTokenCursor;
 
@@ -820,15 +741,14 @@ protected:
 		default:
 			ASSERT(laDfaResult == LaDfaResult_Fail);
 
-			if (m_resolverStack.isEmpty()) // can't rollback so set error
-			{
+			if (m_resolverStack.isEmpty()) { // can't rollback so set error
 				SymbolNode* symbol = getSymbolTop();
 				ASSERT(symbol);
 				axl::err::setFormatStringError(
 					"unexpected '%s' while trying to resolve a conflict in '%s'",
 					m_currentToken.getName(),
 					static_cast<T*>(this)->getSymbolName(symbol->m_index)
-					);
+				);
 			}
 
 			return MatchResult_Fail;
@@ -838,30 +758,24 @@ protected:
 	// rollback
 
 	MatchResult
-	rollbackResolver()
-	{
+	rollbackResolver() {
 		LaDfaNode* laDfaNode = getPreResolverTop();
 		ASSERT(laDfaNode);
 		ASSERT(laDfaNode->m_flags & LaDfaNodeFlag_PreResolver);
 
 		// keep popping prediction stack until pre-resolver dfa node
 
-		while (!m_predictionStack.isEmpty())
-		{
+		while (!m_predictionStack.isEmpty()) {
 			Node* node = getPredictionTop();
 			if (node == laDfaNode)
 				break; // found it!!
 
-			if (node->m_nodeKind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Stacked))
-			{
+			if (node->m_nodeKind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Stacked)) {
 				SymbolNode* symbol = (SymbolNode*) node;
-				if (isCatchSymbol(symbol))
-				{
+				if (isCatchSymbol(symbol)) {
 					ASSERT(symbol == getCatchTop());
 					popCatch();
-				}
-				else
-				{
+				} else {
 					ASSERT(symbol == getSymbolTop());
 					if (symbol->m_leaveIndex != -1) // call leave() even when in a resolver
 						static_cast<T*>(this)->leave(symbol->m_leaveIndex);
@@ -881,17 +795,14 @@ protected:
 		// switch to resolver-else branch
 
 		if (laDfaNode->m_resolverElseIndex >= T::LaDfaFirst &&
-			laDfaNode->m_resolverElseIndex < T::LaDfaEnd)
-		{
+			laDfaNode->m_resolverElseIndex < T::LaDfaEnd) {
 			// still in lookahead DFA after rollback...
 
 			laDfaNode->m_index = laDfaNode->m_resolverElseIndex - T::LaDfaFirst;
 
 			if (!(laDfaNode->m_flags & LaDfaNodeFlag_HasChainedResolver))
 				return MatchResult_NextToken; // if no chained resolver, advance to next token
-		}
-		else
-		{
+		} else {
 			size_t productionIndex = laDfaNode->m_resolverElseIndex;
 			popPrediction();
 			pushPrediction(productionIndex);
@@ -903,53 +814,37 @@ protected:
 	// create nodes
 
 	Node*
-	createNode(size_t masterIndex)
-	{
+	createNode(size_t masterIndex) {
 		ASSERT(masterIndex < T::TotalCount);
 
 		Node* node = NULL;
 
-		if (masterIndex < T::TokenEnd)
-		{
+		if (masterIndex < T::TokenEnd) {
 			node = allocateNode<T, TokenNode>();
 			node->m_index = masterIndex;
-		}
-		else if (masterIndex < T::TokenEnd + T::NamedSymbolCount)
-		{
+		} else if (masterIndex < T::TokenEnd + T::NamedSymbolCount) {
 			size_t index = masterIndex - T::SymbolFirst;
 			SymbolNode* symbolNode = static_cast<T*>(this)->createSymbolNode(index);
 			node = symbolNode;
-		}
-		else if (masterIndex < T::TokenEnd + T::NamedSymbolCount + T::CatchSymbolCount)
-		{
+		} else if (masterIndex < T::TokenEnd + T::NamedSymbolCount + T::CatchSymbolCount) {
 			node = allocateNode<T, StdSymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
-		}
-		else if (masterIndex < T::SymbolEnd)
-		{
+		} else if (masterIndex < T::SymbolEnd) {
 			node = allocateNode<T, SymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
-		}
-		else if (masterIndex < T::SequenceEnd)
-		{
+		} else if (masterIndex < T::SequenceEnd) {
 			node = allocateNode<T, Node>();
 			node->m_nodeKind = NodeKind_Sequence;
 			node->m_index = masterIndex - T::SequenceFirst;
-		}
-		else if (masterIndex < T::ActionEnd)
-		{
+		} else if (masterIndex < T::ActionEnd) {
 			node = allocateNode<T, Node>();
 			node->m_nodeKind = NodeKind_Action;
 			node->m_index = masterIndex - T::ActionFirst;
-		}
-		else if (masterIndex < T::ArgumentEnd)
-		{
+		} else if (masterIndex < T::ArgumentEnd) {
 			node = allocateNode<T, Node>();
 			node->m_nodeKind = NodeKind_Argument;
 			node->m_index = masterIndex - T::ArgumentFirst;
-		}
-		else if (masterIndex < T::BeaconEnd)
-		{
+		} else if (masterIndex < T::BeaconEnd) {
 			const size_t* p = static_cast<T*>(this)->getBeacon(masterIndex - T::BeaconFirst);
 			size_t slotIndex = p[0];
 			size_t targetIndex = p[1];
@@ -965,9 +860,7 @@ protected:
 			symbolNode->m_locatorArray.ensureCountZeroConstruct(slotIndex + 1);
 			symbolNode->m_locatorArray[slotIndex] = node;
 			symbolNode->m_locatorList.insertTail(node);
-		}
-		else
-		{
+		} else {
 			ASSERT(masterIndex < T::LaDfaEnd);
 			node = allocateNode<T, LaDfaNode>();
 			node->m_index = masterIndex - T::LaDfaFirst;
@@ -979,8 +872,7 @@ protected:
 	// prediction stack
 
 	Node*
-	getArgument()
-	{
+	getArgument() {
 		size_t count = m_predictionStack.getCount();
 		if (count < 2)
 			return NULL;
@@ -990,8 +882,7 @@ protected:
 	}
 
 	Node*
-	pushPrediction(size_t masterIndex)
-	{
+	pushPrediction(size_t masterIndex) {
 		if (!masterIndex) // check for epsilon production
 			return NULL;
 
@@ -1004,8 +895,7 @@ protected:
 	}
 
 	void
-	popPrediction()
-	{
+	popPrediction() {
 		Node* node = m_predictionStack.getBackAndPop();
 		ASSERT(!(node->m_flags & SymbolNodeFlag_Stacked));
 
@@ -1016,8 +906,7 @@ protected:
 	// symbol stack
 
 	void
-	pushSymbol(SymbolNode* node)
-	{
+	pushSymbol(SymbolNode* node) {
 		ASSERT(isNamedSymbol(node));
 		m_symbolStack.append(node);
 		node->m_flags |= SymbolNodeFlag_Stacked;
@@ -1028,8 +917,7 @@ protected:
 	}
 
 	void
-	popSymbol()
-	{
+	popSymbol() {
 		SymbolNode* node = m_symbolStack.getBackAndPop();
 		ASSERT(node->m_flags & SymbolNodeFlag_Stacked);
 		node->m_flags &= ~SymbolNodeFlag_Stacked;
@@ -1038,8 +926,7 @@ protected:
 	// catch stack
 
 	void
-	pushCatch(SymbolNode* node)
-	{
+	pushCatch(SymbolNode* node) {
 		ASSERT(isCatchSymbol(node));
 		m_catchStack.append(node);
 		node->m_catchSymbolCount = m_symbolStack.getCount();
@@ -1047,8 +934,7 @@ protected:
 	}
 
 	void
-	popCatch()
-	{
+	popCatch() {
 		SymbolNode* node = m_catchStack.getBackAndPop();
 		ASSERT(node->m_flags & SymbolNodeFlag_Stacked);
 		node->m_flags &= ~SymbolNodeFlag_Stacked;
@@ -1057,22 +943,19 @@ protected:
 	// resolver stack
 
 	LaDfaNode*
-	getPreResolverTop()
-	{
+	getPreResolverTop() {
 		size_t count = m_resolverStack.getCount();
 		return count ? m_resolverStack[count - 1] : NULL;
 	}
 
 	void
-	pushPreResolver(LaDfaNode* node)
-	{
+	pushPreResolver(LaDfaNode* node) {
 		m_resolverStack.append(node);
 		node->m_flags |= LaDfaNodeFlag_PreResolver;
 	}
 
 	void
-	popPreResolver()
-	{
+	popPreResolver() {
 		LaDfaNode* node = m_resolverStack.getBackAndPop();
 		ASSERT(node->m_flags & LaDfaNodeFlag_PreResolver);
 		node->m_flags &= ~LaDfaNodeFlag_PreResolver;
@@ -1081,8 +964,7 @@ protected:
 	// locators
 
 	Node*
-	getLocator(size_t index)
-	{
+	getLocator(size_t index) {
 		SymbolNode* symbolNode = getSymbolTop();
 		if (!symbolNode)
 			return NULL;
@@ -1099,15 +981,13 @@ protected:
 	}
 
 	const Token*
-	getTokenLocator(size_t index)
-	{
+	getTokenLocator(size_t index) {
 		Node* node = getLocator(index);
 		return node && node->m_nodeKind == NodeKind_Token ? &((TokenNode*)node)->m_token : NULL;
 	}
 
 	SymbolNodeValue*
-	getSymbolLocator(size_t index)
-	{
+	getSymbolLocator(size_t index) {
 		Node* node = getLocator(index);
 		return node && node->m_nodeKind == NodeKind_Symbol ? ((SymbolNode*)node)->getValue() : NULL;
 	}

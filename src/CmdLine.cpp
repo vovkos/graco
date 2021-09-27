@@ -14,8 +14,7 @@
 
 //..............................................................................
 
-CmdLine::CmdLine()
-{
+CmdLine::CmdLine() {
 	m_flags = 0;
 	m_lookaheadLimit = 1;
 	m_conflictDepthLimit = 4;
@@ -24,8 +23,7 @@ CmdLine::CmdLine()
 //..............................................................................
 
 bool
-CmdLineParser::onValue(const sl::StringRef& value)
-{
+CmdLineParser::onValue(const sl::StringRef& value) {
 	m_cmdLine->m_inputFileName = value;
 	return true;
 }
@@ -34,10 +32,8 @@ bool
 CmdLineParser::onSwitch(
 	SwitchKind switchKind,
 	const sl::StringRef& value
-	)
-{
-	switch (switchKind)
-	{
+) {
+	switch (switchKind) {
 	case CmdLineSwitchKind_Help:
 		m_cmdLine->m_flags |= CmdLineFlag_Help;
 		break;
@@ -102,11 +98,9 @@ CmdLineParser::onSwitch(
 }
 
 bool
-CmdLineParser::finalize()
-{
+CmdLineParser::finalize() {
 	if (m_cmdLine->m_outputFileNameList.getCount() !=
-		m_cmdLine->m_frameFileNameList.getCount())
-	{
+		m_cmdLine->m_frameFileNameList.getCount()) {
 		err::setError("output-file-count vs frame-file-count mismatch\n");
 		return false;
 	}

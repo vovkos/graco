@@ -13,8 +13,7 @@
 
 //..............................................................................
 
-enum TokenKind
-{
+enum TokenKind {
 	// common tokens
 
 	TokenKind_Eof = 0,
@@ -104,8 +103,7 @@ typedef lex::RagelToken<TokenKind, TokenName, lex::StdTokenData> Token;
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Lexer: public lex::RagelLexer<Lexer, Token>
-{
+class Lexer: public lex::RagelLexer<Lexer, Token> {
 	friend class lex::RagelLexer<Lexer, Token>;
 
 protected:
@@ -114,7 +112,7 @@ protected:
 		int tokenKind,
 		size_t left = 0,
 		size_t right = 0
-		);
+	);
 
 	Token*
 	createCharToken(int tokenKind);
@@ -123,7 +121,7 @@ protected:
 	createIntegerToken(
 		int radix = 10,
 		size_t left = 0
-		);
+	);
 
 	Token*
 	createFpToken();

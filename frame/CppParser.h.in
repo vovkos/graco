@@ -15,8 +15,7 @@ dofile(FrameDir .. "/CppParserUtils.lua")
 $HeaderFileBegin
 //..............................................................................
 
-enum SymbolKind
-{
+enum SymbolKind {
 %{
 for i = 1, NamedSymbolCount do
 	local symbol = SymbolTable[i]
@@ -29,15 +28,13 @@ end -- for
 
 //..............................................................................
 
-class $ParserClassName: public llk::Parser<$ParserClassName, $TokenClassName>
-{
+class $ParserClassName: public llk::Parser<$ParserClassName, $TokenClassName> {
 	friend class llk::Parser<$ParserClassName, $TokenClassName>;
 
 $Members
 
 protected:
-	class TokenMap: public axl::sl::SimpleHashTable<int, size_t>
-	{
+	class TokenMap: public axl::sl::SimpleHashTable<int, size_t> {
 	public:
 		TokenMap();
 	};
@@ -50,8 +47,7 @@ for i = 1, NamedSymbolCount do
 	if symbol.isCustomClass then
 		if symbol.valueBlock then
 }
-	struct SymbolNodeValue_$(symbol.name): llk::SymbolNodeValue
-	{
+	struct SymbolNodeValue_$(symbol.name): llk::SymbolNodeValue {
 $(getPpLine(symbol.srcPos.filePath, symbol.valueLine))
 	$(symbol.valueBlock);
 $(getPpLineDefault())
@@ -64,14 +60,12 @@ $(getPpLineDefault())
 	struct SymbolNode_$(symbol.name): llk::StdSymbolNode
 %{
 		end -- if
-}
-	{
+} {
 	public:
 %{
 		if symbol.paramBlock then
 }
-		struct
-		{
+		struct {
 $(getPpLine(symbol.srcPos.filePath, symbol.paramLine))
 			$((string.gsub(symbol.paramBlock, ",", ";")));
 $(getPpLineDefault())
@@ -81,8 +75,7 @@ $(getPpLineDefault())
 
 		if symbol.localBlock then
 }
-		struct
-		{
+		struct {
 $(getPpLine(symbol.srcPos.filePath, symbol.localLine))
 			$(symbol.localBlock);
 $(getPpLineDefault())
@@ -90,8 +83,7 @@ $(getPpLineDefault())
 %{
 		end -- if
 }
-		SymbolNode_$(symbol.name)()
-		{
+		SymbolNode_$(symbol.name)() {
 			m_index = SymbolKind_$(symbol.name);
 %{
 		if symbol.enterBlock then
@@ -113,8 +105,7 @@ $(getPpLineDefault())
 	end -- if
 end -- for
 }
-	union MaxNodeSizeCalc
-	{
+	union MaxNodeSizeCalc {
 		char m_laDfaNode[sizeof(LaDfaNode)];
 		char m_tokenNode[sizeof(TokenNode)];
 		char m_stdSymbolNode[sizeof(StdSymbolNode)];
@@ -131,8 +122,7 @@ end -- for
 	};
 
 public:
-	enum
-	{
+	enum {
 		StartSymbol        = $StartSymbol,
 		PragmaStartSymbol  = $PragmaStartSymbol,
 		EofToken           = 0,
@@ -205,7 +195,7 @@ protected:
 	argument(
 		size_t index,
 		SymbolNode* symbol
-		);
+	);
 
 	bool
 	enter(size_t index);
@@ -218,7 +208,7 @@ protected:
 		size_t index,
 		int lookaheadToken,
 		LaDfaTransition* transition
-		);
+	);
 
 	const int*
 	getSyncTokenSet(size_t index);
@@ -298,7 +288,7 @@ for i = 1, LaDfaCount do
 	laDfa_$(i - 1)(
 		int lookaheadToken,
 		LaDfaTransition* transition
-		);
+	);
 
 %{
 end -- for

@@ -17,14 +17,12 @@
 
 //..............................................................................
 
-Module::Module()
-{
+Module::Module() {
 	m_maxUsedLookahead = 1;
 }
 
 void
-Module::clear()
-{
+Module::clear() {
 	m_sourceCache.clear();
 	m_parseTable.clear();
 	m_defineMgr.clear();
@@ -34,14 +32,12 @@ Module::clear()
 }
 
 bool
-Module::build(const CmdLine* cmdLine)
-{
+Module::build(const CmdLine* cmdLine) {
 	bool result;
 
 	m_parseTable.clear();
 
-	if (m_nodeMgr.isEmpty())
-	{
+	if (m_nodeMgr.isEmpty()) {
 		err::setError("grammar is empty");
 		return false;
 	}
@@ -67,12 +63,10 @@ Module::build(const CmdLine* cmdLine)
 	ProductionBuilder productionBuilder(&m_nodeMgr);
 
 	sl::Iterator<SymbolNode> symbolIt = m_nodeMgr.m_namedSymbolList.getHead();
-	for (; symbolIt; symbolIt++)
-	{
+	for (; symbolIt; symbolIt++) {
 		SymbolNode* symbol = *symbolIt;
 
-		if (symbol->m_resolver)
-		{
+		if (symbol->m_resolver) {
 			ASSERT(symbol->m_resolver->m_productionArray.getCount() == 1);
 			result = productionBuilder.build(symbol->m_resolver, &symbol->m_resolver->m_productionArray[0]);
 			if (!result)
@@ -80,8 +74,7 @@ Module::build(const CmdLine* cmdLine)
 		}
 
 		size_t count = symbol->m_productionArray.getCount();
-		for (size_t i = 0; i < count; i++)
-		{
+		for (size_t i = 0; i < count; i++) {
 			result = productionBuilder.build(symbol, &symbol->m_productionArray[i]);
 			if (!result)
 				return false;
@@ -102,8 +95,7 @@ Module::build(const CmdLine* cmdLine)
 
 	LaDfaBuilder builder(cmdLine, &m_nodeMgr, &m_parseTable);
 	sl::Iterator<ConflictNode> conflictIt = m_nodeMgr.m_conflictList.getHead();
-	for (; conflictIt; conflictIt++)
-	{
+	for (; conflictIt; conflictIt++) {
 		ConflictNode* conflict = *conflictIt;
 
 		conflict->m_resultNode = builder.build(conflict);
@@ -115,8 +107,7 @@ Module::build(const CmdLine* cmdLine)
 
 	size_t tokenCount = m_nodeMgr.m_tokenArray.getCount();
 	conflictIt = m_nodeMgr.m_conflictList.getHead();
-	for (; conflictIt; conflictIt++)
-	{
+	for (; conflictIt; conflictIt++) {
 		ConflictNode* conflict = *conflictIt;
 		Node** production = &m_parseTable[conflict->m_symbol->m_index * tokenCount + conflict->m_token->m_index];
 		ASSERT(*production == conflict);
@@ -126,8 +117,7 @@ Module::build(const CmdLine* cmdLine)
 
 	symbolIt = m_nodeMgr.m_namedSymbolList.getHead();
 	for (; symbolIt; symbolIt++)
-		if (symbolIt->m_resolver && !(symbolIt->m_flags & SymbolNodeFlag_ResolverUsed))
-		{
+		if (symbolIt->m_resolver && !(symbolIt->m_flags & SymbolNodeFlag_ResolverUsed)) {
 			err::setFormatStringError("unused resolver");
 			lex::pushSrcPosError(symbolIt->m_srcPos);
 			return false;
@@ -141,8 +131,7 @@ Module::build(const CmdLine* cmdLine)
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
-Module::trace()
-{
+Module::trace() {
 	printf("LOOKAHEAD: %d\n", m_maxUsedLookahead);
 	m_nodeMgr.trace();
 }
@@ -151,8 +140,7 @@ bool
 Module::writeBnfFile(
 	const sl::StringRef& fileName,
 	BnfDialect dialect
-	)
-{
+) {
 	sl::String bufferString;
 
 	io::File file;
@@ -169,8 +157,7 @@ Module::writeBnfFile(
 }
 
 sl::String
-Module::generateBnfString(BnfDialect dialect)
-{
+Module::generateBnfString(BnfDialect dialect) {
 	sl::String string;
 	sl::String sequenceString;
 	sl::StringRef orString = "\t|\t";
@@ -178,14 +165,12 @@ Module::generateBnfString(BnfDialect dialect)
 	sl::StringRef termString = dialect == BnfDialect_Graco ? "\t;\n\n" : "\n";
 
 	sl::Iterator<SymbolNode> node = m_nodeMgr.m_namedSymbolList.getHead();
-	for (; node; node++)
-	{
+	for (; node; node++) {
 		SymbolNode* symbol = *node;
 		if (symbol->m_productionArray.isEmpty())
 			continue;
 
-		if (dialect == BnfDialect_Graco)
-		{
+		if (dialect == BnfDialect_Graco) {
 			if (symbol->m_flags & SymbolNodeFlag_Start)
 				string.append("start\n");
 
@@ -201,14 +186,11 @@ Module::generateBnfString(BnfDialect dialect)
 
 		size_t productionCount = symbol->m_productionArray.getCount();
 
-		if (symbol->m_quantifierKind)
-		{
+		if (symbol->m_quantifierKind) {
 			string.append(equString);
 			string.append(symbol->GrammarNode::getBnfString());
 			string.append('\n');
-		}
-		else for (size_t i = 0; i < productionCount; i++)
-		{
+		} else for (size_t i = 0; i < productionCount; i++) {
 			string.append(i ? orString : equString);
 			string.append(symbol->m_productionArray[i]->getBnfString());
 			string.append('\n');
@@ -223,27 +205,23 @@ Module::generateBnfString(BnfDialect dialect)
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 void
-Module::luaExport(lua::LuaState* luaState)
-{
+Module::luaExport(lua::LuaState* luaState) {
 	m_defineMgr.luaExport(luaState);
 	m_nodeMgr.luaExport(luaState);
 	luaExportParseTable(luaState);
 }
 
 void
-Module::luaExportParseTable(lua::LuaState* luaState)
-{
+Module::luaExportParseTable(lua::LuaState* luaState) {
 	size_t symbolCount = m_nodeMgr.m_symbolArray.getCount();
 	size_t tokenCount = m_nodeMgr.m_tokenArray.getCount();
 
 	luaState->createTable(symbolCount);
 
-	for (size_t i = 0, k = 0; i < symbolCount; i++)
-	{
+	for (size_t i = 0, k = 0; i < symbolCount; i++) {
 		luaState->createTable(tokenCount);
 
-		for (size_t j = 0; j < tokenCount; j++, k++)
-		{
+		for (size_t j = 0; j < tokenCount; j++, k++) {
 			Node* production = m_parseTable[k];
 			luaState->setArrayElementInteger(j + 1, production ? production->m_masterIndex : -1);
 		}

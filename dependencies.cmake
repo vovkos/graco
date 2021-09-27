@@ -20,7 +20,7 @@ set(
 	7Z_EXE
 	SPHINX_BUILD_EXE
 	PDFLATEX_EXE
-	)
+)
 
 set(
 	AXL_IMPORT_LIST

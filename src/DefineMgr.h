@@ -13,8 +13,7 @@
 
 //..............................................................................
 
-enum DefineKind
-{
+enum DefineKind {
 	DefineKind_String,
 	DefineKind_Integer,
 	DefineKind_Bool,
@@ -23,8 +22,7 @@ enum DefineKind
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-class Define: public sl::ListLink
-{
+class Define: public sl::ListLink {
 public:
 	DefineKind m_defineKind;
 	lex::SrcPos m_srcPos;
@@ -32,8 +30,7 @@ public:
 	sl::StringRef m_stringValue;
 	int m_integerValue;
 
-	Define()
-	{
+	Define() {
 		m_defineKind = DefineKind_Default;
 		m_integerValue = 0;
 	}
@@ -41,28 +38,24 @@ public:
 
 //..............................................................................
 
-class DefineMgr
-{
+class DefineMgr {
 protected:
 	sl::List<Define> m_defineList;
 	sl::StringHashTable<Define*> m_defineMap;
 
 public:
 	bool
-	isEmpty()
-	{
+	isEmpty() {
 		return m_defineList.isEmpty();
 	}
 
 	size_t
-	getCount()
-	{
+	getCount() {
 		return m_defineList.getCount();
 	}
 
 	void
-	clear()
-	{
+	clear() {
 		m_defineList.clear();
 		m_defineMap.clear();
 	}
@@ -71,8 +64,7 @@ public:
 	luaExport(lua::LuaState* luaState);
 
 	sl::Iterator<Define>
-	getHead()
-	{
+	getHead() {
 		return m_defineList.getHead();
 	}
 
@@ -80,8 +72,7 @@ public:
 	getDefine(const sl::StringRef& name);
 
 	Define*
-	findDefine(const sl::StringRef& name)
-	{
+	findDefine(const sl::StringRef& name) {
 		sl::StringHashTableIterator<Define*> it = m_defineMap.find(name);
 		return it ? it->m_value : NULL;
 	}

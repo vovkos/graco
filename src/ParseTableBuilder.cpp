@@ -15,8 +15,7 @@
 //..............................................................................
 
 bool
-ParseTableBuilder::build()
-{
+ParseTableBuilder::build() {
 	calcGrammarProps();
 
 	// build parse table
@@ -28,71 +27,61 @@ ParseTableBuilder::build()
 
 	// normal productions
 
-	for (size_t i = 0; i < symbolCount; i++)
-	{
+	for (size_t i = 0; i < symbolCount; i++) {
 		SymbolNode* node = m_nodeMgr->m_symbolArray[i];
 
-		if (node->m_synchronizer)
-		{
+		if (node->m_synchronizer) {
 			ASSERT(node->m_productionArray.getCount() == 1);
 			GrammarNode* production = node->m_productionArray[0];
-			if (!production->isNullable() && node->m_synchronizer != &m_nodeMgr->m_eofTokenNode)
-			{
+			if (!production->isNullable() && node->m_synchronizer != &m_nodeMgr->m_eofTokenNode) {
 				err::setError("'catch' applied to a non-nullable production");
 				lex::pushSrcPosError(node->m_srcPos);
 				return false;
 			}
 		}
 
-		if (node->m_flags & SymbolNodeFlag_User)
-		{
-			if (node->isNullable() && !(node->m_flags & SymbolNodeFlag_Nullable))
-			{
+		if (node->m_flags & SymbolNodeFlag_User) {
+			if (node->isNullable() && !(node->m_flags & SymbolNodeFlag_Nullable)) {
 				err::setFormatStringError(
 					"'%s': nullable symbols must be explicitly marked as 'nullable'",
 					node->m_name.sz()
-					);
+				);
 				lex::pushSrcPosError(node->m_srcPos);
 				return false;
 			}
 
-			if (!node->isNullable() && (node->m_flags & SymbolNodeFlag_Nullable))
-			{
+			if (!node->isNullable() && (node->m_flags & SymbolNodeFlag_Nullable)) {
 				err::setFormatStringError(
 					"'%s': not nullable but marked as 'nullable'",
 					node->m_name.sz()
-					);
+				);
 				lex::pushSrcPosError(node->m_srcPos);
 				return false;
 			}
 		}
 
-		if (node->m_flags & SymbolNodeFlag_Pragma)
-		{
-			if (node->isNullable())
-			{
+		if (node->m_flags & SymbolNodeFlag_Pragma) {
+			if (node->isNullable()) {
 				err::setFormatStringError(
 					"'%s': pragma cannot be nullable",
 					node->m_name.sz()
-					);
+				);
 				lex::pushSrcPosError(node->m_srcPos);
 				return false;
 			}
 
-			if (node->m_firstSet.getBit(1))
-			{
+			if (node->m_firstSet.getBit(1)) {
 				err::setFormatStringError(
 					"'%s': pragma cannot start with 'anytoken'",
 					node->m_name.sz()
-					);
+				);
 				lex::pushSrcPosError(node->m_srcPos);
 				return false;
 			}
 		}
 
 		size_t childrenCount = node->m_productionArray.getCount();
-		for (size_t j = 0; j < childrenCount; j++)
-		{
+		for (size_t j = 0; j < childrenCount; j++) {
 			GrammarNode* production = node->m_productionArray[j];
 			addProductionToParseTable(node, production);
 		}
@@ -107,13 +96,11 @@ ParseTableBuilder::build()
 	// then
 	//	set all parse table entries to this production
 
-	for (size_t i = 0; i < symbolCount; i++)
-	{
+	for (size_t i = 0; i < symbolCount; i++) {
 		SymbolNode* node = m_nodeMgr->m_symbolArray[i];
 
 		size_t childrenCount = node->m_productionArray.getCount();
-		for (size_t j = 0; j < childrenCount; j++)
-		{
+		for (size_t j = 0; j < childrenCount; j++) {
 			GrammarNode* production = node->m_productionArray[j];
 
 			if (production->m_firstSet.getBit(1) || (production->isNullable() && node->m_followSet.getBit(1)))
@@ -128,13 +115,11 @@ void
 ParseTableBuilder::addProductionToParseTable(
 	SymbolNode* symbol,
 	GrammarNode* production
-	)
-{
+) {
 	size_t count;
 
 	count = production->m_firstArray.getCount();
-	for (size_t i = 0; i < count; i++)
-	{
+	for (size_t i = 0; i < count; i++) {
 		SymbolNode* token = production->m_firstArray[i];
 		addParseTableEntry(symbol, token, production);
 	}
@@ -143,8 +128,7 @@ ParseTableBuilder::addProductionToParseTable(
 		return;
 
 	count = symbol->m_followArray.getCount();
-	for (size_t i = 0; i < count; i++)
-	{
+	for (size_t i = 0; i < count; i++) {
 		SymbolNode* token = symbol->m_followArray[i];
 		addParseTableEntry(symbol, token, production);
 	}
@@ -157,14 +141,12 @@ void
 ParseTableBuilder::addAnyTokenProductionToParseTable(
 	SymbolNode* symbol,
 	GrammarNode* production
-	)
-{
+) {
 	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount();
 
 	// skip EOF and ANYTOKEN
 
-	for (size_t i = 2; i < tokenCount; i++)
-	{
+	for (size_t i = 2; i < tokenCount; i++) {
 		SymbolNode* token = m_nodeMgr->m_tokenArray[i];
 		addParseTableEntry(symbol, token, production);
 	}
@@ -175,15 +157,13 @@ ParseTableBuilder::addParseTableEntry(
 	SymbolNode* symbol,
 	SymbolNode* token,
 	GrammarNode* production
-	)
-{
+) {
 	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount();
 
 	Node** productionSlot = *m_parseTable + symbol->m_index * tokenCount + token->m_index;
 	Node* oldProduction = *productionSlot;
 
-	if (!oldProduction)
-	{
+	if (!oldProduction) {
 		*productionSlot = production;
 		return 0;
 	}
@@ -192,8 +172,7 @@ ParseTableBuilder::addParseTableEntry(
 		return 0;
 
 	ConflictNode* conflict;
-	if (oldProduction->m_nodeKind != NodeKind_Conflict)
-	{
+	if (oldProduction->m_nodeKind != NodeKind_Conflict) {
 		GrammarNode* firstProduction = (GrammarNode*)oldProduction;
 
 		conflict = m_nodeMgr->createConflictNode();
@@ -205,9 +184,7 @@ ParseTableBuilder::addParseTableEntry(
 		conflict->m_productionArray[1] = production;
 
 		*productionSlot = conflict; // later will be replaced with lookahead DFA
-	}
-	else
-	{
+	} else {
 		conflict = (ConflictNode*)oldProduction;
 		size_t count = conflict->m_productionArray.getCount();
 
@@ -224,8 +201,7 @@ ParseTableBuilder::addParseTableEntry(
 }
 
 void
-ParseTableBuilder::calcGrammarProps()
-{
+ParseTableBuilder::calcGrammarProps() {
 	bool hasChanged;
 
 	GrammarNode* startSymbol = m_nodeMgr->m_symbolArray[0];
@@ -234,14 +210,12 @@ ParseTableBuilder::calcGrammarProps()
 	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount();
 	size_t symbolCount = m_nodeMgr->m_symbolArray.getCount();
 
-	for (size_t i = 1; i < tokenCount; i++)
-	{
+	for (size_t i = 1; i < tokenCount; i++) {
 		SymbolNode* node = m_nodeMgr->m_tokenArray[i];
 		node->m_firstSet.setBitResize(node->m_masterIndex, true);
 	}
 
-	for (size_t i = 0; i < symbolCount; i++)
-	{
+	for (size_t i = 0; i < symbolCount; i++) {
 		SymbolNode* node = m_nodeMgr->m_symbolArray[i];
 		node->initializeFirstFollowSets(tokenCount);
 
@@ -264,8 +238,7 @@ ParseTableBuilder::calcGrammarProps()
 	for (; wrNodeIt; wrNodeIt++)
 		wrNodeIt->initializeFirstFollowSets(tokenCount);
 
-	do
-	{
+	do {
 		hasChanged = false;
 
 		for (size_t i = 0; i < symbolCount; i++)

@@ -14,8 +14,7 @@
 
 //..............................................................................
 
-ProductionBuilder::ProductionBuilder(NodeMgr* nodeMgr)
-{
+ProductionBuilder::ProductionBuilder(NodeMgr* nodeMgr) {
 	m_nodeMgr = nodeMgr;
 	m_symbol = NULL;
 	m_dispatcher = NULL;
@@ -25,8 +24,7 @@ bool
 ProductionBuilder::build(
 	SymbolNode* symbol,
 	GrammarNode** production
-	)
-{
+) {
 	GrammarNode* result = build(symbol, *production);
 	if (!result)
 		return false;
@@ -39,13 +37,11 @@ GrammarNode*
 ProductionBuilder::build(
 	SymbolNode* symbol,
 	GrammarNode* production
-	)
-{
+) {
 	bool result;
 	size_t paramCount;
 
-	switch (production->m_nodeKind)
-	{
+	switch (production->m_nodeKind) {
 	case NodeKind_Epsilon:
 	case NodeKind_Token:
 		return production;
@@ -65,13 +61,12 @@ ProductionBuilder::build(
 		beacon = (BeaconNode*)production;
 
 		paramCount = beacon->m_target->m_paramNameList.getCount();
-		if (paramCount)
-		{
+		if (paramCount) {
 			err::setFormatStringError(
 				"'%s' takes %d parameters, passed none",
 				beacon->m_target->m_name.sz(),
 				paramCount
-				);
+			);
 			lex::pushSrcPosError(beacon->m_srcPos);
 			return NULL;
 		}
@@ -99,8 +94,7 @@ ProductionBuilder::build(
 		return NULL;
 
 	result = processAllUserCode();
-	if (!result)
-	{
+	if (!result) {
 		ensureSrcPosError();
 		return NULL;
 	}
@@ -115,13 +109,11 @@ ProductionBuilder::build(
 }
 
 bool
-ProductionBuilder::processAllUserCode()
-{
+ProductionBuilder::processAllUserCode() {
 	bool result;
 
 	size_t count = m_actionArray.getCount();
-	for (size_t i = 0; i < count; i++)
-	{
+	for (size_t i = 0; i < count; i++) {
 		ActionNode* node = m_actionArray[i];
 		if (node->m_flags & UserNodeFlag_UserCodeProcessed)
 			continue;
@@ -135,15 +127,13 @@ ProductionBuilder::processAllUserCode()
 	}
 
 	count = m_argumentArray.getCount();
-	for (size_t i = 0; i < count; i++)
-	{
+	for (size_t i = 0; i < count; i++) {
 		ArgumentNode* node = m_argumentArray[i];
 		if (node->m_flags & UserNodeFlag_UserCodeProcessed)
 			continue;
 
 		sl::BoxIterator<sl::String> it = node->m_argValueList.getHead();
-		for (; it; it++)
-		{
+		for (; it; it++) {
 			result = processUserCode(node->m_srcPos, &*it);
 			if (!result)
 				return false;
@@ -157,8 +147,7 @@ ProductionBuilder::processAllUserCode()
 }
 
 bool
-ProductionBuilder::scan(GrammarNode* node)
-{
+ProductionBuilder::scan(GrammarNode* node) {
 	bool result;
 
 	if (node->m_flags & NodeFlag_RecursionStopper)
@@ -171,8 +160,7 @@ ProductionBuilder::scan(GrammarNode* node)
 
 	size_t childrenCount;
 
-	switch (node->m_nodeKind)
-	{
+	switch (node->m_nodeKind) {
 	case NodeKind_Epsilon:
 	case NodeKind_Token:
 		break;
@@ -187,8 +175,7 @@ ProductionBuilder::scan(GrammarNode* node)
 		symbol->m_flags |= NodeFlag_RecursionStopper;
 
 		childrenCount = symbol->m_productionArray.getCount();
-		for (size_t i = 0; i < childrenCount; i++)
-		{
+		for (size_t i = 0; i < childrenCount; i++) {
 			GrammarNode* child = symbol->m_productionArray[i];
 			result = scan(child);
 			if (!result)
@@ -203,8 +190,7 @@ ProductionBuilder::scan(GrammarNode* node)
 		sequence->m_flags |= NodeFlag_RecursionStopper;
 
 		childrenCount = sequence->m_sequence.getCount();
-		for (size_t i = 0; i < childrenCount; i++)
-		{
+		for (size_t i = 0; i < childrenCount; i++) {
 			GrammarNode* child = sequence->m_sequence[i];
 			result = scan(child);
 			if (!result)
@@ -241,32 +227,28 @@ ProductionBuilder::scan(GrammarNode* node)
 }
 
 bool
-ProductionBuilder::addBeacon(BeaconNode* beacon)
-{
+ProductionBuilder::addBeacon(BeaconNode* beacon) {
 	if (beacon->m_flags & BeaconNodeFlag_Added)
 		return true;
 
-	if (!beacon->m_label.isEmpty())
-	{
+	if (!beacon->m_label.isEmpty()) {
 		sl::StringHashTableIterator<BeaconNode*> it = m_beaconMap.visit(beacon->m_label);
 		if (!it->m_value)
 			it->m_value = beacon;
 	}
 
-	if (beacon->m_target->m_nodeKind == NodeKind_Symbol)
-	{
+	if (beacon->m_target->m_nodeKind == NodeKind_Symbol) {
 		SymbolNode* node = (SymbolNode*)beacon->m_target;
 		size_t paramCount = node->m_paramNameList.getCount();
 		size_t actualArgCount = beacon->m_argument ? beacon->m_argument->m_argValueList.getCount() : 0;
 
-		if (paramCount != actualArgCount)
-		{
+		if (paramCount != actualArgCount) {
 			err::setFormatStringError(
 				"'%s' takes %d parameters, passed %d",
 				node->m_name.sz(),
 				paramCount,
 				actualArgCount
-				);
+			);
 			lex::pushSrcPosError(beacon->m_srcPos);
 			return false;
 		}
@@ -278,8 +260,7 @@ ProductionBuilder::addBeacon(BeaconNode* beacon)
 }
 
 void
-ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode** node0)
-{
+ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode** node0) {
 	GrammarNode* node = *node0;
 
 	if (node->m_flags & NodeFlag_RecursionStopper)
@@ -291,8 +272,7 @@ ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode** node0)
 
 	size_t count;
 
-	switch (node->m_nodeKind)
-	{
+	switch (node->m_nodeKind) {
 	case NodeKind_Epsilon:
 	case NodeKind_Token:
 	case NodeKind_Action:
@@ -304,8 +284,7 @@ ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode** node0)
 		if (beacon->m_slotIndex != -1)
 			break;
 
-		if (!(beacon->m_flags & BeaconNodeFlag_Deleted))
-		{
+		if (!(beacon->m_flags & BeaconNodeFlag_Deleted)) {
 			m_beaconDeleteArray.append(beacon);
 			beacon->m_flags |= BeaconNodeFlag_Deleted;
 		}
@@ -350,16 +329,14 @@ ProductionBuilder::VariableKind
 ProductionBuilder::findVariable(
 	int index,
 	BeaconNode** beacon_o
-	)
-{
+) {
 	if (index == 0)
 		return VariableKind_This;
 
 	size_t beaconIndex = index - 1;
 	size_t beaconCount = m_beaconArray.getCount();
 
-	if (beaconIndex >= beaconCount)
-	{
+	if (beaconIndex >= beaconCount) {
 		err::setFormatStringError("locator '$%d' is out of range ($1..$%d)", beaconIndex + 1, beaconCount);
 		return VariableKind_Undefined;
 	}
@@ -375,11 +352,9 @@ ProductionBuilder::VariableKind
 ProductionBuilder::findVariable(
 	const sl::StringRef& name,
 	BeaconNode** beacon_o
-	)
-{
+) {
 	sl::StringHashTableIterator<BeaconNode*> it = m_beaconMap.find(name);
-	if (it)
-	{
+	if (it) {
 		BeaconNode* beacon = it->m_value;
 		*beacon_o = beacon;
 		return beacon->m_target->m_nodeKind == NodeKind_Token ?
@@ -403,8 +378,7 @@ bool
 ProductionBuilder::processUserCode(
 	lex::SrcPos& srcPos,
 	sl::String* userCode
-	)
-{
+) {
 	const Token* token;
 
 	sl::String resultString;
@@ -413,7 +387,7 @@ ProductionBuilder::processUserCode(
 		getMachineState(LexerMachine_UserCode2ndPass),
 		srcPos.m_filePath,
 		*userCode
-		);
+	);
 
 	setLineCol(srcPos);
 
@@ -422,14 +396,12 @@ ProductionBuilder::processUserCode(
 	VariableKind variableKind;
 	BeaconNode* beacon;
 
-	for (;;)
-	{
+	for (;;) {
 		token = getToken();
 		if (token->m_token <= 0)
 			break;
 
-		switch (token->m_token)
-		{
+		switch (token->m_token) {
 		case TokenKind_Integer:
 			variableKind = findVariable(token->m_data.m_integer, &beacon);
 			break;
@@ -448,12 +420,10 @@ ProductionBuilder::processUserCode(
 
 		resultString.append(p, token->m_pos.m_p - p);
 
-		switch (variableKind)
-		{
+		switch (variableKind) {
 		case VariableKind_SymbolBeacon:
 		case VariableKind_TokenBeacon:
-			if (beacon->m_slotIndex == -1)
-			{
+			if (beacon->m_slotIndex == -1) {
 				if (!m_dispatcher)
 					m_dispatcher = m_nodeMgr->createDispatcherNode(m_symbol);
 

@@ -18,13 +18,13 @@ set(
 	${GRACO_INC_DIR}/llk_Node.h
 	${GRACO_INC_DIR}/llk_Parser.h
 	${GRACO_INC_DIR}/llk_Pch.h
-	)
+)
 
 source_group(
 	include
 	FILES
 	${INC_H_LIST}
-	)
+)
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
@@ -45,7 +45,7 @@ set(
 	ParseTableBuilder.h
 	ProductionBuilder.h
 	version.h.in
-	)
+)
 
 set(
 	APP_CPP_LIST
@@ -61,12 +61,12 @@ set(
 	Parser.cpp
 	ParseTableBuilder.cpp
 	ProductionBuilder.cpp
-	)
+)
 
 set(
 	APP_RL_LIST
 	Lexer.rl
-	)
+)
 
 source_group(
 	app
@@ -74,7 +74,7 @@ source_group(
 	${APP_H_LIST}
 	${APP_CPP_LIST}
 	${APP_RL_LIST}
-	)
+)
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
@@ -84,13 +84,13 @@ source_group(
 file(
 	GLOB FRAME_LIST
 	${GRACO_ROOT_DIR}/frame/*.*
-	)
+)
 
 source_group(
 	frame
 	FILES
 	${FRAME_LIST}
-	)
+)
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
@@ -100,13 +100,13 @@ source_group(
 set(
 	RES_RC_LIST
 	res.rc
-	)
+)
 
 source_group(
 	res
 	FILES
 	${RES_RC_LIST}
-	)
+)
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
@@ -121,22 +121,22 @@ axl_push_and_set(CMAKE_CURRENT_BINARY_DIR ${GEN_DIR})
 configure_file(
 	version.h.in
 	${GEN_DIR}/version.h
-	)
+)
 
 set(
 	GEN_H_LIST
 	${GEN_DIR}/version.h
-	)
+)
 
 add_ragel_step(
 	Lexer.rl.cpp
 	Lexer.rl
-	)
+)
 
 set(
 	GEN_RL_CPP_LIST
 	${GEN_DIR}/Lexer.rl.cpp
-	)
+)
 
 axl_pop(CMAKE_CURRENT_BINARY_DIR)
 
@@ -147,7 +147,7 @@ source_group(
 	FILES
 	${GEN_RL_CPP_LIST}
 	${GEN_H_LIST}
-	)
+)
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 #
@@ -162,7 +162,7 @@ source_group(
 	FILES
 	${PCH_H}
 	${PCH_CPP}
-	)
+)
 
 #...............................................................................
 #
@@ -173,12 +173,12 @@ include_directories(
 	${LUA_INC_DIR}
 	${AXL_INC_DIR}
 	${GEN_DIR}
-	)
+)
 
 link_directories(
 	${LUA_LIB_DIR}
 	${AXL_LIB_DIR}
-	)
+)
 
 add_executable(
 	graco
@@ -192,13 +192,13 @@ add_executable(
 	${GEN_RL_CPP_LIST}
 	${FRAME_LIST}
 	${RES_RC_LIST}
-	)
+)
 
 axl_set_pch(
 	graco
 	${PCH_H}
 	${PCH_CPP}
-	)
+)
 
 target_link_libraries(
 	graco
@@ -208,20 +208,20 @@ target_link_libraries(
 	axl_io
 	axl_core
 	${LUA_LIB_NAME}
-	)
+)
 
 if(UNIX)
 	target_link_libraries(
 		graco
 		dl
 		pthread
-		)
+	)
 
 	if(NOT APPLE)
 		target_link_libraries(
 			graco
 			rt
-			)
+		)
 	endif()
 endif()
 
@@ -243,6 +243,6 @@ endif()
 install(
 	TARGETS graco
 	DESTINATION ${GRACO_INSTALL_BIN_SUBDIR}
-	)
+)
 
 #...............................................................................

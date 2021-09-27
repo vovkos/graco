@@ -15,16 +15,14 @@ struct CmdLine;
 
 //..............................................................................
 
-class Generator
-{
+class Generator {
 protected:
 	const CmdLine* m_cmdLine;
 	st::LuaStringTemplate m_stringTemplate;
 	sl::String m_buffer;
 
 public:
-	Generator(const CmdLine* cmdLine)
-	{
+	Generator(const CmdLine* cmdLine) {
 		m_cmdLine = cmdLine;
 	}
 
@@ -35,7 +33,7 @@ public:
 	generate(
 		const sl::StringRef& fileName,
 		const sl::StringRef& frameFileName
-		);
+	);
 };
 
 //..............................................................................

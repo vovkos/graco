@@ -167,10 +167,10 @@ bool
 GrammarNode::propagateChildGrammarProps(GrammarNode* child) {
 	bool hasChanged = false;
 
-	if (m_firstSet.merge(child->m_firstSet, sl::BitOpKind_Or))
+	if (m_firstSet.mergeCmp<sl::BitMapOr>(child->m_firstSet))
 		hasChanged = true;
 
-	if (child->m_followSet.merge(m_followSet, sl::BitOpKind_Or))
+	if (child->m_followSet.mergeCmp<sl::BitMapOr>(m_followSet))
 		hasChanged = true;
 
 	if (child->isNullable())
@@ -451,7 +451,7 @@ SequenceNode::propagateGrammarProps() {
 	bool isNullable = true;
 	for (size_t j = 0; j < childrenCount; j++) {
 		GrammarNode* child = m_sequence[j];
-		if (m_firstSet.merge(child->m_firstSet, sl::BitOpKind_Or))
+		if (m_firstSet.mergeCmp<sl::BitMapOr>(child->m_firstSet))
 			hasChanged = true;
 
 		if (!child->isNullable()) {
@@ -468,7 +468,7 @@ SequenceNode::propagateGrammarProps() {
 
 	for (intptr_t j = childrenCount - 1; j >= 0; j--) {
 		GrammarNode* child = m_sequence[j];
-		if (child->m_followSet.merge(m_followSet, sl::BitOpKind_Or))
+		if (child->m_followSet.mergeCmp<sl::BitMapOr>(m_followSet))
 			hasChanged = true;
 
 		if (isFinal())
@@ -486,7 +486,7 @@ SequenceNode::propagateGrammarProps() {
 			GrammarNode* child = m_sequence[j];
 			for (size_t k = j + 1; k < childrenCount; k++) {
 				GrammarNode* next = m_sequence[k];
-				if (child->m_followSet.merge(next->m_firstSet, sl::BitOpKind_Or))
+				if (child->m_followSet.mergeCmp<sl::BitMapOr>(next->m_firstSet))
 					hasChanged = true;
 
 				if (!next->isNullable())

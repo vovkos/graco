@@ -212,7 +212,7 @@ ParseTableBuilder::calcGrammarProps() {
 
 	for (size_t i = 1; i < tokenCount; i++) {
 		SymbolNode* node = m_nodeMgr->m_tokenArray[i];
-		node->m_firstSet.setBitResize(node->m_masterIndex, true);
+		node->m_firstSet.setBitResize(node->m_masterIndex);
 	}
 
 	for (size_t i = 0; i < symbolCount; i++) {

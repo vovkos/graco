@@ -42,7 +42,7 @@ protected:
 		const Token::Pos& closePos
 	);
 
-	RecoverAction
+	RecoveryAction
 	processError(ErrorKind errorKind);
 }
 

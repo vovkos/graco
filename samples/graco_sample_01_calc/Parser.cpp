@@ -15,20 +15,20 @@
 
 //..............................................................................
 
-Parser::RecoverAction
+Parser::RecoveryAction
 Parser::processError(ErrorKind errorKind) {
 	switch (errorKind) {
 	case ErrorKind_Syntax:
 		printf("syntax error: %s\n", err::getLastErrorDescription().sz());
-		return RecoverAction_Synchronize;
+		return RecoveryAction_Synchronize;
 
 	case ErrorKind_Semantic:
 		printf("semantic error: %s\n", err::getLastErrorDescription().sz());
-		return RecoverAction_Synchronize; // RecoverAction_Continue would require more rigid checks in actions
+		return RecoveryAction_Synchronize; // RecoveryAction_Continue would require more rigid checks in actions
 
 	default:
 		ASSERT(false);
-		return RecoverAction_Fail;
+		return RecoveryAction_Fail;
 	}
 }
 

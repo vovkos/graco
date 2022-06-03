@@ -42,11 +42,12 @@ public:
 
 protected:
 	enum Flag {
-		Flag_TokenMatch      = 0x0001,
-		Flag_Synchronize     = 0x0010,
-		Flag_PostSynchronize = 0x0020,
+		Flag_TokenMatch            = 0x0001,
+		Flag_Synchronize           = 0x0010,
+		Flag_PostSynchronize       = 0x0020,
+		Flag_RecoveryFailureErrors = 0x0100,
 #if (_LLK_RANDOM_ERRORS)
-		Flag_NoRandomErrors  = 0x1000,
+		Flag_NoRandomErrors        = 0x1000,
 #endif
 	};
 
@@ -55,10 +56,10 @@ protected:
 		ErrorKind_Semantic,
 	};
 
-	enum RecoverAction {
-		RecoverAction_Fail,
-		RecoverAction_Synchronize,
-		RecoverAction_Continue,
+	enum RecoveryAction {
+		RecoveryAction_Fail,
+		RecoveryAction_Synchronize,
+		RecoveryAction_Continue,
 	};
 
 	enum MatchResult {
@@ -122,6 +123,14 @@ public:
 		m_tokenList.clear();
 		m_tokenCursor = NULL;
 		m_flags = 0;
+	}
+
+	void
+	enableRecoveryFailureErrors(bool isEnabled) {
+		if (isEnabled)
+			m_flags |= Flag_RecoveryFailureErrors;
+		else
+			m_flags &= ~Flag_RecoveryFailureErrors;
 	}
 
 #if (_LLK_RANDOM_ERRORS)
@@ -330,13 +339,13 @@ public:
 protected:
 	// default recover action: fail on semantic error, synchronize on syntax error
 
-	RecoverAction
+	RecoveryAction
 	processError(ErrorKind errorKind) {
 		if (errorKind != ErrorKind_Syntax)
-			return RecoverAction_Fail;
+			return RecoveryAction_Fail;
 
 		fprintf(stderr, "syntax error: %s\n", axl::err::getLastErrorDescription().sz());
-		return RecoverAction_Synchronize;
+		return RecoveryAction_Synchronize;
 	}
 
 	void
@@ -357,25 +366,28 @@ protected:
 			symbol->m_index < T::NamedSymbolCount + T::CatchSymbolCount;
 	}
 
-	RecoverAction
+	RecoveryAction
 	recover(ErrorKind errorKind) {
 		if (errorKind == ErrorKind_Syntax && (m_flags & Flag_PostSynchronize)) {
 			// synchronizer token must match (otherwise, it's a bad choice of sync tokens)
 
-			axl::err::setFormatStringError(
-				"synchronizer token '%s' didn't match (adjust the 'catch' clause in the grammar)",
-				m_currentToken.getName()
-			);
+			if (m_flags & Flag_RecoveryFailureErrors) {
+				axl::err::setFormatStringError(
+					"synchronizer token '%s' didn't match (adjust the 'catch' clause in the grammar)",
+					m_currentToken.getName()
+				);
 
-			axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
-			return RecoverAction_Fail;
+				axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
+			}
+
+			return RecoveryAction_Fail;
 		}
 
 		axl::lex::ensureSrcPosError(m_fileName, m_currentToken.m_pos);
-		RecoverAction action = static_cast<T*>(this)->processError(errorKind);
-		ASSERT(action != RecoverAction_Continue || errorKind != ErrorKind_Syntax); // can't continue on syntax errors
+		RecoveryAction action = static_cast<T*>(this)->processError(errorKind);
+		ASSERT(action != RecoveryAction_Continue || errorKind != ErrorKind_Syntax); // can't continue on syntax errors
 
-		if (action != RecoverAction_Synchronize)
+		if (action != RecoveryAction_Synchronize)
 			return action;
 
 		m_syncTokenSet.clear();
@@ -389,9 +401,12 @@ protected:
 		}
 
 		if (m_syncTokenSet.isEmpty()) {
-			axl::err::setError("unable to recover from previous error(s)");
-			axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
-			return RecoverAction_Fail;
+			if (m_flags & Flag_RecoveryFailureErrors) {
+				axl::err::setError("unable to recover from previous error(s)");
+				axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
+			}
+
+			return RecoveryAction_Fail;
 		}
 
 		// reset and wait for a synchornization token
@@ -400,7 +415,7 @@ protected:
 		m_tokenList.clear();
 		m_tokenCursor = m_tokenList.insertTail(m_currentToken);
 		m_flags |= Flag_Synchronize;
-		return RecoverAction_Synchronize;
+		return RecoveryAction_Synchronize;
 	}
 
 	MatchResult
@@ -564,10 +579,10 @@ protected:
 					if (!m_resolverStack.isEmpty())
 						return MatchResult_Fail; // rollback resolver
 
-					RecoverAction action = recover(ErrorKind_Semantic);
-					if (action == RecoverAction_Fail)
+					RecoveryAction action = recover(ErrorKind_Semantic);
+					if (action == RecoveryAction_Fail)
 						return MatchResult_Fail;
-					else if (action == RecoverAction_Synchronize)
+					else if (action == RecoveryAction_Synchronize)
 						return MatchResult_Continue;
 				}
 			}
@@ -601,10 +616,10 @@ protected:
 					if (!m_resolverStack.isEmpty())
 						return MatchResult_Fail; // rollback resolver
 
-					RecoverAction action = recover(ErrorKind_Semantic);
-					if (action == RecoverAction_Fail)
+					RecoveryAction action = recover(ErrorKind_Semantic);
+					if (action == RecoveryAction_Fail)
 						return MatchResult_Fail;
-					else if (action == RecoverAction_Synchronize)
+					else if (action == RecoveryAction_Synchronize)
 						return MatchResult_Continue;
 				}
 			}
@@ -669,10 +684,10 @@ protected:
 			if (!m_resolverStack.isEmpty())
 				return MatchResult_Fail; // rollback resolver
 
-			RecoverAction action = recover(ErrorKind_Semantic);
-			if (action == RecoverAction_Fail)
+			RecoveryAction action = recover(ErrorKind_Semantic);
+			if (action == RecoveryAction_Fail)
 				return MatchResult_Fail;
-			else if (action == RecoverAction_Synchronize)
+			else if (action == RecoveryAction_Synchronize)
 				return MatchResult_Continue;
 		}
 
@@ -1049,7 +1064,7 @@ protected:
 
 	// optionally implement:
 
-	// RecoverAction
+	// RecoveryAction
 	// processError(ErrorKind errorKind);
 };
 

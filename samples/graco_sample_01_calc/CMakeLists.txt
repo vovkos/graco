@@ -161,6 +161,7 @@ if(UNIX)
 	if(NOT APPLE)
 		target_link_libraries(
 			graco_sample_01_calc
+			dl
 			rt
 		)
 	endif()

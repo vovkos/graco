@@ -98,13 +98,11 @@ source_group(
 #
 
 set(PCH_H   pch.h)
-set(PCH_CPP pch.cpp)
 
 source_group(
 	pch
 	FILES
 	${PCH_H}
-	${PCH_CPP}
 )
 
 #...............................................................................
@@ -124,7 +122,6 @@ link_directories(${AXL_LIB_DIR})
 add_executable(
 	graco_sample_01_calc
 	${PCH_H}
-	${PCH_CPP}
 	${APP_H_LIST}
 	${APP_CPP_LIST}
 	${APP_RL_LIST}
@@ -167,10 +164,10 @@ if(UNIX)
 	endif()
 endif()
 
-axl_set_pch(
+target_precompile_headers(
 	graco_sample_01_calc
+	PRIVATE
 	${PCH_H}
-	${PCH_CPP}
 )
 
 #...............................................................................

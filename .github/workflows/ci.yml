@@ -8,6 +8,7 @@ jobs:
     windowsBuild:
         name: Windows Build
         runs-on: windows-2019
+
         strategy:
             fail-fast: false
             matrix:
@@ -55,7 +56,7 @@ jobs:
 
     linuxBuild:
         name: Linux Build
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-20.04
         strategy:
             fail-fast: false
             matrix:
@@ -105,7 +106,7 @@ jobs:
 
     macOsBuild:
         name: macOS Build
-        runs-on: macos-10.15
+        runs-on: macos-11
         strategy:
             fail-fast: false
             matrix:

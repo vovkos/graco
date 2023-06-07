@@ -13,8 +13,6 @@ Graco
 =====
 .. image:: https://github.com/vovkos/graco/actions/workflows/ci.yml/badge.svg
 	:target: https://github.com/vovkos/graco/actions/workflows/ci.yml
-.. image:: https://ci.appveyor.com/api/projects/status/1l8srr6wo3ixnc7o?svg=true
-	:target: https://ci.appveyor.com/project/vovkos/graco
 
 Abstract
 --------

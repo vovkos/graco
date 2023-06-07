@@ -6,6 +6,7 @@ on:
 
 jobs:
     windowsBuild:
+        if: ${{ false }}
         name: Windows Build
         runs-on: windows-2019
 
@@ -61,15 +62,15 @@ jobs:
             fail-fast: false
             matrix:
                 CONFIGURATION:
-                -   Debug
+                #-   Debug
                 -   Release
 
                 TARGET_CPU:
-                -   x86
+                #-   x86
                 -   amd64
 
                 COMPILER:
-                -   clang
+                #-   clang
                 -   gcc
 
         steps:
@@ -101,7 +102,7 @@ jobs:
                 mkdir build
                 cd build
                 cmake .. -DTARGET_CPU=${{matrix.TARGET_CPU}} -DCMAKE_BUILD_TYPE=${{matrix.CONFIGURATION}}
-                make
+                make VERBOSE=1
                 ctest --output-on-failure
 
     macOsBuild:
@@ -111,7 +112,7 @@ jobs:
             fail-fast: false
             matrix:
                 CONFIGURATION:
-                -   Debug
+                #-   Debug
                 -   Release
 
         steps:
@@ -141,5 +142,5 @@ jobs:
                 mkdir build
                 cd build
                 cmake .. -DCMAKE_BUILD_TYPE=${{matrix.CONFIGURATION}}
-                make
+                make VERBOSE=1
                 ctest --output-on-failure

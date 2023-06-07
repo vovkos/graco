@@ -99,6 +99,19 @@ jobs:
 
                 echo "set (AXL_CMAKE_DIR $THIS_DIR/axl/cmake $THIS_DIR/axl/build/cmake)" >> paths.cmake
 
+                echo 1 - running graco...
+                cd /home/runner/work/graco/graco/build/samples/graco_sample_01_calc && ../../bin/Release/graco
+
+                echo 2 - checking llk source
+                ls /home/runner/work/graco/graco/samples/graco_sample_01_calc/Parser.llk
+
+                echo 2 - checking frames
+                ls /home/runner/work/graco/graco/frame/CppParser.h.in
+                ls /home/runner/work/graco/graco/frame/CppParser.cpp.in
+
+                echo 2 - checking gen dir
+                ls /home/runner/work/graco/graco/build/samples/graco_sample_01_calc/
+
                 mkdir build
                 cd build
                 cmake .. -DTARGET_CPU=${{matrix.TARGET_CPU}} -DCMAKE_BUILD_TYPE=${{matrix.CONFIGURATION}}

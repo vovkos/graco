@@ -36,9 +36,13 @@ Generator::generate(
 
 	bool result;
 
+	io::File targetFile;
 	io::MappedFile frameFile;
 
-	result = frameFile.open(frameFilePath, io::FileFlag_ReadOnly);
+	result =
+		targetFile.open(fileName) &&
+		frameFile.open(frameFilePath, io::FileFlag_ReadOnly);
+
 	if (!result)
 		return false;
 
@@ -60,20 +64,11 @@ Generator::generate(
 	if (!result)
 		return false;
 
-	io::File targetFile;
-	result = targetFile.open(targetFilePath);
-	if (!result)
-		return false;
-
 	size = m_buffer.getLength();
 
-	result = targetFile.write(m_buffer, size) != -1;
-	if (!result)
-		return false;
-
-	targetFile.setSize(size);
-
-	return true;
+	return
+		targetFile.write(m_buffer, size) != -1 &&
+		targetFile.setSize(size);
 }
 
 //..............................................................................

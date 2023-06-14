@@ -61,8 +61,6 @@ main(
 )
 #endif
 {
-	g::getModule()->setTag("graco_test_cpp");
-
 	lex::registerParseErrorProvider();
 
 	bool result = parse(

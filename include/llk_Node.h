@@ -181,7 +181,7 @@ public:
 	};
 
 protected:
-	axl::sl::List<Node, axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink>, axl::mem::StdFree> m_freeList;
+	axl::sl::List<Node, axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink>, axl::mem::Deallocate> m_freeList;
 
 public:
 	template <typename T>

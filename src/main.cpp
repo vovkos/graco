@@ -65,7 +65,6 @@ main(
 {
 	bool result;
 
-	g::getModule()->setTag("graco");
 	lex::registerParseErrorProvider();
 
 	CmdLine cmdLine;

@@ -154,19 +154,19 @@ $ParserClassName::createSymbolNode(size_t index) {
 
 	typedef
 	SymbolNode*
-	CreateFunc(size_t index);
+	($ParserClassName::*CreateFunc)(size_t index);
 
-	static CreateFunc* const createFuncTable[NamedSymbolCount + 1] = {
+	static CreateFunc const createFuncTable[NamedSymbolCount + 1] = {
 %{
 for i = 1, NamedSymbolCount do
 	local symbol = SymbolTable[i]
 	if symbol.isCustomClass or symbol.enterBlock or symbol.leaveBlock then
 }
-		createSymbolNode_$(symbol.name),
+		&$ParserClassName::createSymbolNode_$(symbol.name),
 %{
 	else
 }
-		createStdSymbolNode,
+		&$ParserClassName::createStdSymbolNode,
 %{
 	end --if
 end -- for
@@ -174,7 +174,7 @@ end -- for
 		NULL
 	};
 
-	return createFuncTable[index](index);
+	return (this->*createFuncTable[index])(index);
 }
 
 %{
@@ -187,11 +187,11 @@ $ParserClassName::createSymbolNode_$(symbol.name)(size_t index) {
 %{
 		if symbol.isCustomClass then
 }
-	return llk::allocateNode<$ParserClassName, SymbolNode_$(symbol.name)>();
+	return m_nodeAllocator->allocate<SymbolNode_$(symbol.name)>();
 %{
 		else
 }
-	StdSymbolNode* node = llk::allocateNode<$ParserClassName, StdSymbolNode>();
+	SymbolNode* node = m_nodeAllocator->allocate<SymbolNode>();
 	node->m_index = index;
 %{
 			if symbol.enterBlock then
@@ -218,7 +218,7 @@ end -- for
 }
 $ParserClassName::SymbolNode*
 $ParserClassName::createStdSymbolNode(size_t index) {
-	SymbolNode* node = llk::allocateNode<$ParserClassName, StdSymbolNode>();
+	SymbolNode* node = m_nodeAllocator->allocate<SymbolNode>();
 	node->m_index = index;
 	return node;
 }

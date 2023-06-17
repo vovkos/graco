@@ -37,7 +37,6 @@ public:
 	typedef typename Token::TokenKind TokenKind;
 	typedef llk::TokenNode<Token> TokenNode;
 	typedef llk::SymbolNode SymbolNode;
-	typedef llk::StdSymbolNode StdSymbolNode;
 	typedef llk::LaDfaNode<Token> LaDfaNode;
 
 protected:
@@ -85,22 +84,33 @@ protected:
 protected:
 	axl::sl::StringRef m_fileName;
 
-	axl::sl::List<Node, axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink>, DeleteNode<T> > m_nodeList;
+	axl::mem::Pool<Token>* m_tokenPool;
+	NodeAllocator<T>* m_nodeAllocator;
+	axl::sl::List<Node, GetNodeLink, DeallocateNode> m_nodeList;
 	axl::sl::Array<Node*> m_predictionStack;
 	axl::sl::Array<SymbolNode*> m_symbolStack;
 	axl::sl::Array<SymbolNode*> m_catchStack;
 	axl::sl::Array<LaDfaNode*> m_resolverStack;
 
 	axl::sl::SimpleHashTable<int, size_t> m_syncTokenSet;
-	axl::sl::BoxList<Token> m_tokenList;
-	axl::sl::BoxIterator<Token> m_tokenCursor;
-	Token m_currentToken;
-	Token m_lastMatchedToken;
+	axl::sl::List<Token> m_tokenList;
+	axl::sl::Iterator<Token> m_tokenCursor;
 	uint_t m_flags;
 
 public:
 	Parser() {
+		// the same parser is normally never shared among threads
+		// if it does, be sure to update the node allocator and token pool
+
+		m_tokenPool = mem::getCurrentThreadPool<Token>();
+		m_nodeAllocator = getCurrentThreadNodeAllocator<T>();
 		m_flags = 0;
+	}
+
+	static
+	void
+	clearNodeAllocator() {
+		getCurrentThreadNodeAllocator<T>()->clear();
 	}
 
 	SymbolNode*
@@ -116,7 +126,8 @@ public:
 	void
 	clear() {
 		m_fileName.clear();
-		m_nodeList.clear();
+		m_tokenPool->put(&m_tokenList);
+		m_nodeAllocator->free(&m_nodeList);
 		m_predictionStack.clear();
 		m_symbolStack.clear();
 		m_resolverStack.clear();
@@ -141,19 +152,28 @@ public:
 #endif
 
 	bool
-	parseToken(const Token* token) {
+	consumeToken(Token* token) {
 		bool result;
+
+		if (token->m_token == -1) {
+			err::setFormatStringError("invalid character '\\x%x'", token->m_data.m_integer);
+			axl::lex::ensureSrcPosError(m_fileName, token->m_pos);
+			return false;
+		}
 
 		if (m_flags & Flag_Synchronize) {
 			MatchResult matchResult = synchronize(token);
-			if (matchResult == MatchResult_NextToken)
+			if (matchResult == MatchResult_NextToken) {
+				m_tokenPool->put(token);
 				return true;
-			else if (matchResult == MatchResult_Fail)
+			} else if (matchResult == MatchResult_Fail) {
+				m_tokenPool->put(token);
+				axl::lex::ensureSrcPosError(m_fileName, token->m_pos);
 				return false;
+			}
 		}
 
-		m_tokenCursor = m_tokenList.insertTail(*token);
-		m_currentToken = *token;
+		m_tokenCursor = m_tokenList.insertTail(token);
 
 		const size_t* parseTable = static_cast<T*>(this)->getParseTable();
 		size_t tokenIndex = static_cast<T*>(this)->getTokenIndex(token->m_token);
@@ -171,7 +191,7 @@ public:
 
 		for (;;) {
 			if (m_flags & Flag_Synchronize) {
-				MatchResult matchResult = synchronize(&m_currentToken);
+				MatchResult matchResult = synchronize(*m_tokenCursor);
 				switch (matchResult) {
 				case MatchResult_Continue:
 					break;
@@ -184,8 +204,7 @@ public:
 					// fall through
 
 				case MatchResult_NextTokenNoAdvance:
-					m_currentToken = *m_tokenCursor;
-					tokenIndex = static_cast<T*>(this)->getTokenIndex(m_currentToken.m_token);
+					tokenIndex = static_cast<T*>(this)->getTokenIndex(m_tokenCursor->m_token);
 					ASSERT(tokenIndex < T::TokenCount);
 					m_flags &= ~Flag_TokenMatch;
 					break;
@@ -236,8 +255,10 @@ public:
 			m_flags &= ~Flag_PostSynchronize;
 
 			if (matchResult == MatchResult_Fail) {
-				if (m_resolverStack.isEmpty())
+				if (m_resolverStack.isEmpty()) {
+					axl::lex::ensureSrcPosError(m_fileName, token->m_pos);
 					return false;
+				}
 
 				matchResult = rollbackResolver();
 				ASSERT(matchResult != MatchResult_Fail); // failed resolver means there is another possibility!
@@ -255,8 +276,7 @@ public:
 				// fall through
 
 			case MatchResult_NextTokenNoAdvance:
-				m_currentToken = *m_tokenCursor;
-				tokenIndex = static_cast<T*>(this)->getTokenIndex(m_currentToken.m_token);
+				tokenIndex = static_cast<T*>(this)->getTokenIndex(m_tokenCursor->m_token);
 				ASSERT(tokenIndex < T::TokenCount);
 				m_flags &= ~Flag_TokenMatch;
 				break;
@@ -276,10 +296,7 @@ public:
 
 		for (intptr_t i = count - 1; i >= 0; i--) {
 			SymbolNode* node = m_symbolStack[i];
-			SymbolNodeValue* value = node->getValue();
-			TRACE("%p %s", node, static_cast<T*>(this)->getSymbolName(node->m_index));
-			TRACE(" (%d:%d)", value->m_firstTokenPos.m_line + 1, value->m_firstTokenPos.m_col + 1);
-			TRACE("\n");
+			TRACE("%p %s\n", node, static_cast<T*>(this)->getSymbolName(node->m_index));
 		}
 	}
 
@@ -301,25 +318,15 @@ public:
 
 	void
 	traceTokenList() {
-		axl::sl::BoxIterator<Token> token = m_tokenList.getHead();
-
 		TRACE("TOKEN LIST (%d tokens):\n", m_tokenList.getCount());
-		for (; token; token++) {
-			TRACE("%s '%s' %s\n", token->getName(), token->getText(), token == m_tokenCursor ? "<--" : "");
+
+		axl::sl::ConstIterator<Token> it = m_tokenList.getHead();
+		for (; it; it++) {
+			TRACE("%s '%s' %s\n", it->getName(), it->getText(), it == m_tokenCursor ? "<--" : "");
 		}
 	}
 
 	// public info
-
-	const Token&
-	getLastMatchedToken() {
-		return m_lastMatchedToken;
-	}
-
-	const Token&
-	getCurrentToken() {
-		return m_currentToken;
-	}
 
 	Node*
 	getPredictionTop() {
@@ -374,16 +381,16 @@ protected:
 			if (m_flags & Flag_RecoveryFailureErrors) {
 				axl::err::setFormatStringError(
 					"synchronizer token '%s' didn't match (adjust the 'catch' clause in the grammar)",
-					m_currentToken.getName()
+					m_tokenCursor->getName()
 				);
 
-				axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
+				axl::lex::pushSrcPosError(m_fileName, m_tokenCursor->m_pos);
 			}
 
 			return RecoveryAction_Fail;
 		}
 
-		axl::lex::ensureSrcPosError(m_fileName, m_currentToken.m_pos);
+		axl::lex::ensureSrcPosError(m_fileName, m_tokenCursor->m_pos);
 		RecoveryAction action = static_cast<T*>(this)->processError(errorKind);
 		ASSERT(action != RecoveryAction_Continue || errorKind != ErrorKind_Syntax); // can't continue on syntax errors
 
@@ -403,7 +410,7 @@ protected:
 		if (m_syncTokenSet.isEmpty()) {
 			if (m_flags & Flag_RecoveryFailureErrors) {
 				axl::err::setError("unable to recover from previous error(s)");
-				axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
+				axl::lex::pushSrcPosError(m_fileName, m_tokenCursor->m_pos);
 			}
 
 			return RecoveryAction_Fail;
@@ -412,8 +419,7 @@ protected:
 		// reset and wait for a synchornization token
 
 		m_resolverStack.clear();
-		m_tokenList.clear();
-		m_tokenCursor = m_tokenList.insertTail(m_currentToken);
+		m_tokenList.clearButEntry(m_tokenCursor);
 		m_flags |= Flag_Synchronize;
 		return RecoveryAction_Synchronize;
 	}
@@ -457,8 +463,10 @@ protected:
 			if (node == catcher)
 				break;
 
-			if (!(node->m_flags & NodeFlag_Locator))
-				m_nodeList.erase(node);
+			if (!(node->m_flags & NodeFlag_Locator)) {
+				m_nodeList.remove(node);
+				m_nodeAllocator->free(node);
+			}
 		}
 
 		bool isEof = token->m_token == T::EofToken;
@@ -482,7 +490,7 @@ protected:
 			return false;
 
 		axl::err::setFormatStringError("random error: %s", description);
-		axl::lex::pushSrcPosError(m_fileName, m_currentToken.m_pos);
+		axl::lex::pushSrcPosError(m_fileName, m_tokenCursor->m_pos);
 		return true;
 	}
 #endif
@@ -493,7 +501,7 @@ protected:
 
 		Node* node = getPredictionTop();
 		if (m_resolverStack.isEmpty() && (!node || node->m_nodeKind != NodeKind_LaDfa)) {
-			m_tokenList.removeHead(); // nobody gonna reparse this token
+			m_tokenPool->put(m_tokenList.removeHead()); // nobody gonna reparse this token
 			ASSERT(m_tokenCursor == m_tokenList.getHead());
 		}
 
@@ -507,10 +515,10 @@ protected:
 
 	MatchResult
 	matchEmptyPredictionStack() {
-		if ((m_flags & Flag_TokenMatch) || m_currentToken.m_token == T::EofToken)
+		if ((m_flags & Flag_TokenMatch) || m_tokenCursor->m_token == T::EofToken)
 			return MatchResult_NextToken;
 
-		axl::err::setFormatStringError("prediction stack empty while parsing '%s'", m_currentToken.getName());
+		axl::err::setFormatStringError("prediction stack empty while parsing '%s'", m_tokenCursor->getName());
 		return MatchResult_Fail;
 	}
 
@@ -532,16 +540,15 @@ protected:
 				return MatchResult_Fail; // rollback resolver
 
 			int expectedToken = static_cast<T*>(this)->getTokenFromIndex(node->m_index);
-			axl::lex::setExpectedTokenError(Token::getName(expectedToken), m_currentToken.getName());
+			axl::lex::setExpectedTokenError(Token::getName(expectedToken), m_tokenCursor->getName());
 			return recover(ErrorKind_Syntax) ? MatchResult_Continue : MatchResult_Fail;
 		}
 
 		if (node->m_flags & NodeFlag_Locator) {
-			node->m_token = m_currentToken;
+			node->m_token = **m_tokenCursor;
 			node->m_flags |= NodeFlag_Matched;
 		}
 
-		m_lastMatchedToken = m_currentToken;
 		m_flags |= Flag_TokenMatch;
 
 		popPrediction();
@@ -564,7 +571,6 @@ protected:
 			}
 
 			ASSERT(getSymbolTop() == node);
-			node->getValue()->m_lastTokenPos = m_lastMatchedToken.m_pos;
 			node->m_flags |= NodeFlag_Matched;
 
 			if (node->m_leaveIndex != -1) {
@@ -641,7 +647,7 @@ protected:
 			ASSERT(symbol);
 			axl::err::setFormatStringError(
 				"unexpected '%s' in '%s'",
-				m_currentToken.getName(),
+				m_tokenCursor->getName(),
 				static_cast<T*>(this)->getSymbolName(symbol->m_index)
 			);
 
@@ -721,7 +727,7 @@ protected:
 
 		LaDfaResult laDfaResult = static_cast<T*>(this)->laDfa(
 			node->m_index,
-			m_currentToken.m_token,
+			m_tokenCursor->m_token,
 			&transition
 		);
 
@@ -738,7 +744,6 @@ protected:
 
 				popPrediction();
 				pushPrediction(transition.m_productionIndex);
-
 				return MatchResult_NextTokenNoAdvance;
 			}
 
@@ -761,7 +766,7 @@ protected:
 				ASSERT(symbol);
 				axl::err::setFormatStringError(
 					"unexpected '%s' while trying to resolve a conflict in '%s'",
-					m_currentToken.getName(),
+					m_tokenCursor->getName(),
 					static_cast<T*>(this)->getSymbolName(symbol->m_index)
 				);
 			}
@@ -835,28 +840,28 @@ protected:
 		Node* node = NULL;
 
 		if (masterIndex < T::TokenEnd) {
-			node = allocateNode<T, TokenNode>();
+			node = m_nodeAllocator->allocate<TokenNode>();
 			node->m_index = masterIndex;
 		} else if (masterIndex < T::TokenEnd + T::NamedSymbolCount) {
 			size_t index = masterIndex - T::SymbolFirst;
 			SymbolNode* symbolNode = static_cast<T*>(this)->createSymbolNode(index);
 			node = symbolNode;
 		} else if (masterIndex < T::TokenEnd + T::NamedSymbolCount + T::CatchSymbolCount) {
-			node = allocateNode<T, StdSymbolNode>();
+			node = m_nodeAllocator->allocate<SymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
 		} else if (masterIndex < T::SymbolEnd) {
-			node = allocateNode<T, SymbolNode>();
+			node = m_nodeAllocator->allocate<SymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
 		} else if (masterIndex < T::SequenceEnd) {
-			node = allocateNode<T, Node>();
+			node = m_nodeAllocator->allocate<Node>();
 			node->m_nodeKind = NodeKind_Sequence;
 			node->m_index = masterIndex - T::SequenceFirst;
 		} else if (masterIndex < T::ActionEnd) {
-			node = allocateNode<T, Node>();
+			node = m_nodeAllocator->allocate<Node>();
 			node->m_nodeKind = NodeKind_Action;
 			node->m_index = masterIndex - T::ActionFirst;
 		} else if (masterIndex < T::ArgumentEnd) {
-			node = allocateNode<T, Node>();
+			node = m_nodeAllocator->allocate<Node>();
 			node->m_nodeKind = NodeKind_Argument;
 			node->m_index = masterIndex - T::ArgumentFirst;
 		} else if (masterIndex < T::BeaconEnd) {
@@ -877,7 +882,7 @@ protected:
 			symbolNode->m_locatorList.insertTail(node);
 		} else {
 			ASSERT(masterIndex < T::LaDfaEnd);
-			node = allocateNode<T, LaDfaNode>();
+			node = m_nodeAllocator->allocate<LaDfaNode>();
 			node->m_index = masterIndex - T::LaDfaFirst;
 		}
 
@@ -914,8 +919,10 @@ protected:
 		Node* node = m_predictionStack.getBackAndPop();
 		ASSERT(!(node->m_flags & SymbolNodeFlag_Stacked));
 
-		if (!(node->m_flags & NodeFlag_Locator))
-			m_nodeList.erase(node);
+		if (!(node->m_flags & NodeFlag_Locator)) {
+			m_nodeList.remove(node);
+			m_nodeAllocator->free(node);
+		}
 	}
 
 	// symbol stack
@@ -925,10 +932,6 @@ protected:
 		ASSERT(isNamedSymbol(node));
 		m_symbolStack.append(node);
 		node->m_flags |= SymbolNodeFlag_Stacked;
-
-		SymbolNodeValue* value = node->getValue();
-		value->m_firstTokenPos = m_currentToken.m_pos;
-		value->m_lastTokenPos = m_currentToken.m_pos;
 	}
 
 	void
@@ -1001,7 +1004,7 @@ protected:
 		return node && node->m_nodeKind == NodeKind_Token ? &((TokenNode*)node)->m_token : NULL;
 	}
 
-	SymbolNodeValue*
+	void*
 	getSymbolLocator(size_t index) {
 		Node* node = getLocator(index);
 		return node && node->m_nodeKind == NodeKind_Symbol ? ((SymbolNode*)node)->getValue() : NULL;

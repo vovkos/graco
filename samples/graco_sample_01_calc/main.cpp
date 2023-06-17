@@ -16,31 +16,23 @@
 //..............................................................................
 
 bool
-parse(const sl::StringRef& p) {
+parse(const sl::StringRef& source) {
 	bool result;
 
 	Lexer lexer;
-	lexer.create("my-source", p);
+	lexer.create(source);
 
 	Parser parser;
 	parser.create("my-source", Parser::StartSymbol);
 
-	for (;;) {
-		const Token* token = lexer.getToken();
-		if (token->m_token == TokenKind_Error) {
-			err::setFormatStringError("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
-			return false;
-		}
-
-		result = parser.parseToken(token);
+	bool isEof;
+	do {
+		Token* token = lexer.takeToken();
+		isEof = token->m_token == TokenKind_Eof;
+		result = parser.consumeToken(token);
 		if (!result)
 			return false;
-
-		if (token->m_token == TokenKind_Eof)
-			break;
-
-		lexer.nextToken();
-	}
+	} while (!isEof);
 
 	return true;
 }

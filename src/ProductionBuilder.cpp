@@ -94,10 +94,8 @@ ProductionBuilder::build(
 		return NULL;
 
 	result = processAllUserCode();
-	if (!result) {
-		ensureSrcPosError();
+	if (!result)
 		return NULL;
-	}
 
 	findAndReplaceUnusedBeacons(&production);
 
@@ -119,8 +117,10 @@ ProductionBuilder::processAllUserCode() {
 			continue;
 
 		result = processUserCode(node->m_srcPos, &node->m_userCode);
-		if (!result)
+		if (!result) {
+			lex::ensureSrcPosError(node->m_srcPos);
 			return false;
+		}
 
 		node->m_flags |= UserNodeFlag_UserCodeProcessed;
 		node->m_dispatcher = m_dispatcher;
@@ -135,8 +135,10 @@ ProductionBuilder::processAllUserCode() {
 		sl::BoxIterator<sl::String> it = node->m_argValueList.getHead();
 		for (; it; it++) {
 			result = processUserCode(node->m_srcPos, &*it);
-			if (!result)
+			if (!result) {
+				lex::ensureSrcPosError(node->m_srcPos);
 				return false;
+			}
 		}
 
 		node->m_flags |= UserNodeFlag_UserCodeProcessed;
@@ -383,15 +385,8 @@ ProductionBuilder::processUserCode(
 
 	sl::String resultString;
 
-	Lexer::create(
-		getMachineState(LexerMachine_UserCode2ndPass),
-		srcPos.m_filePath,
-		*userCode
-	);
-
+	Lexer::create(getMachineState(LexerMachine_UserCode2ndPass), *userCode);
 	setLineCol(srcPos);
-
-	const char* p = userCode->cp();
 
 	VariableKind variableKind;
 	BeaconNode* beacon;

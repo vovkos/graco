@@ -33,6 +33,7 @@ protected:
 protected:
 	CmdLine* m_cmdLine;
 	Module* m_module;
+	sl::StringRef m_filePath;
 	sl::String m_dir;
 
 public:
@@ -141,11 +142,6 @@ protected:
 		GrammarNode* node,
 		const lex::LineCol& lineCol
 	);
-
-	void
-	setGrammarNodeSrcPos(GrammarNode* node) {
-		setGrammarNodeSrcPos(node, m_lastTokenPos);
-	}
 };
 
 //..............................................................................

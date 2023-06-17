@@ -47,7 +47,7 @@ for i = 1, NamedSymbolCount do
 	if symbol.isCustomClass then
 		if symbol.valueBlock then
 }
-	struct SymbolNodeValue_$(symbol.name): llk::SymbolNodeValue {
+	struct SymbolNodeValue_$(symbol.name) {
 $(getPpLine(symbol.srcPos.filePath, symbol.valueLine))
 	$(symbol.valueBlock);
 $(getPpLineDefault())
@@ -57,7 +57,7 @@ $(getPpLineDefault())
 %{
 		else
 }
-	struct SymbolNode_$(symbol.name): llk::StdSymbolNode
+	struct SymbolNode_$(symbol.name): llk::SymbolNode
 %{
 		end -- if
 } {
@@ -108,7 +108,7 @@ end -- for
 	union MaxNodeSizeCalc {
 		char m_laDfaNode[sizeof(LaDfaNode)];
 		char m_tokenNode[sizeof(TokenNode)];
-		char m_stdSymbolNode[sizeof(StdSymbolNode)];
+		char m_stdSymbolNode[sizeof(SymbolNode)];
 %{
 for i = 1, NamedSymbolCount do
 	local symbol = SymbolTable[i]
@@ -180,7 +180,6 @@ protected:
 	const char*
 	getSymbolName(size_t index);
 
-	static
 	SymbolNode*
 	createSymbolNode(size_t index);
 
@@ -221,7 +220,6 @@ for i = 1, NamedSymbolCount do
 	local symbol = SymbolTable[i]
 	if symbol.isCustomClass or symbol.enterBlock or symbol.leaveBlock then
 }
-	static
 	SymbolNode*
 	createSymbolNode_$(symbol.name)(size_t index);
 
@@ -229,7 +227,6 @@ for i = 1, NamedSymbolCount do
 	end -- if
 end -- for
 }
-	static
 	SymbolNode*
 	createStdSymbolNode(size_t index);
 

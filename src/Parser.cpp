@@ -58,14 +58,15 @@ Parser::parse(
 	const sl::StringRef& source
 ) {
 	const sl::String& cachedSource = m_module->cacheSource(source);
-	Lexer::create(filePath, cachedSource);
+	Lexer::create(cachedSource);
 
+	m_filePath = filePath;
 	m_dir = io::getDir(filePath);
 	m_module->m_nodeMgr.m_lookaheadLimit = m_cmdLine->m_lookaheadLimit;
 
 	bool result = program();
 	if (!result) {
-		ensureSrcPosError();
+		lex::ensureSrcPosError(filePath, getToken()->m_pos);
 		return false;
 	}
 
@@ -508,7 +509,7 @@ Parser::customizeSymbol(SymbolNode* node) {
 bool
 Parser::processParamBlock(SymbolNode* node) {
 	Lexer lexer;
-	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), "param-list", node->m_paramBlock);
+	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), node->m_paramBlock);
 	const char* p = node->m_paramBlock.cp();
 	const Token* token;
 	sl::String resultString;
@@ -560,7 +561,7 @@ Parser::processParamBlock(SymbolNode* node) {
 bool
 Parser::processLocalBlock(SymbolNode* node) {
 	Lexer lexer;
-	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), "local-list", node->m_localBlock);
+	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), node->m_localBlock);
 	const char* p = node->m_localBlock.cp();
 	const Token* token;
 	sl::String resultString;
@@ -599,7 +600,7 @@ Parser::processEnterLeaveBlock(
 	sl::StringRef* string
 ) {
 	Lexer lexer;
-	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), "event-handler", *string);
+	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), *string);
 	const char* p = string->cp();
 	const Token* token;
 	sl::String resultString;
@@ -669,7 +670,7 @@ Parser::processActualArgList(
 	const Token* token;
 
 	Lexer lexer;
-	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), "actual-arg-list", string);
+	lexer.create(getMachineState(LexerMachine_UserCode2ndPass), string);
 
 	int level = 0;
 
@@ -739,7 +740,7 @@ Parser::production(const ProductionSpecifiers* specifiers) {
 		return false;
 	}
 
-	setGrammarNodeSrcPos(symbol);
+	setGrammarNodeSrcPos(symbol, token->m_pos);
 
 	nextToken();
 
@@ -1023,7 +1024,7 @@ Parser::beacon() {
 	}
 
 	BeaconNode* beacon = m_module->m_nodeMgr.createBeaconNode(node);
-	setGrammarNodeSrcPos(beacon);
+	setGrammarNodeSrcPos(beacon, token->m_pos);
 
 	nextToken();
 

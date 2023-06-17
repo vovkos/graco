@@ -82,6 +82,21 @@ struct Node: axl::sl::ListLink {
 	}
 };
 
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+typedef axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink> GetNodeLink;
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+class DeallocateNode {
+public:
+	void
+	operator () (Node* node) const {
+		node->~Node();
+		axl::mem::deallocate(node);
+	}
+};
+
 //..............................................................................
 
 template <class Token>
@@ -97,13 +112,6 @@ struct TokenNode: Node {
 
 enum SymbolNodeFlag {
 	SymbolNodeFlag_Stacked = 0x0010,
-};
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-struct SymbolNodeValue {
-	axl::lex::LineCol m_firstTokenPos;
-	axl::lex::LineCol m_lastTokenPos;
 };
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -127,9 +135,9 @@ struct SymbolNode: Node {
 		m_leaveIndex = -1;
 	}
 
-	SymbolNodeValue*
+	void*
 	getValue() {
-		return (SymbolNodeValue*)(this + 1);
+		return (this + 1);
 	}
 };
 
@@ -144,10 +152,6 @@ struct SymbolNodeImpl: SymbolNode {
 	}
 };
 
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-typedef SymbolNodeImpl<SymbolNodeValue> StdSymbolNode;
-
 //..............................................................................
 
 enum LaDfaNodeFlag {
@@ -161,8 +165,8 @@ template <class Token>
 struct LaDfaNode: Node {
 	size_t m_resolverThenIndex;
 	size_t m_resolverElseIndex;
-	axl::sl::BoxIterator<Token> m_reparseLaDfaTokenCursor;
-	axl::sl::BoxIterator<Token> m_reparseResolverTokenCursor;
+	axl::sl::Iterator<Token> m_reparseLaDfaTokenCursor;
+	axl::sl::Iterator<Token> m_reparseResolverTokenCursor;
 
 	LaDfaNode() {
 		m_nodeKind = NodeKind_LaDfa;
@@ -173,15 +177,15 @@ struct LaDfaNode: Node {
 
 //..............................................................................
 
-template <typename Parser>
+template <typename T>
 class NodeAllocator: public axl::rc::RefCount {
 public:
 	enum {
-		MaxNodeSize = Parser::MaxNodeSize,
+		MaxNodeSize = 1024, // T::MaxNodeSize,
 	};
 
 protected:
-	axl::sl::List<Node, axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink>, axl::mem::Deallocate> m_freeList;
+	axl::sl::List<Node, GetNodeLink, axl::mem::Deallocate> m_freeList;
 
 public:
 	template <typename T>
@@ -201,46 +205,34 @@ public:
 		node->~Node();
 		m_freeList.insertHead(node);
 	}
-};
 
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-template <typename Parser>
-NodeAllocator<Parser>*
-createCurrentThreadNodeAllocator() {
-	axl::rc::Ptr<NodeAllocator<Parser> > allocator = AXL_RC_NEW(NodeAllocator<Parser>);
-	axl::sys::setTlsPtrSlotValue<NodeAllocator<Parser> >(allocator);
-	return allocator;
-}
-
-template <typename Parser>
-NodeAllocator<Parser>*
-getCurrentThreadNodeAllocator() {
-	NodeAllocator<Parser>* allocator = axl::sys::getTlsPtrSlotValue<NodeAllocator<Parser> >();
-	return allocator ? allocator : createCurrentThreadNodeAllocator<Parser>();
-}
-
-//..............................................................................
-
-template <
-	typename Parser,
-	typename T
->
-T*
-allocateNode() {
-	return getCurrentThreadNodeAllocator<Parser>()->template allocate<T>();
-}
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-template <typename Parser>
-class DeleteNode {
-public:
 	void
-	operator () (Node* node) {
-		getCurrentThreadNodeAllocator<Parser>()->free(node);
+	free(axl::sl::List<Node, GetNodeLink, DeallocateNode>* list) {
+		for (axl::sl::Iterator<Node> it = list->getHead(); it; it++)
+			it->~Node();
+
+		m_freeList.insertListHead(list);
+	}
+
+	void
+	clear() {
+		m_freeList.clear();
 	}
 };
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+template <typename T>
+NodeAllocator<T>*
+getCurrentThreadNodeAllocator() {
+	NodeAllocator<T>* allocator = sys::getTlsPtrSlotValue<NodeAllocator<T> >();
+	if (allocator)
+		return allocator;
+
+	rc::Ptr<NodeAllocator<T> > newAllocator = AXL_RC_NEW(NodeAllocator<T>);
+	sys::setTlsPtrSlotValue<NodeAllocator<T> >(newAllocator);
+	return newAllocator;
+}
 
 //..............................................................................
 

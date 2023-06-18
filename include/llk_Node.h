@@ -181,23 +181,23 @@ template <typename T>
 class NodeAllocator: public axl::rc::RefCount {
 public:
 	enum {
-		MaxNodeSize = 1024, // T::MaxNodeSize,
+		MaxNodeSize = T::MaxNodeSize,
 	};
 
 protected:
 	axl::sl::List<Node, GetNodeLink, axl::mem::Deallocate> m_freeList;
 
 public:
-	template <typename T>
-	T*
+	template <typename N>
+	N*
 	allocate() {
-		ASSERT(sizeof(T) <= MaxNodeSize);
+		ASSERT(sizeof(N) <= MaxNodeSize);
 
 		Node* node = !m_freeList.isEmpty() ?
 			m_freeList.removeHead() :
 			(Node*)AXL_MEM_ALLOCATE(MaxNodeSize);
 
-		return new(node)T;
+		return new (node) N;
 	}
 
 	void
@@ -225,12 +225,12 @@ public:
 template <typename T>
 NodeAllocator<T>*
 getCurrentThreadNodeAllocator() {
-	NodeAllocator<T>* allocator = sys::getTlsPtrSlotValue<NodeAllocator<T> >();
+	NodeAllocator<T>* allocator = axl::sys::getTlsPtrSlotValue<NodeAllocator<T> >();
 	if (allocator)
 		return allocator;
 
-	rc::Ptr<NodeAllocator<T> > newAllocator = AXL_RC_NEW(NodeAllocator<T>);
-	sys::setTlsPtrSlotValue<NodeAllocator<T> >(newAllocator);
+	axl::rc::Ptr<NodeAllocator<T> > newAllocator = AXL_RC_NEW(NodeAllocator<T>);
+	axl::sys::setTlsPtrSlotValue<NodeAllocator<T> >(newAllocator);
 	return newAllocator;
 }
 

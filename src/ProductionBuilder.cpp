@@ -390,6 +390,7 @@ ProductionBuilder::processUserCode(
 
 	VariableKind variableKind;
 	BeaconNode* beacon;
+    const char* p = userCode->cp();
 
 	for (;;) {
 		token = getToken();

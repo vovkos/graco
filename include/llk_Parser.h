@@ -102,7 +102,7 @@ public:
 		// the same parser is normally never shared among threads
 		// if it does, be sure to update the node allocator and token pool
 
-		m_tokenPool = mem::getCurrentThreadPool<Token>();
+		m_tokenPool = axl::mem::getCurrentThreadPool<Token>();
 		m_nodeAllocator = getCurrentThreadNodeAllocator<T>();
 		m_flags = 0;
 	}
@@ -156,7 +156,7 @@ public:
 		bool result;
 
 		if (token->m_token == -1) {
-			err::setFormatStringError("invalid character '\\x%x'", token->m_data.m_integer);
+			axl::err::setFormatStringError("invalid character '\\x%x'", token->m_data.m_integer);
 			axl::lex::ensureSrcPosError(m_fileName, token->m_pos);
 			return false;
 		}
@@ -840,28 +840,28 @@ protected:
 		Node* node = NULL;
 
 		if (masterIndex < T::TokenEnd) {
-			node = m_nodeAllocator->allocate<TokenNode>();
+			node = m_nodeAllocator->template allocate<TokenNode>();
 			node->m_index = masterIndex;
 		} else if (masterIndex < T::TokenEnd + T::NamedSymbolCount) {
 			size_t index = masterIndex - T::SymbolFirst;
 			SymbolNode* symbolNode = static_cast<T*>(this)->createSymbolNode(index);
 			node = symbolNode;
 		} else if (masterIndex < T::TokenEnd + T::NamedSymbolCount + T::CatchSymbolCount) {
-			node = m_nodeAllocator->allocate<SymbolNode>();
+			node = m_nodeAllocator->template allocate<SymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
 		} else if (masterIndex < T::SymbolEnd) {
-			node = m_nodeAllocator->allocate<SymbolNode>();
+			node = m_nodeAllocator->template allocate<SymbolNode>();
 			node->m_index = masterIndex - T::SymbolFirst;
 		} else if (masterIndex < T::SequenceEnd) {
-			node = m_nodeAllocator->allocate<Node>();
+			node = m_nodeAllocator->template allocate<Node>();
 			node->m_nodeKind = NodeKind_Sequence;
 			node->m_index = masterIndex - T::SequenceFirst;
 		} else if (masterIndex < T::ActionEnd) {
-			node = m_nodeAllocator->allocate<Node>();
+			node = m_nodeAllocator->template allocate<Node>();
 			node->m_nodeKind = NodeKind_Action;
 			node->m_index = masterIndex - T::ActionFirst;
 		} else if (masterIndex < T::ArgumentEnd) {
-			node = m_nodeAllocator->allocate<Node>();
+			node = m_nodeAllocator->template allocate<Node>();
 			node->m_nodeKind = NodeKind_Argument;
 			node->m_index = masterIndex - T::ArgumentFirst;
 		} else if (masterIndex < T::BeaconEnd) {
@@ -882,7 +882,7 @@ protected:
 			symbolNode->m_locatorList.insertTail(node);
 		} else {
 			ASSERT(masterIndex < T::LaDfaEnd);
-			node = m_nodeAllocator->allocate<LaDfaNode>();
+			node = m_nodeAllocator->template allocate<LaDfaNode>();
 			node->m_index = masterIndex - T::LaDfaFirst;
 		}
 

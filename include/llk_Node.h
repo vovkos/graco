@@ -145,30 +145,11 @@ public:
 		MaxNodeSize = T::MaxNodeSize,
 	};
 
-protected:
-	size_t m_allocatedCount;
-	size_t m_allocatedSize;
-
 public:
-	NodeAllocator() {
-		m_allocatedCount = 0;
-		m_allocatedSize = 0;
-	}
-
-	~NodeAllocator() {
-		printf("~NodeAllocator: MaxNodeSize: %d B\n", MaxNodeSize);
-		printf("    %d blocks %d byte(s)\n", m_allocatedCount, m_allocatedSize);
-	}
-
 	template <typename N>
 	N*
 	allocate() {
 		ASSERT(sizeof(N) <= MaxNodeSize);
-
-		if (m_freeList.isEmpty()) {
-			m_allocatedCount++;
-			m_allocatedSize += MaxNodeSize;
-		}
 
 		Node* node = !m_freeList.isEmpty() ?
 			m_freeList.removeHead() :

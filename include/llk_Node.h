@@ -186,12 +186,25 @@ public:
 
 protected:
 	axl::sl::List<Node, GetNodeLink, axl::mem::Deallocate> m_freeList;
+	size_t m_allocatedSize;
 
 public:
+	NodeAllocator() {
+		m_allocatedSize = 0;
+	}
+
+	~NodeAllocator() {
+		printf("MaxNodSize: %d B\n", MaxNodeSize);
+		printf("Nodes allocated: %d B\n", m_allocatedSize);
+	}
+
 	template <typename N>
 	N*
 	allocate() {
 		ASSERT(sizeof(N) <= MaxNodeSize);
+
+		if (m_freeList.isEmpty())
+			m_allocatedSize += sizeof(N);
 
 		Node* node = !m_freeList.isEmpty() ?
 			m_freeList.removeHead() :

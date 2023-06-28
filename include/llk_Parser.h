@@ -92,6 +92,10 @@ protected:
 	axl::sl::Array<SymbolNode*> m_catchStack;
 	axl::sl::Array<LaDfaNode*> m_resolverStack;
 
+	size_t m_maxSymbolStackDepth;
+	size_t m_maxPredictionStackDepth;
+	size_t m_maxNodeListLength;
+
 	axl::sl::SimpleHashTable<int, size_t> m_syncTokenSet;
 	axl::sl::List<Token> m_tokenList;
 	axl::sl::Iterator<Token> m_tokenCursor;
@@ -105,6 +109,17 @@ public:
 		m_tokenPool = axl::mem::getCurrentThreadPool<Token>();
 		m_nodeAllocator = getCurrentThreadNodeAllocator<T>();
 		m_flags = 0;
+
+		m_maxSymbolStackDepth = 0;
+		m_maxPredictionStackDepth = 0;
+		m_maxNodeListLength = 0;
+	}
+
+	~Parser() {
+		printf("~Parser:\n");
+		printf("  m_maxSymbolStackDepth:     %d\n", m_maxSymbolStackDepth);
+		printf("  m_maxPredictionStackDepth: %d\n", m_maxPredictionStackDepth);
+		printf("  m_maxNodeListLength:       %d\n", m_maxNodeListLength);
 	}
 
 	static
@@ -907,10 +922,15 @@ protected:
 			return NULL;
 
 		Node* node = createNode(masterIndex);
-		if (!(node->m_flags & NodeFlag_Locator))
+		if (!(node->m_flags & NodeFlag_Locator)) {
 			m_nodeList.insertTail(node);
+			if (m_maxNodeListLength < m_nodeList.getCount())
+				m_maxNodeListLength = m_nodeList.getCount();
+		}
 
 		m_predictionStack.append(node);
+		if (m_maxPredictionStackDepth < m_predictionStack.getCount())
+			m_maxPredictionStackDepth = m_predictionStack.getCount();
 		return node;
 	}
 
@@ -931,6 +951,9 @@ protected:
 	pushSymbol(SymbolNode* node) {
 		ASSERT(isNamedSymbol(node));
 		m_symbolStack.append(node);
+		if (m_maxSymbolStackDepth < m_symbolStack.getCount())
+			m_maxSymbolStackDepth = m_symbolStack.getCount();
+
 		node->m_flags |= SymbolNodeFlag_Stacked;
 	}
 

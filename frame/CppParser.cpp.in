@@ -187,30 +187,32 @@ $ParserClassName::createSymbolNode_$(symbol.name)(size_t index) {
 %{
 		if symbol.isCustomClass then
 }
-	return m_nodeAllocator->allocate<SymbolNode_$(symbol.name)>();
+	SymbolNode* node = m_nodeAllocator->allocate<SymbolNode_$(symbol.name)>();
 %{
 		else
 }
 	SymbolNode* node = m_nodeAllocator->allocate<SymbolNode>();
-	node->m_index = index;
-%{
-			if symbol.enterBlock then
-}
-	node->m_enterIndex = $(symbol.enterIndex);
-%{
-			end -- if
-
-			if symbol.leaveBlock then
-}
-	node->m_leaveIndex = $(symbol.leaveIndex);
-%{
-			end -- if
-}
-	return node;
 %{
 		end -- if
 }
+	node->m_index = index;
+%{
+		if symbol.enterBlock then
 }
+	node->m_enterIndex = $(symbol.enterIndex);
+%{
+		end -- if
+
+		if symbol.leaveBlock then
+}
+	node->m_leaveIndex = $(symbol.leaveIndex);
+%{
+		end -- if
+}
+	node->m_nodeAllocator = m_nodeAllocator;
+	return node;
+}
+
 
 %{
 	end -- if
@@ -220,6 +222,7 @@ $ParserClassName::SymbolNode*
 $ParserClassName::createStdSymbolNode(size_t index) {
 	SymbolNode* node = m_nodeAllocator->allocate<SymbolNode>();
 	node->m_index = index;
+	node->m_nodeAllocator = m_nodeAllocator;
 	return node;
 }
 

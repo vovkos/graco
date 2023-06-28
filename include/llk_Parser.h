@@ -86,7 +86,6 @@ protected:
 
 	axl::mem::Pool<Token>* m_tokenPool;
 	NodeAllocator<T>* m_nodeAllocator;
-	axl::sl::List<Node, GetNodeLink, DeallocateNode> m_nodeList;
 	axl::sl::Array<Node*> m_predictionStack;
 	axl::sl::Array<SymbolNode*> m_symbolStack;
 	axl::sl::Array<SymbolNode*> m_catchStack;
@@ -94,7 +93,6 @@ protected:
 
 	size_t m_maxSymbolStackDepth;
 	size_t m_maxPredictionStackDepth;
-	size_t m_maxNodeListLength;
 
 	axl::sl::SimpleHashTable<int, size_t> m_syncTokenSet;
 	axl::sl::List<Token> m_tokenList;
@@ -112,14 +110,14 @@ public:
 
 		m_maxSymbolStackDepth = 0;
 		m_maxPredictionStackDepth = 0;
-		m_maxNodeListLength = 0;
 	}
 
 	~Parser() {
+		m_nodeAllocator->free(m_predictionStack);
+
 		printf("~Parser:\n");
 		printf("  m_maxSymbolStackDepth:     %d\n", m_maxSymbolStackDepth);
 		printf("  m_maxPredictionStackDepth: %d\n", m_maxPredictionStackDepth);
-		printf("  m_maxNodeListLength:       %d\n", m_maxNodeListLength);
 	}
 
 	static
@@ -142,7 +140,7 @@ public:
 	clear() {
 		m_fileName.clear();
 		m_tokenPool->put(&m_tokenList);
-		m_nodeAllocator->free(&m_nodeList);
+		m_nodeAllocator->free(m_predictionStack);
 		m_predictionStack.clear();
 		m_symbolStack.clear();
 		m_resolverStack.clear();
@@ -478,10 +476,8 @@ protected:
 			if (node == catcher)
 				break;
 
-			if (!(node->m_flags & NodeFlag_Locator)) {
-				m_nodeList.remove(node);
+			if (!(node->m_flags & NodeFlag_Locator))
 				m_nodeAllocator->free(node);
-			}
 		}
 
 		bool isEof = token->m_token == T::EofToken;
@@ -890,7 +886,7 @@ protected:
 			node->m_flags |= NodeFlag_Locator;
 
 			SymbolNode* symbolNode = getSymbolTop();
-			ASSERT(symbolNode);
+			ASSERT(symbolNode && symbolNode->m_index < T::NamedSymbolCount);
 
 			symbolNode->m_locatorArray.ensureCountZeroConstruct(slotIndex + 1);
 			symbolNode->m_locatorArray[slotIndex] = node;
@@ -922,15 +918,11 @@ protected:
 			return NULL;
 
 		Node* node = createNode(masterIndex);
-		if (!(node->m_flags & NodeFlag_Locator)) {
-			m_nodeList.insertTail(node);
-			if (m_maxNodeListLength < m_nodeList.getCount())
-				m_maxNodeListLength = m_nodeList.getCount();
-		}
-
 		m_predictionStack.append(node);
+
 		if (m_maxPredictionStackDepth < m_predictionStack.getCount())
 			m_maxPredictionStackDepth = m_predictionStack.getCount();
+
 		return node;
 	}
 
@@ -939,10 +931,8 @@ protected:
 		Node* node = m_predictionStack.getBackAndPop();
 		ASSERT(!(node->m_flags & SymbolNodeFlag_Stacked));
 
-		if (!(node->m_flags & NodeFlag_Locator)) {
-			m_nodeList.remove(node);
+		if (!(node->m_flags & NodeFlag_Locator))
 			m_nodeAllocator->free(node);
-		}
 	}
 
 	// symbol stack

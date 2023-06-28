@@ -53,16 +53,13 @@ $(getPpLine(symbol.srcPos.filePath, symbol.valueLine))
 $(getPpLineDefault())
 	};
 
-	struct SymbolNode_$(symbol.name): llk::SymbolNodeImpl<SymbolNodeValue_$(symbol.name)>
+	struct SymbolNode_$(symbol.name): llk::SymbolNodeImpl<SymbolNodeValue_$(symbol.name)> {
 %{
 		else
 }
-	struct SymbolNode_$(symbol.name): llk::SymbolNode
+	struct SymbolNode_$(symbol.name): llk::SymbolNode {
 %{
 		end -- if
-} {
-	public:
-%{
 		if symbol.paramBlock then
 }
 		struct {
@@ -83,22 +80,6 @@ $(getPpLineDefault())
 %{
 		end -- if
 }
-		SymbolNode_$(symbol.name)() {
-			m_index = SymbolKind_$(symbol.name);
-%{
-		if symbol.enterBlock then
-}
-			m_enterIndex = $(symbol.enterIndex);
-%{
-		end -- if
-
-		if symbol.leaveBlock then
-}
-			m_leaveIndex = $(symbol.leaveIndex);
-%{
-		end -- if
-}
-		}
 	};
 
 %{

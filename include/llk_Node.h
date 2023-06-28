@@ -84,10 +84,6 @@ struct Node: axl::sl::ListLink {
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
-typedef axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink> GetNodeLink;
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
 class DeallocateNode {
 public:
 	void
@@ -96,6 +92,105 @@ public:
 		axl::mem::deallocate(node);
 	}
 };
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+typedef axl::sl::ImplicitPtrCast<Node, axl::sl::ListLink> GetNodeLink;
+typedef axl::sl::List<Node, GetNodeLink, axl::mem::Deallocate> NodeList;
+
+//..............................................................................
+
+class NodeAllocatorBase: public axl::rc::RefCount {
+protected:
+	NodeList m_freeList;
+
+public:
+	void
+	free(Node* node) {
+		node->~Node();
+		m_freeList.insertHead(node);
+	}
+
+	void
+	free(NodeList* list) {
+		for (axl::sl::Iterator<Node> it = list->getHead(); it; it++)
+			it->~Node();
+
+		m_freeList.insertListHead(list);
+	}
+
+	void
+	free(const axl::sl::ArrayRef<Node*>& array) {
+		Node* const* p = array.cp();
+		Node* const* end = array.getEnd();
+		for (; p < end; p++) {
+			Node* node = *p;
+			node->~Node();
+			m_freeList.insertTail(node);
+		}
+	}
+
+	void
+	clear() {
+		m_freeList.clear();
+	}
+};
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+template <typename T>
+class NodeAllocator: public NodeAllocatorBase {
+public:
+	enum {
+		MaxNodeSize = T::MaxNodeSize,
+	};
+
+protected:
+	size_t m_allocatedCount;
+	size_t m_allocatedSize;
+
+public:
+	NodeAllocator() {
+		m_allocatedCount = 0;
+		m_allocatedSize = 0;
+	}
+
+	~NodeAllocator() {
+		printf("~NodeAllocator: MaxNodeSize: %d B\n", MaxNodeSize);
+		printf("    %d blocks %d byte(s)\n", m_allocatedCount, m_allocatedSize);
+	}
+
+	template <typename N>
+	N*
+	allocate() {
+		ASSERT(sizeof(N) <= MaxNodeSize);
+
+		if (m_freeList.isEmpty()) {
+			m_allocatedCount++;
+			m_allocatedSize += MaxNodeSize;
+		}
+
+		Node* node = !m_freeList.isEmpty() ?
+			m_freeList.removeHead() :
+			(Node*)axl::mem::allocate(MaxNodeSize);
+
+		return new (node) N;
+	}
+};
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+template <typename T>
+NodeAllocator<T>*
+getCurrentThreadNodeAllocator() {
+	NodeAllocator<T>* allocator = axl::sys::getTlsPtrSlotValue<NodeAllocator<T> >();
+	if (allocator)
+		return allocator;
+
+	axl::rc::Ptr<NodeAllocator<T> > newAllocator = AXL_RC_NEW(NodeAllocator<T>);
+	axl::sys::setTlsPtrSlotValue<NodeAllocator<T> >(newAllocator);
+	return newAllocator;
+}
 
 //..............................................................................
 
@@ -117,8 +212,9 @@ enum SymbolNodeFlag {
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 struct SymbolNode: Node {
-	axl::sl::List<Node> m_locatorList;
 	axl::sl::Array<Node*> m_locatorArray;
+	NodeList m_locatorList;
+	NodeAllocatorBase* m_nodeAllocator;
 
 	union {
 		struct {
@@ -133,6 +229,13 @@ struct SymbolNode: Node {
 		m_nodeKind = NodeKind_Symbol;
 		m_enterIndex = -1;
 		m_leaveIndex = -1;
+		m_nodeAllocator = NULL;
+	}
+
+	~SymbolNode() {
+		ASSERT(m_nodeAllocator || m_locatorList.isEmpty());
+		if (m_nodeAllocator)
+			m_nodeAllocator->free(&m_locatorList);
 	}
 
 	void*
@@ -174,78 +277,6 @@ struct LaDfaNode: Node {
 		m_resolverElseIndex = -1;
 	}
 };
-
-//..............................................................................
-
-template <typename T>
-class NodeAllocator: public axl::rc::RefCount {
-public:
-	enum {
-		MaxNodeSize = T::MaxNodeSize,
-	};
-
-protected:
-	axl::sl::List<Node, GetNodeLink, axl::mem::Deallocate> m_freeList;
-	size_t m_allocatedSize;
-
-public:
-	NodeAllocator() {
-		m_allocatedSize = 0;
-	}
-
-	~NodeAllocator() {
-		printf("MaxNodSize: %d B\n", MaxNodeSize);
-		printf("Nodes allocated: %d B\n", m_allocatedSize);
-	}
-
-	template <typename N>
-	N*
-	allocate() {
-		ASSERT(sizeof(N) <= MaxNodeSize);
-
-		if (m_freeList.isEmpty())
-			m_allocatedSize += sizeof(N);
-
-		Node* node = !m_freeList.isEmpty() ?
-			m_freeList.removeHead() :
-			(Node*)AXL_MEM_ALLOCATE(MaxNodeSize);
-
-		return new (node) N;
-	}
-
-	void
-	free(Node* node) {
-		node->~Node();
-		m_freeList.insertHead(node);
-	}
-
-	void
-	free(axl::sl::List<Node, GetNodeLink, DeallocateNode>* list) {
-		for (axl::sl::Iterator<Node> it = list->getHead(); it; it++)
-			it->~Node();
-
-		m_freeList.insertListHead(list);
-	}
-
-	void
-	clear() {
-		m_freeList.clear();
-	}
-};
-
-// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-template <typename T>
-NodeAllocator<T>*
-getCurrentThreadNodeAllocator() {
-	NodeAllocator<T>* allocator = axl::sys::getTlsPtrSlotValue<NodeAllocator<T> >();
-	if (allocator)
-		return allocator;
-
-	axl::rc::Ptr<NodeAllocator<T> > newAllocator = AXL_RC_NEW(NodeAllocator<T>);
-	axl::sys::setTlsPtrSlotValue<NodeAllocator<T> >(newAllocator);
-	return newAllocator;
-}
 
 //..............................................................................
 

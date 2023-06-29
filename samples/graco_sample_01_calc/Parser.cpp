@@ -44,7 +44,7 @@ Parser::createVariable(
 		return NULL;
 	}
 
-	Variable* variable = AXL_MEM_NEW(Variable);
+	Variable* variable = new Variable;
 	variable->m_name = name;
 	variable->m_value = initializer;
 	variable->m_isConst = isConst;

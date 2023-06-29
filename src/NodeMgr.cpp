@@ -108,7 +108,7 @@ NodeMgr::getTokenNode(int token) {
 	if (mapIt->m_value)
 		return mapIt->m_value;
 
-	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
+	SymbolNode* node = new SymbolNode;
 	node->m_nodeKind = NodeKind_Token;
 	node->m_charToken = token;
 
@@ -129,7 +129,7 @@ NodeMgr::getSymbolNode(const sl::StringRef& name) {
 	if (mapIt->m_value)
 		return mapIt->m_value;
 
-	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
+	SymbolNode* node = new SymbolNode;
 	node->m_flags = SymbolNodeFlag_User;
 	node->m_name = name;
 
@@ -141,7 +141,7 @@ NodeMgr::getSymbolNode(const sl::StringRef& name) {
 
 SymbolNode*
 NodeMgr::createCatchSymbolNode() {
-	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
+	SymbolNode* node = new SymbolNode;
 	node->m_name.format("_cat%d", m_catchSymbolList.getCount() + 1);
 	node->m_lookaheadLimit = m_lookaheadLimit;
 	m_catchSymbolList.insertTail(node);
@@ -150,7 +150,7 @@ NodeMgr::createCatchSymbolNode() {
 
 SymbolNode*
 NodeMgr::createTempSymbolNode() {
-	SymbolNode* node = AXL_MEM_NEW(SymbolNode);
+	SymbolNode* node = new SymbolNode;
 	node->m_name.format("_tmp%d", m_tempSymbolList.getCount() + 1);
 	node->m_lookaheadLimit = m_lookaheadLimit;
 	m_tempSymbolList.insertTail(node);
@@ -159,7 +159,7 @@ NodeMgr::createTempSymbolNode() {
 
 SequenceNode*
 NodeMgr::createSequenceNode() {
-	SequenceNode* node = AXL_MEM_NEW(SequenceNode);
+	SequenceNode* node = new SequenceNode;
 	node->m_name.format("_seq%d", m_sequenceList.getCount() + 1);
 	m_sequenceList.insertTail(node);
 	return node;
@@ -174,7 +174,7 @@ NodeMgr::createSequenceNode(GrammarNode* node) {
 
 BeaconNode*
 NodeMgr::createBeaconNode(SymbolNode* target) {
-	BeaconNode* beaconNode = AXL_MEM_NEW(BeaconNode);
+	BeaconNode* beaconNode = new BeaconNode;
 	beaconNode->m_target = target;
 
 	if (target->m_nodeKind == NodeKind_Symbol)
@@ -203,7 +203,7 @@ NodeMgr::deleteBeaconNode(BeaconNode* node) {
 
 DispatcherNode*
 NodeMgr::createDispatcherNode(SymbolNode* symbol) {
-	DispatcherNode* dispatcherNode = AXL_MEM_NEW(DispatcherNode);
+	DispatcherNode* dispatcherNode = new DispatcherNode;
 	dispatcherNode->m_name.format("_dsp%d", m_dispatcherList.getCount() + 1);
 	dispatcherNode->m_symbol = symbol;
 	m_dispatcherList.insertTail(dispatcherNode);
@@ -212,7 +212,7 @@ NodeMgr::createDispatcherNode(SymbolNode* symbol) {
 
 ActionNode*
 NodeMgr::createActionNode() {
-	ActionNode* node = AXL_MEM_NEW(ActionNode);
+	ActionNode* node = new ActionNode;
 	node->m_name.format("_act%d", m_actionList.getCount() + 1);
 	m_actionList.insertTail(node);
 	return node;
@@ -220,7 +220,7 @@ NodeMgr::createActionNode() {
 
 ArgumentNode*
 NodeMgr::createArgumentNode() {
-	ArgumentNode* node = AXL_MEM_NEW(ArgumentNode);
+	ArgumentNode* node = new ArgumentNode;
 	node->m_name.format("_arg%d", m_argumentList.getCount() + 1);
 	m_argumentList.insertTail(node);
 	return node;
@@ -228,7 +228,7 @@ NodeMgr::createArgumentNode() {
 
 ConflictNode*
 NodeMgr::createConflictNode() {
-	ConflictNode* node = AXL_MEM_NEW(ConflictNode);
+	ConflictNode* node = new ConflictNode;
 	node->m_name.format("_cnf%d", m_conflictList.getCount() + 1);
 	m_conflictList.insertTail(node);
 	return node;
@@ -236,7 +236,7 @@ NodeMgr::createConflictNode() {
 
 LaDfaNode*
 NodeMgr::createLaDfaNode() {
-	LaDfaNode* node = AXL_MEM_NEW(LaDfaNode);
+	LaDfaNode* node = new LaDfaNode;
 	node->m_name.format("_dfa%d", m_laDfaList.getCount() + 1);
 	m_laDfaList.insertTail(node);
 	return node;

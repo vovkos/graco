@@ -35,7 +35,7 @@ LaDfaState::LaDfaState() {
 
 LaDfaThread*
 LaDfaState::createThread(LaDfaThread* src) {
-	LaDfaThread* thread = AXL_MEM_NEW(LaDfaThread);
+	LaDfaThread* thread = new LaDfaThread;
 	thread->m_state = this;
 
 	if (src) {
@@ -408,7 +408,7 @@ LaDfaBuilder::trace() {
 
 LaDfaState*
 LaDfaBuilder::createState() {
-	LaDfaState* state = AXL_MEM_NEW(LaDfaState);
+	LaDfaState* state = new LaDfaState;
 	state->m_index = m_stateList.getCount();
 	m_stateList.insertTail(state);
 

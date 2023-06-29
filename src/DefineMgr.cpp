@@ -20,7 +20,7 @@ DefineMgr::getDefine(const sl::StringRef& name) {
 	if (it->m_value)
 		return it->m_value;
 
-	Define* define = AXL_MEM_NEW(Define);
+	Define* define = new Define;
 	define->m_name = name;
 	m_defineList.insertTail(define);
 	it->m_value = define;

@@ -107,7 +107,7 @@ public:
 	}
 
 	~Parser() {
-		m_nodeAllocator->free(m_predictionStack);
+		clear();
 	}
 
 	static
@@ -130,7 +130,14 @@ public:
 	clear() {
 		m_fileName.clear();
 		m_tokenPool->put(&m_tokenList);
-		m_nodeAllocator->free(m_predictionStack);
+
+		size_t count = m_predictionStack.getCount();
+		for (size_t i = 0; i < count; i++) {
+			Node* node = m_predictionStack[i];
+			if (!(node->m_flags & NodeFlag_Locator))
+				m_nodeAllocator->free(node);
+		}
+
 		m_predictionStack.clear();
 		m_symbolStack.clear();
 		m_resolverStack.clear();
@@ -378,6 +385,8 @@ protected:
 
 	RecoveryAction
 	recover(ErrorKind errorKind) {
+		ASSERT(m_resolverStack.isEmpty());
+
 		if (errorKind == ErrorKind_Syntax && (m_flags & Flag_PostSynchronize)) {
 			// synchronizer token must match (otherwise, it's a bad choice of sync tokens)
 
@@ -421,7 +430,6 @@ protected:
 
 		// reset and wait for a synchornization token
 
-		m_resolverStack.clear();
 		m_tokenList.clearButEntry(m_tokenCursor);
 		m_flags |= Flag_Synchronize;
 		return RecoveryAction_Synchronize;
@@ -429,7 +437,9 @@ protected:
 
 	MatchResult
 	synchronize(const Token* token) {
-		ASSERT((m_flags & Flag_Synchronize) && !m_syncTokenSet.isEmpty());
+		ASSERT(m_flags & Flag_Synchronize);
+		ASSERT(m_resolverStack.isEmpty());
+		ASSERT(!m_syncTokenSet.isEmpty());
 
 		size_t i = m_syncTokenSet.findValue(token->m_token, -1);
 		if (i == -1) {
@@ -781,8 +791,6 @@ protected:
 	MatchResult
 	rollbackResolver() {
 		LaDfaNode* laDfaNode = getPreResolverTop();
-		ASSERT(laDfaNode);
-		ASSERT(laDfaNode->m_flags & LaDfaNodeFlag_PreResolver);
 
 		// keep popping prediction stack until pre-resolver dfa node
 
@@ -915,7 +923,7 @@ protected:
 	void
 	popPrediction() {
 		Node* node = m_predictionStack.getBackAndPop();
-		ASSERT(!(node->m_flags & SymbolNodeFlag_Stacked));
+		ASSERT(!(node->m_flags & (SymbolNodeFlag_Stacked | LaDfaNodeFlag_PreResolver)));
 
 		if (!(node->m_flags & NodeFlag_Locator))
 			m_nodeAllocator->free(node);
@@ -958,8 +966,8 @@ protected:
 
 	LaDfaNode*
 	getPreResolverTop() {
-		size_t count = m_resolverStack.getCount();
-		return count ? m_resolverStack[count - 1] : NULL;
+		ASSERT(m_resolverStack.getBack()->m_flags & LaDfaNodeFlag_PreResolver);
+		return m_resolverStack.getBack();
 	}
 
 	void

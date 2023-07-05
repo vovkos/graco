@@ -120,17 +120,6 @@ public:
 	}
 
 	void
-	free(const axl::sl::ArrayRef<Node*>& array) {
-		Node* const* p = array.cp();
-		Node* const* end = array.getEnd();
-		for (; p < end; p++) {
-			Node* node = *p;
-			node->~Node();
-			m_freeList.insertTail(node);
-		}
-	}
-
-	void
 	clear() {
 		m_freeList.clear();
 	}

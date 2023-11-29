@@ -168,6 +168,7 @@ public:
 		if (token->m_token == -1) {
 			axl::err::setFormatStringError("invalid character '\\x%x'", token->m_data.m_integer);
 			axl::lex::ensureSrcPosError(m_fileName, token->m_pos);
+			m_tokenPool->put(token);
 			return false;
 		}
 

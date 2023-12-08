@@ -204,7 +204,6 @@ target_link_libraries(
 	axl_lua
 	axl_lex
 	axl_io
-	axl_mem_new
 	axl_core
 	${LUA_LIB_NAME}
 )

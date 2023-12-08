@@ -147,7 +147,6 @@ target_link_libraries(
 	graco_sample_01_calc
 	axl_lex
 	axl_io
-	axl_mem_new
 	axl_core
 )
 

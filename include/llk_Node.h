@@ -193,9 +193,11 @@ struct SymbolNode: Node {
 		};
 
 		size_t m_catchSymbolCount;
+		uint64_t _m_padding;
 	};
 
 	SymbolNode() {
+		AXL_ASSERT_NO_TAIL_PADDING(SymbolNode);
 		m_nodeKind = NodeKind_Symbol;
 		m_enterIndex = -1;
 		m_leaveIndex = -1;

@@ -110,6 +110,11 @@ public:
 		clear();
 	}
 
+	axl::mem::Pool<Token>*
+	getTokenPool() const {
+		return m_tokenPool;
+	}
+	
 	static
 	void
 	clearNodeAllocator() {

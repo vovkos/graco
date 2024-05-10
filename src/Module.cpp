@@ -68,14 +68,15 @@ Module::build(const CmdLine* cmdLine) {
 
 		if (symbol->m_resolver) {
 			ASSERT(symbol->m_resolver->m_productionArray.getCount() == 1);
-			result = productionBuilder.build(symbol->m_resolver, &symbol->m_resolver->m_productionArray[0]);
+			result = productionBuilder.build(symbol->m_resolver, &symbol->m_resolver->m_productionArray.rwi()[0]);
 			if (!result)
 				return false;
 		}
 
 		size_t count = symbol->m_productionArray.getCount();
+		sl::Array<GrammarNode*>::Rwi rwi = symbol->m_productionArray;
 		for (size_t i = 0; i < count; i++) {
-			result = productionBuilder.build(symbol, &symbol->m_productionArray[i]);
+			result = productionBuilder.build(symbol, &rwi[i]);
 			if (!result)
 				return false;
 		}
@@ -105,13 +106,13 @@ Module::build(const CmdLine* cmdLine) {
 
 	// replace conflicts with dfas or with direct productions (could happen in conflicts with epsilon productions or with anytoken)
 
+	sl::Array<Node*>::Rwi rwi = m_parseTable;
 	size_t tokenCount = m_nodeMgr.m_tokenArray.getCount();
 	conflictIt = m_nodeMgr.m_conflictList.getHead();
 	for (; conflictIt; conflictIt++) {
 		ConflictNode* conflict = *conflictIt;
-		Node** production = &m_parseTable[conflict->m_symbol->m_index * tokenCount + conflict->m_token->m_index];
+		Node** production = &rwi[conflict->m_symbol->m_index * tokenCount + conflict->m_token->m_index];
 		ASSERT(*production == conflict);
-
 		*production = conflict->m_resultNode;
 	}
 

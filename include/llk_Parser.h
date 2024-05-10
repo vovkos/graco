@@ -114,7 +114,7 @@ public:
 	getTokenPool() const {
 		return m_tokenPool;
 	}
-	
+
 	static
 	void
 	clearNodeAllocator() {
@@ -893,7 +893,7 @@ protected:
 			ASSERT(symbolNode && symbolNode->m_index < T::NamedSymbolCount);
 
 			symbolNode->m_locatorArray.ensureCountZeroConstruct(slotIndex + 1);
-			symbolNode->m_locatorArray[slotIndex] = node;
+			symbolNode->m_locatorArray.rwi()[slotIndex] = node;
 			symbolNode->m_locatorList.insertTail(node);
 		} else {
 			ASSERT(masterIndex < T::LaDfaEnd);

@@ -160,7 +160,7 @@ ParseTableBuilder::addParseTableEntry(
 ) {
 	size_t tokenCount = m_nodeMgr->m_tokenArray.getCount();
 
-	Node** productionSlot = *m_parseTable + symbol->m_index * tokenCount + token->m_index;
+	Node** productionSlot = m_parseTable->p() + symbol->m_index * tokenCount + token->m_index;
 	Node* oldProduction = *productionSlot;
 
 	if (!oldProduction) {
@@ -180,8 +180,9 @@ ParseTableBuilder::addParseTableEntry(
 		conflict->m_token = token;
 
 		conflict->m_productionArray.setCount(2);
-		conflict->m_productionArray[0] = firstProduction;
-		conflict->m_productionArray[1] = production;
+		sl::Array<GrammarNode*>::Rwi rwi = conflict->m_productionArray;
+		rwi[0] = firstProduction;
+		rwi[1] = production;
 
 		*productionSlot = conflict; // later will be replaced with lookahead DFA
 	} else {

@@ -294,7 +294,7 @@ ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode** node0) {
 		*node0 = beacon->m_target; // replace
 		break;
 
-	case NodeKind_Symbol:
+	case NodeKind_Symbol: {
 		if (node->m_flags & SymbolNodeFlag_User)
 			break;
 
@@ -305,22 +305,26 @@ ProductionBuilder::findAndReplaceUnusedBeacons(GrammarNode** node0) {
 			findAndReplaceUnusedBeacons(&symbol->m_synchronizer);
 
 		count = symbol->m_productionArray.getCount();
+		sl::Array<GrammarNode*>::Rwi rwi = symbol->m_productionArray;
 		for (size_t i = 0; i < count; i++)
-			findAndReplaceUnusedBeacons(&symbol->m_productionArray[i]);
+			findAndReplaceUnusedBeacons(&rwi[i]);
 
 		symbol->m_flags &= ~NodeFlag_RecursionStopper;
 		break;
+		}
 
-	case NodeKind_Sequence:
+	case NodeKind_Sequence: {
 		sequence = (SequenceNode*)node;
 		sequence->m_flags |= NodeFlag_RecursionStopper;
 
 		count = sequence->m_sequence.getCount();
+		sl::Array<GrammarNode*>::Rwi rwi = sequence->m_sequence;
 		for (size_t i = 0; i < count; i++)
-			findAndReplaceUnusedBeacons(&sequence->m_sequence[i]);
+			findAndReplaceUnusedBeacons(&rwi[i]);
 
 		sequence->m_flags &= ~NodeFlag_RecursionStopper;
 		break;
+		}
 
 	default:
 		ASSERT(false);

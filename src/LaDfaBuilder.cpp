@@ -266,12 +266,13 @@ LaDfaBuilder::build(ConflictNode* conflict) {
 
 			sl::Array<LaDfaThread*> resolverThreadArray;
 			resolverThreadArray.setCount(count);
+			sl::Array<LaDfaThread*>::Rwi rwi = resolverThreadArray;
 
 			sl::Iterator<LaDfaThread> resolverThread = state->m_resolverThreadList.getHead();
 			for (size_t i = 0; resolverThread; resolverThread++, i++)
-				resolverThreadArray[i] = *resolverThread;
+				rwi[i] = *resolverThread;
 
-			qsort(resolverThreadArray, count, sizeof(LaDfaThread*), cmpResolverThreadPriority);
+			qsort(rwi.p(), count, sizeof(LaDfaThread*), cmpResolverThreadPriority);
 
 			for (size_t i = 0; i < count; i++) {
 				LaDfaThread* resolverThread = resolverThreadArray[i];

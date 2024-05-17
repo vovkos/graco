@@ -91,9 +91,8 @@ if "%CONFIGURATION%" == "" (set CONFIGURATION=Release)
 if "%CMAKE_USE_ARCH_OPTIONS%" == "" (set CMAKE_GENERATOR=%CMAKE_GENERATOR%%CMAKE_ARCH_SUFFIX%)
 if not "%CMAKE_USE_ARCH_OPTIONS%" == "" (set CMAKE_OPTIONS=%CMAKE_OPTIONS%%CMAKE_ARCH_OPTIONS%)
 
-set LUA_VERSION=5.3.5
-set LUA_LIB_NAME=lua53
-set LUA_DOWNLOAD_URL=https://sourceforge.net/projects/luabinaries/files/%LUA_VERSION%/Windows%%20Libraries/Dynamic/lua-%LUA_VERSION%_%LUA_PLATFORM%_%LUA_TOOLCHAIN%_lib.zip/download
+set LUA_VERSION=5.4.5
+set LUA_DOWNLOAD_URL=https://github.com/walterschell/Lua/archive/refs/tags/v%LUA_VERSION%.zip
 
 set RAGEL_DOWNLOAD_URL=https://github.com/eloraiby/ragel-windows/raw/master/ragel.exe
 
@@ -107,7 +106,6 @@ set CMAKE_BUILD_FLAGS= ^
 	/consoleloggerparameters:Summary
 
 echo ---------------------------------------------------------------------------
-echo LUA_LIB_NAME:         %LUA_LIB_NAME%
 echo LUA_DOWNLOAD_URL:     %LUA_DOWNLOAD_URL%
 echo RAGEL_DOWNLOAD_URL:   %RAGEL_DOWNLOAD_URL%
 echo ---------------------------------------------------------------------------

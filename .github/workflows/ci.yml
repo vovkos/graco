@@ -39,6 +39,7 @@ jobs:
                 set THIS_DIR_CMAKE=%THIS_DIR:\=/%
 
                 call ci\github-actions\set-env.bat msvc16 ${{matrix.TARGET_CPU}}
+                call axl\ci\github-actions\build-lua.bat
 
                 mkdir axl\build
                 cd axl\build

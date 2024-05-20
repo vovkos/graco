@@ -10,8 +10,8 @@
 #...............................................................................
 
 set(GRACO_VERSION_MAJOR     1)
-set(GRACO_VERSION_MINOR     3)
-set(GRACO_VERSION_REVISION  3)
+set(GRACO_VERSION_MINOR     4)
+set(GRACO_VERSION_REVISION  0)
 set(GRACO_VERSION_TAG)
 
 set(GRACO_VERSION_FULL "${GRACO_VERSION_MAJOR}.${GRACO_VERSION_MINOR}.${GRACO_VERSION_REVISION}")

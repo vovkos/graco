@@ -213,10 +213,7 @@ constant_expr
 	:	conditional_expr<&$.m_value>
 			{
 				if ($.m_value.getValueKind() != ValueKind_Const)
-				{
-					err::setFormatStringError("not a constant expression");
-					return false;
-				}
+					return err::fail("not a constant expression");
 			}
 	;
 
@@ -228,11 +225,9 @@ constant_integer_expr
 	:	expression
 			{
 				if ($1.m_value.getValueKind() != ValueKind_Const ||
-					!($1.m_value.getType()->getTypeKindFlags() & TypeKindFlag_Integer))
-				{
-					err::setFormatStringError("expression is not integer constant");
-					return false;
-				}
+					!($1.m_value.getType()->getTypeKindFlags() & TypeKindFlag_Integer)
+				)
+					return err::fail("expression is not integer constant");
 
 				bool result = m_module->m_operatorMgr.castOperator(&$1.m_value, TypeKind_Int32);
 				if (!result)
@@ -919,10 +914,7 @@ curly_initializer
 	:	'{' curly_initializer_item<&$initializer> (',' curly_initializer_item<&$initializer>)* '}'
 			{
 				if (!$initializer.m_count)
-				{
-					err::setFormatStringError("empty curly initializer");
-					return false;
-				}
+					return err::fail("empty curly initializer");
 			}
 	;
 

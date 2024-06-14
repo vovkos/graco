@@ -643,7 +643,7 @@ protected:
 					if (action == RecoveryAction_Fail)
 						return MatchResult_Fail;
 					else if (action == RecoveryAction_Synchronize)
-						return MatchResult_Continue;
+						return MatchResult_NextToken; // advance to next token to avoid a potential loop
 				}
 			}
 		} else if (node->m_index < T::NamedSymbolCount + T::CatchSymbolCount) {
@@ -711,7 +711,7 @@ protected:
 			if (action == RecoveryAction_Fail)
 				return MatchResult_Fail;
 			else if (action == RecoveryAction_Synchronize)
-				return MatchResult_Continue;
+				return MatchResult_NextToken; // advance to next token to avoid a potential loop
 		}
 
 		popPrediction();

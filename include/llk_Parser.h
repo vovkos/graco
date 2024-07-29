@@ -806,7 +806,7 @@ protected:
 				break; // found it!!
 
 			if (node->m_nodeKind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_Stacked)) {
-				SymbolNode* symbol = (SymbolNode*) node;
+				SymbolNode* symbol = (SymbolNode*)node;
 				if (isCatchSymbol(symbol)) {
 					ASSERT(symbol == getCatchTop());
 					popCatch();

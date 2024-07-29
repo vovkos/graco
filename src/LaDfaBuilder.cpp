@@ -127,8 +127,8 @@ cmpResolverThreadPriority(
 	const void* p1,
 	const void* p2
 ) {
-	LaDfaThread* thread1 = *(LaDfaThread**) p1;
-	LaDfaThread* thread2 = *(LaDfaThread**) p2;
+	LaDfaThread* thread1 = *(LaDfaThread**)p1;
+	LaDfaThread* thread2 = *(LaDfaThread**)p2;
 
 	// sort from highest priority to lowest
 

@@ -107,7 +107,7 @@ jobs:
 
     macOsBuild:
         name: macOS Build
-        runs-on: macos-11
+        runs-on: macos-latest
         strategy:
             fail-fast: false
             matrix:

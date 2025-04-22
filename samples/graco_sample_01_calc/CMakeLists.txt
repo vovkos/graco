@@ -150,19 +150,13 @@ target_link_libraries(
 	axl_core
 )
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
 	target_link_libraries(
 		graco_sample_01_calc
 		pthread
+		dl
+		rt
 	)
-
-	if(NOT APPLE)
-		target_link_libraries(
-			graco_sample_01_calc
-			dl
-			rt
-		)
-	endif()
 endif()
 
 target_precompile_headers(

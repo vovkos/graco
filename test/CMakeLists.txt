@@ -15,10 +15,8 @@ option(
 	ON
 )
 
-if(NOT BUILD_GRACO_TESTS)
-	return()
+if(BUILD_GRACO_TESTS)
+	add_subdirectory(llk)
 endif()
-
-add_subdirectory(llk)
 
 #...............................................................................

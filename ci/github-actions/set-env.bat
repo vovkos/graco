@@ -85,7 +85,7 @@ goto :loop
 
 :finalize
 
-if "%TOOLCHAIN%" == "" goto :msvc15
+if "%TOOLCHAIN%" == "" goto :msvc17
 if "%TARGET_CPU%" == "" goto :amd64
 if "%CONFIGURATION%" == "" (set CONFIGURATION=Release)
 if "%CMAKE_USE_ARCH_OPTIONS%" == "" (set CMAKE_GENERATOR=%CMAKE_GENERATOR%%CMAKE_ARCH_SUFFIX%)

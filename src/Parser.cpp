@@ -288,7 +288,7 @@ Parser::lookahead() {
 		break;
 
 	default:
-		err::setFormatStringError("invalid lookahead specified");
+		err::setError("invalid lookahead specified");
 		return -1;
 	}
 
@@ -639,7 +639,7 @@ Parser::processEnterLeaveBlock(
 
 		case TokenKind_Integer:
 			if (token->m_data.m_integer != 0) {
-				err::setFormatStringError("'enter' or 'leave' cannot have indexed references");
+				err::setError("'enter' or 'leave' cannot have indexed references");
 				return false;
 			}
 
@@ -1012,7 +1012,7 @@ Parser::beacon() {
 
 	case TokenKind_Integer:
 		if (!token->m_data.m_integer) {
-			err::setFormatStringError("cannot use a reserved eof token \\00");
+			err::setError("cannot use a reserved eof token \\00");
 			return NULL;
 		}
 

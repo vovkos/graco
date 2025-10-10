@@ -251,7 +251,7 @@ NodeMgr::createQuantifierNode(
 	SymbolNode* tempAlt;
 
 	if (node->m_nodeKind == NodeKind_Action || node->m_nodeKind == NodeKind_Epsilon) {
-		err::setFormatStringError("can't apply quantifier to action or epsilon nodes");
+		err::setError("can't apply quantifier to action or epsilon nodes");
 		return NULL;
 	}
 

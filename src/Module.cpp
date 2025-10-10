@@ -119,7 +119,7 @@ Module::build(const CmdLine* cmdLine) {
 	symbolIt = m_nodeMgr.m_namedSymbolList.getHead();
 	for (; symbolIt; symbolIt++)
 		if (symbolIt->m_resolver && !(symbolIt->m_flags & SymbolNodeFlag_ResolverUsed)) {
-			err::setFormatStringError("unused resolver");
+			err::setError("unused resolver");
 			lex::pushSrcPosError(symbolIt->m_srcPos);
 			return false;
 		}

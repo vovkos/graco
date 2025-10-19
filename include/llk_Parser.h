@@ -303,6 +303,14 @@ public:
 		}
 	}
 
+	// dynamic parsing
+
+	SymbolNode*
+	pushSymbol(int symbol) {
+		ASSERT(symbol < T::NamedSymbolCount);
+		return (SymbolNode*)pushPrediction(T::SymbolFirst + symbol);
+	}
+
 	// debug
 
 	void
@@ -697,6 +705,7 @@ protected:
 	MatchResult
 	matchActionNode(Node* node) {
 		bool result = static_cast<T*>(this)->action(node->m_index);
+		popPrediction();
 
 #if (_LLK_RANDOM_SEMANTIC_ERRORS)
 		if (isRandomError("action"))
@@ -714,7 +723,6 @@ protected:
 				return MatchResult_NextToken; // advance to next token to avoid a potential loop
 		}
 
-		popPrediction();
 		return MatchResult_Continue;
 	}
 

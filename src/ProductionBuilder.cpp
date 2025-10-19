@@ -172,8 +172,6 @@ ProductionBuilder::scan(GrammarNode* node) {
 			break;
 
 		symbol = (SymbolNode*)node;
-		ASSERT(!symbol->m_resolver);
-
 		symbol->m_flags |= NodeFlag_RecursionStopper;
 
 		childrenCount = symbol->m_productionArray.getCount();

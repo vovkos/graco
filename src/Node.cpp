@@ -191,7 +191,7 @@ SymbolNode::SymbolNode() {
 	m_charToken = 0;
 	m_synchronizer = NULL;
 	m_resolver = NULL;
-	m_resolverPriority = 0;
+	m_priority = 0;
 	m_lookaheadLimit = 1;
 	m_enterIndex = -1;
 	m_leaveIndex = -1;
@@ -202,7 +202,8 @@ SymbolNode::addProduction(GrammarNode* node) {
 	if (node->m_nodeKind == NodeKind_Symbol &&
 		!(node->m_flags & SymbolNodeFlag_User) &&
 		!((SymbolNode*)node)->m_synchronizer &&
-		!((SymbolNode*)node)->m_resolver) {
+		!((SymbolNode*)node)->m_resolver
+	) {
 		if (m_flags & SymbolNodeFlag_User) {
 			m_quantifierKind = node->m_quantifierKind;
 			m_quantifiedNode = node->m_quantifiedNode;

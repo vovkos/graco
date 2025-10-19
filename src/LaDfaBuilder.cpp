@@ -19,7 +19,6 @@ LaDfaThread::LaDfaThread() {
 	m_state = NULL;
 	m_production = NULL;
 	m_resolver = NULL;
-	m_resolverPriority = 0;
 }
 
 //..............................................................................
@@ -130,11 +129,13 @@ cmpResolverThreadPriority(
 	LaDfaThread* thread1 = *(LaDfaThread**)p1;
 	LaDfaThread* thread2 = *(LaDfaThread**)p2;
 
+	ASSERT(thread1->m_resolver && thread2->m_resolver);
+
 	// sort from highest priority to lowest
 
 	return
-		thread1->m_resolverPriority < thread2->m_resolverPriority ? 1 :
-		thread1->m_resolverPriority > thread2->m_resolverPriority ? -1 : 0;
+		thread1->m_resolver->m_priority < thread2->m_resolver->m_priority ? 1 :
+		thread1->m_resolver->m_priority > thread2->m_resolver->m_priority ? -1 : 0;
 }
 
 Node*
@@ -540,9 +541,8 @@ LaDfaBuilder::processThread(
 						m_conflict->m_token->m_name.sz()
 					);
 
-				symbol->m_flags |= SymbolNodeFlag_ResolverUsed;
+				symbol->m_resolver->m_flags |= SymbolNodeFlag_ResolverUsed;
 				thread->m_resolver = symbol->m_resolver;
-				thread->m_resolverPriority = symbol->m_resolverPriority;
 				thread->m_state->m_activeThreadList.remove(thread);
 				thread->m_state->m_resolverThreadList.insertTail(thread);
 				return true;

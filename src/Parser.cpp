@@ -325,38 +325,8 @@ Parser::resolverSpecifier(ProductionSpecifiers* specifiers) {
 		return false;
 	}
 
-	const Token* token = getToken();
-	ASSERT(token->m_token == TokenKind_Resolver);
-
-	nextToken();
-
-	token = expectToken('(');
-	if (!token)
-		return false;
-
-	nextToken();
-
-	specifiers->m_resolver = alternative();
-	if (!specifiers->m_resolver)
-		return false;
-
-	specifiers->m_resolverPriority = 0;
-
-	token = getToken();
-	if (token->m_token == ',') {
-		nextToken();
-
-		token = expectToken(TokenKind_Integer);
-		specifiers->m_resolverPriority = token->m_data.m_integer;
-		nextToken();
-	}
-
-	token = expectToken(')');
-	if (!token)
-		return false;
-
-	nextToken();
-	return true;
+	specifiers->m_resolver = resolver();
+	return specifiers->m_resolver != NULL;
 }
 
 bool
@@ -747,17 +717,7 @@ Parser::production(const ProductionSpecifiers* specifiers) {
 	symbol->m_valueBlock = specifiers->m_valueBlock;
 	symbol->m_valueLineCol = specifiers->m_valueLineCol;
 	symbol->m_flags |= specifiers->m_flags;
-
-	if (specifiers->m_resolver) {
-		// resolver is a temp symbol with a single production
-
-		SymbolNode* temp = m_module->m_nodeMgr.createTempSymbolNode();
-		temp->addProduction(specifiers->m_resolver);
-		setGrammarNodeSrcPos(temp, specifiers->m_resolver->m_srcPos);
-
-		symbol->m_resolver = temp;
-		symbol->m_resolverPriority = specifiers->m_resolverPriority;
-	}
+	symbol->m_resolver = specifiers->m_resolver;
 
 	symbol->m_lookaheadLimit = specifiers->m_lookaheadLimit ?
 		specifiers->m_lookaheadLimit :
@@ -789,7 +749,7 @@ Parser::production(const ProductionSpecifiers* specifiers) {
 
 GrammarNode*
 Parser::alternative() {
-	GrammarNode* node = sequence();
+	GrammarNode* node = resolvableSequence();
 	if (!node)
 		return NULL;
 
@@ -802,14 +762,17 @@ Parser::alternative() {
 
 		nextToken();
 
-		GrammarNode* node2 = sequence();
+		GrammarNode* node2 = resolvableSequence();
 		if (!node2)
 			return NULL;
 
 		if (!temp)
-			if (node->m_nodeKind == NodeKind_Symbol && (node->m_flags & SymbolNodeFlag_User)) {
+			if (node->m_nodeKind == NodeKind_Symbol &&
+				!((SymbolNode*)node)->m_resolver &&
+				!(node->m_flags & SymbolNodeFlag_User)
+			)
 				temp = (SymbolNode*)node;
-			} else {
+			else {
 				temp = m_module->m_nodeMgr.createTempSymbolNode();
 				temp->addProduction(node);
 
@@ -821,6 +784,21 @@ Parser::alternative() {
 	}
 
 	return node;
+}
+
+GrammarNode*
+Parser::resolvableSequence() {
+	const Token* token = getToken();
+	if (token->m_token != TokenKind_Resolver)
+		return sequence();
+
+	SymbolNode* rslv = resolver();
+	GrammarNode* node = sequence();
+
+	SymbolNode* temp = m_module->m_nodeMgr.createTempSymbolNode();
+	temp->m_resolver = rslv;
+	temp->addProduction(node);
+	return temp;
 }
 
 static
@@ -862,9 +840,9 @@ Parser::sequence() {
 			return NULL;
 
 		if (!temp)
-			if (node->m_nodeKind == NodeKind_Sequence) {
+			if (node->m_nodeKind == NodeKind_Sequence)
 				temp = (SequenceNode*)node;
-			} else {
+			else {
 				temp = m_module->m_nodeMgr.createSequenceNode();
 				temp->append(node);
 
@@ -1077,6 +1055,44 @@ Parser::catcher() {
 	catcher->m_productionArray.copy(production);
 	setGrammarNodeSrcPos(catcher, production->m_srcPos);
 	return catcher;
+}
+
+SymbolNode*
+Parser::resolver() {
+	const Token* token = getToken();
+	ASSERT(token->m_token == TokenKind_Resolver);
+
+	nextToken();
+
+	token = expectToken('(');
+	if (!token)
+		return false;
+
+	nextToken();
+
+	GrammarNode* production = alternative();
+	if (!production)
+		return false;
+
+	SymbolNode* resolver = m_module->m_nodeMgr.createResolverSymbolNode();
+	resolver->addProduction(production);
+	setGrammarNodeSrcPos(resolver, production->m_srcPos);
+
+	token = getToken();
+	if (token->m_token == ',') {
+		nextToken();
+
+		token = expectToken(TokenKind_Integer);
+		resolver->m_priority = token->m_data.m_integer;
+		nextToken();
+	}
+
+	token = expectToken(')');
+	if (!token)
+		return false;
+
+	nextToken();
+	return resolver;
 }
 
 bool

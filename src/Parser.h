@@ -22,8 +22,7 @@ protected:
 	struct ProductionSpecifiers {
 		sl::StringRef m_valueBlock;
 		lex::LineCol m_valueLineCol;
-		GrammarNode* m_resolver;
-		size_t m_resolverPriority;
+		SymbolNode* m_resolver;
 		size_t m_lookaheadLimit;
 		uint_t m_flags;
 
@@ -88,6 +87,9 @@ protected:
 	alternative();
 
 	GrammarNode*
+	resolvableSequence();
+
+	GrammarNode*
 	sequence();
 
 	GrammarNode*
@@ -98,6 +100,9 @@ protected:
 
 	SymbolNode*
 	catcher();
+
+	SymbolNode*
+	resolver();
 
 	BeaconNode*
 	beacon();

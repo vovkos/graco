@@ -30,8 +30,7 @@ class LaDfaThread: public sl::ListLink {
 public:
 	LaDfaThreadMatchKind m_match;
 	LaDfaState* m_state;
-	GrammarNode* m_resolver;
-	size_t m_resolverPriority;
+	SymbolNode* m_resolver;
 	Node* m_production;
 	sl::Array<Node*> m_stack;
 

@@ -68,6 +68,7 @@ NodeMgr::clear() {
 	m_namedTokenList.clear();
 	m_namedSymbolList.clear();
 	m_catchSymbolList.clear();
+	m_resolverSymbolList.clear();
 	m_tempSymbolList.clear();
 	m_sequenceList.clear();
 	m_beaconList.clear();
@@ -145,6 +146,15 @@ NodeMgr::createCatchSymbolNode() {
 	node->m_name.format("_cat%d", m_catchSymbolList.getCount() + 1);
 	node->m_lookaheadLimit = m_lookaheadLimit;
 	m_catchSymbolList.insertTail(node);
+	return node;
+}
+
+SymbolNode*
+NodeMgr::createResolverSymbolNode() {
+	SymbolNode* node = new SymbolNode;
+	node->m_name.format("_rslv%d", m_resolverSymbolList.getCount() + 1);
+	node->m_lookaheadLimit = m_lookaheadLimit;
+	m_resolverSymbolList.insertTail(node);
 	return node;
 }
 
@@ -333,6 +343,8 @@ void
 NodeMgr::deleteUnreachableNodes() {
 	deleteUnreachableNodes(&m_charTokenList);
 	deleteUnreachableNodes(&m_namedSymbolList);
+	deleteUnreachableNodes(&m_catchSymbolList);
+	deleteUnreachableNodes(&m_resolverSymbolList);
 	deleteUnreachableNodes(&m_tempSymbolList);
 	deleteUnreachableNodes(&m_sequenceList);
 	deleteUnreachableNodes(&m_beaconList);
@@ -386,6 +398,7 @@ NodeMgr::indexSymbols() {
 	size_t count =
 		m_namedSymbolList.getCount() +
 		m_catchSymbolList.getCount() +
+		m_resolverSymbolList.getCount() +
 		m_tempSymbolList.getCount();
 
 	m_symbolArray.setCount(count);
@@ -410,6 +423,14 @@ NodeMgr::indexSymbols() {
 	}
 
 	nodeIt = m_catchSymbolList.getHead();
+	for (; nodeIt; nodeIt++, i++, j++) {
+		SymbolNode* node = *nodeIt;
+		node->m_index = i;
+		node->m_masterIndex = j;
+		rwi[i] = node;
+	}
+
+	nodeIt = m_resolverSymbolList.getHead();
 	for (; nodeIt; nodeIt++, i++, j++) {
 		SymbolNode* node = *nodeIt;
 		node->m_index = i;

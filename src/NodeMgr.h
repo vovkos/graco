@@ -35,6 +35,7 @@ protected:
 	sl::List<SymbolNode> m_namedTokenList;
 	sl::List<SymbolNode> m_namedSymbolList;
 	sl::List<SymbolNode> m_catchSymbolList;
+	sl::List<SymbolNode> m_resolverSymbolList;
 	sl::List<SymbolNode> m_tempSymbolList;
 	sl::List<SequenceNode> m_sequenceList;
 	sl::List<BeaconNode> m_beaconList;
@@ -75,6 +76,9 @@ public:
 
 	SymbolNode*
 	createCatchSymbolNode();
+
+	SymbolNode*
+	createResolverSymbolNode();
 
 	SymbolNode*
 	createTempSymbolNode();

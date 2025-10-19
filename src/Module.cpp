@@ -65,14 +65,6 @@ Module::build(const CmdLine* cmdLine) {
 	sl::Iterator<SymbolNode> symbolIt = m_nodeMgr.m_namedSymbolList.getHead();
 	for (; symbolIt; symbolIt++) {
 		SymbolNode* symbol = *symbolIt;
-
-		if (symbol->m_resolver) {
-			ASSERT(symbol->m_resolver->m_productionArray.getCount() == 1);
-			result = productionBuilder.build(symbol->m_resolver, &symbol->m_resolver->m_productionArray.rwi()[0]);
-			if (!result)
-				return false;
-		}
-
 		size_t count = symbol->m_productionArray.getCount();
 		sl::Array<GrammarNode*>::Rwi rwi = symbol->m_productionArray;
 		for (size_t i = 0; i < count; i++) {
@@ -80,6 +72,15 @@ Module::build(const CmdLine* cmdLine) {
 			if (!result)
 				return false;
 		}
+	}
+
+	symbolIt = m_nodeMgr.m_resolverSymbolList.getHead();
+	for (; symbolIt; symbolIt++) {
+		SymbolNode* symbol = *symbolIt;
+		ASSERT(symbol->m_productionArray.getCount() == 1);
+		result = productionBuilder.build(symbol, &symbol->m_productionArray.rwi()[0]);
+		if (!result)
+			return false;
 	}
 
 	m_nodeMgr.indexBeacons(); // index only after unneeded beacons have been removed
@@ -116,9 +117,9 @@ Module::build(const CmdLine* cmdLine) {
 		*production = conflict->m_resultNode;
 	}
 
-	symbolIt = m_nodeMgr.m_namedSymbolList.getHead();
+	symbolIt = m_nodeMgr.m_resolverSymbolList.getHead();
 	for (; symbolIt; symbolIt++)
-		if (symbolIt->m_resolver && !(symbolIt->m_flags & SymbolNodeFlag_ResolverUsed)) {
+		if (!(symbolIt->m_flags & SymbolNodeFlag_ResolverUsed)) {
 			err::setError("unused resolver");
 			lex::pushSrcPosError(symbolIt->m_srcPos);
 			return false;

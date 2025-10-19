@@ -187,7 +187,7 @@ public:
 
 	GrammarNode* m_synchronizer;
 	SymbolNode* m_resolver;
-	size_t m_resolverPriority;
+	size_t m_priority;
 	size_t m_lookaheadLimit;
 
 	sl::Array<GrammarNode*> m_productionArray;

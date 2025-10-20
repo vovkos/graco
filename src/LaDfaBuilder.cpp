@@ -302,7 +302,8 @@ LaDfaBuilder::build(ConflictNode* conflict) {
 				LaDfaNode* uplink = state->m_dfaNode->m_resolverUplink;
 
 				if (!state->m_dfaNode->m_production ||
-					state->m_dfaNode->m_production == uplink->m_production) {
+					state->m_dfaNode->m_production == uplink->m_production
+				) {
 					// here we handle situation like
 					// 1) sym: resolver ({1}) 'a' | resolver ({2}) 'b' (we have a chain of 2 resolver with empty tail)
 					// or

@@ -855,7 +855,7 @@ LaDfaNode::luaExportResolverMembers(lua::LuaState* luaState) {
 	luaState->setMemberString("name", m_name);
 	luaState->setMemberInteger("resolver", m_resolver->m_masterIndex);
 	luaState->setMemberInteger("production", m_production->m_masterIndex);
-	luaState->setMemberInteger("resolverElse", getTransitionIndex (m_resolverElse));
+	luaState->setMemberInteger("resolverElse", getTransitionIndex(m_resolverElse));
 	luaState->setMemberBoolean("hasChainedResolver", ((LaDfaNode*)m_resolverElse)->m_resolver != NULL);
 }
 

@@ -41,7 +41,7 @@ unary_expression
 	| INC_OP unary_expression
 	| DEC_OP unary_expression
 	| unary_operator cast_expression
-	| SIZEOF (unary_expression | '(' type_name ')')
+	| SIZEOF (unary_expression | resolver('(' type_rslv) '(' type_name ')')
 	;
 
 unary_operator
@@ -73,7 +73,8 @@ assignment_operator
 
 cast_expression
 	: assignment_expression
-	| '(' type_name ')' cast_expression
+	| resolver('(' type_rslv)
+	  '(' type_name ')' cast_expression
 	;
 
 multiplicative_expression
@@ -195,7 +196,29 @@ type_specifier
 	| UNSIGNED
 	| struct_or_union_specifier
 	| enum_specifier
-	| TYPE_NAME
+	| resolver(type_id_rslv)
+	  IDENTIFIER
+	;
+
+type_rslv
+	: VOID
+	| CHAR
+	| SHORT
+	| INT
+	| LONG
+	| FLOAT
+	| DOUBLE
+	| SIGNED
+	| UNSIGNED
+	| struct_or_union
+	| ENUM
+	| type_identifier_rslv
+	;
+
+// the main conflict of C-family
+
+type_id_rslv
+	: IDENTIFIER { return lookupType($1); }
 	;
 
 struct_or_union_specifier
@@ -261,7 +284,8 @@ direct_declarator
 direct_declarator_suffix
 	: '[' constant_expression ']'
 	| '[' ']'
-	| '(' parameter_type_list ')'
+	| resolver('(' type_rslv)
+	  '(' parameter_type_list ')'
 	| '(' identifier_list ')'
 	| '(' ')'
 	;
@@ -315,7 +339,8 @@ direct_abstract_declarator
 direct_abstract_declarator_suffix
 	: '[' constant_expression ']'
 	| '[' ']'
-	| '(' parameter_type_list ')'
+	| resolver('(' type_rslv)
+	  '(' parameter_type_list ')'
 	| '(' ')'
 	;
 
@@ -346,7 +371,8 @@ labeled_statement
 compound_statement
 	: '{' '}'
 	| '{' statement_list '}'
-	| '{' declaration_list statement_list? '}'
+	| resolver('{' type_rslv)
+	  '{' declaration_list statement_list? '}'
 	;
 
 declaration_list

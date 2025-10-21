@@ -793,7 +793,12 @@ Parser::resolvableSequence() {
 		return sequence();
 
 	SymbolNode* rslv = resolver();
+	if (!rslv)
+		return NULL;
+
 	GrammarNode* node = sequence();
+	if (!node)
+		return NULL;
 
 	SymbolNode* temp = m_module->m_nodeMgr.createTempSymbolNode();
 	temp->m_resolver = rslv;

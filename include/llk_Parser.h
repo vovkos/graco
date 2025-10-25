@@ -704,8 +704,10 @@ protected:
 
 	MatchResult
 	matchActionNode(Node* node) {
-		bool result = static_cast<T*>(this)->action(node->m_index);
+		size_t actionIdx = node->m_index;
 		popPrediction();
+
+		bool result = static_cast<T*>(this)->action(actionIdx);
 
 #if (_LLK_RANDOM_SEMANTIC_ERRORS)
 		if (isRandomError("action"))

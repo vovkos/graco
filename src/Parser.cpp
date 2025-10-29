@@ -1071,13 +1071,13 @@ Parser::resolver() {
 
 	token = expectToken('(');
 	if (!token)
-		return false;
+		return NULL;
 
 	nextToken();
 
 	GrammarNode* production = alternative();
 	if (!production)
-		return false;
+		return NULL;
 
 	SymbolNode* resolver = m_module->m_nodeMgr.createResolverSymbolNode();
 	resolver->addProduction(production);
@@ -1094,7 +1094,7 @@ Parser::resolver() {
 
 	token = expectToken(')');
 	if (!token)
-		return false;
+		return NULL;
 
 	nextToken();
 	return resolver;

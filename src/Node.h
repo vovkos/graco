@@ -516,7 +516,7 @@ traceNodeArray(
 
 	size_t count = array->getCount();
 	for (size_t i = 0; i < count; i++) {
-		T* node = (*array) [i];
+		T* node = (*array)[i];
 
 		printf("%3d/%-3d ", node->m_index, node->m_masterIndex);
 		node->trace();
@@ -532,10 +532,10 @@ nodeArrayToString(const sl::Array<T*>* array) {
 	if (!count)
 		return sl::String();
 
-	sl::String string = (*array) [0]->m_name;
+	sl::String string = (*array)[0]->m_name;
 
 	for (size_t i = 1; i < count; i++) {
-		Node* node = (*array) [i];
+		Node* node = (*array)[i];
 		string += ' ';
 		string += node->m_name;
 	}

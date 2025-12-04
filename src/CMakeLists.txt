@@ -218,16 +218,10 @@ if(UNIX AND NOT APPLE)
 endif()
 
 if(WIN32 AND LUA_DLL_DIR)
-	add_custom_command(
-		TARGET graco
-		POST_BUILD
-		COMMAND
-			echo Copying DLL files for graco...
-		COMMAND
-			${CMAKE_COMMAND} -E copy
-			${LUA_DLL_DIR}/${LUA_LIB_NAME}.dll
-			${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CONFIGURATION}
-		)
+	axl_copy_dlls_for_target(
+		graco
+		${LUA_DLL_DIR}/${LUA_LIB_NAME}.dll
+	)
 endif()
 
 #. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

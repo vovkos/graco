@@ -129,15 +129,11 @@ Value::isTrue() const {
 
 bool
 Value::lvalueCheck() const {
-	if (!m_variable) {
-		err::setError("not l-value");
-		return false;
-	}
+	if (!m_variable)
+		return err::fail("not l-value");
 
-	if (m_variable->m_isConst) {
-		err::setFormatStringError("'%s' is constant", m_variable->m_name.sz());
-		return false;
-	}
+	if (m_variable->m_isConst)
+		return err::fail("'%s' is constant", m_variable->m_name.sz());
 
 	return true;
 }
@@ -180,21 +176,18 @@ Value::unaryOperator(UnOpKind opKind) {
 
 	switch (m_type) {
 	case Type_Null:
-		err::setError("cannot apply operators to 'null' values");
-		return false;
+		return err::fail("cannot apply operators to 'null' values");
 
 	case Type_Int:
 		m_integer = op->m_intFunc(m_integer);
 		break;
 
 	case Type_Fp:
-		if (!op->m_fpFunc) {
-			err::setFormatStringError(
+		if (!op->m_fpFunc)
+			return err::fail(
 				"cannot apply unary '%s' to floating-point values",
 				getUnOpKindString(opKind)
 			);
-			return false;
-		}
 
 		m_fp = op->m_fpFunc(m_fp);
 		break;
@@ -232,10 +225,8 @@ Value::binaryOperator(
 		{ binOpFunc<int, sl::Or  <int> >, NULL },                                  // BinOpKind_Or,
 	};
 
-	if (!m_type || !value.m_type) {
-		err::setError("cannot apply operators to 'null' values");
-		return false;
-	}
+	if (!m_type || !value.m_type)
+		return err::fail("cannot apply operators to 'null' values");
 
 	ASSERT(opKind < countof(operatorTable));
 	Operator* op = &operatorTable[opKind];
@@ -247,13 +238,11 @@ Value::binaryOperator(
 		break;
 
 	case Type_Fp:
-		if (!op->m_fpFunc) {
-			err::setFormatStringError(
+		if (!op->m_fpFunc)
+			return err::fail(
 				"cannot apply binary '%s' to floating-point values",
 				getBinOpKindString(opKind)
 			);
-			return false;
-		}
 
 		m_fp = op->m_fpFunc(getFp(), value.getFp());
 		m_type = Type_Fp;
@@ -288,10 +277,8 @@ Value::relationalOperator(
 		{ relOpFunc<int, sl::Ge<int> >, relOpFunc<double, sl::Ge<double> > }, // RelOpKind_Ge,
 	};
 
-	if (!m_type || !value.m_type) {
-		err::setError("cannot apply operators to 'null' values");
-		return false;
-	}
+	if (!m_type || !value.m_type)
+		return err::fail("cannot apply operators to 'null' values");
 
 	ASSERT((size_t)opKind < countof(operatorTable));
 	Operator* op = &operatorTable[opKind];

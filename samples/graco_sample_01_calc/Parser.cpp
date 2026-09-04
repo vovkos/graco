@@ -39,10 +39,8 @@ Parser::createVariable(
 	bool isConst
 ) {
 	sl::StringHashTableIterator<Variable*> it = m_variableMap.visit(name);
-	if (it->m_value) {
-		err::setFormatStringError("'%s': identifier redefinition", name.sz());
-		return NULL;
-	}
+	if (it->m_value)
+		return err::fail<Variable*>(NULL, "'%s': identifier redefinition", name.sz());
 
 	Variable* variable = new Variable;
 	variable->m_name = name;
@@ -60,10 +58,8 @@ Parser::lookupIdentifier(
 	Value* value
 ) {
 	sl::StringHashTableIterator<Variable*> it = m_variableMap.find(name);
-	if (!it) {
-		err::setFormatStringError("'%s': undeclared identifier", name.sz());
-		return false;
-	}
+	if (!it)
+		return err::fail("'%s': undeclared identifier", name.sz());
 
 	*value = it->m_value;
 	return true;
@@ -75,13 +71,11 @@ Parser::assertionCheck(
 	const Token::Pos& openPos,
 	const Token::Pos& closePos
 ) {
-	if (!value.isTrue()) {
-		err::setFormatStringError(
+	if (!value.isTrue())
+		return err::fail(
 			"Assertion failure: %s\n",
 			sl::StringRef(openPos.m_p, closePos.m_p + closePos.m_length - openPos.m_p).sz()
 		);
-		return false;
-	}
 
 	return true;
 }

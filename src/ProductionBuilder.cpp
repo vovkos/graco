@@ -62,7 +62,7 @@ ProductionBuilder::build(
 
 		paramCount = beacon->m_target->m_paramNameList.getCount();
 		if (paramCount) {
-			err::setFormatStringError(
+			err::setError(
 				"'%s' takes %d parameters, passed none",
 				beacon->m_target->m_name.sz(),
 				paramCount
@@ -243,7 +243,7 @@ ProductionBuilder::addBeacon(BeaconNode* beacon) {
 		size_t actualArgCount = beacon->m_argument ? beacon->m_argument->m_argValueList.getCount() : 0;
 
 		if (paramCount != actualArgCount) {
-			err::setFormatStringError(
+			err::setError(
 				"'%s' takes %d parameters, passed %d",
 				node->m_name.sz(),
 				paramCount,
@@ -340,10 +340,8 @@ ProductionBuilder::findVariable(
 	size_t beaconIndex = index - 1;
 	size_t beaconCount = m_beaconArray.getCount();
 
-	if (beaconIndex >= beaconCount) {
-		err::setFormatStringError("locator '$%d' is out of range ($1..$%d)", beaconIndex + 1, beaconCount);
-		return VariableKind_Undefined;
-	}
+	if (beaconIndex >= beaconCount)
+		return err::fail(VariableKind_Undefined, "locator '$%d' is out of range ($1..$%d)", beaconIndex + 1, beaconCount);
 
 	BeaconNode* beacon = m_beaconArray[beaconIndex];
 	*beacon_o = beacon;
@@ -374,8 +372,7 @@ ProductionBuilder::findVariable(
 	if (it2)
 		return VariableKind_Param;
 
-	err::setFormatStringError("locator '$%s' not found", name.sz());
-	return VariableKind_Undefined;
+	return err::fail(VariableKind_Undefined, "locator '$%s' not found", name.sz());
 }
 
 bool

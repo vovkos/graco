@@ -443,7 +443,7 @@ public:
 
 	void
 	pushError() {
-		err::pushFormatStringError(
+		err::pushError(
 			"conflict at '%s':'%s'",
 			m_symbol->m_name.sz(),
 			m_token->m_name.sz()

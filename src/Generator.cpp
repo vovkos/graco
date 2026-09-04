@@ -29,10 +29,8 @@ Generator::generate(
 ) {
 	sl::String frameFilePath;
 	frameFilePath = io::findFilePath(frameFileName, &m_cmdLine->m_frameDirList);
-	if (frameFilePath.isEmpty()) {
-		err::setFormatStringError("frame file '%s' not found", frameFileName.sz());
-		return false;
-	}
+	if (frameFilePath.isEmpty())
+		return err::fail("frame file '%s' not found", frameFileName.sz());
 
 	bool result;
 

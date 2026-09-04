@@ -167,7 +167,7 @@ LaDfaBuilder::build(ConflictNode* conflict) {
 	LaDfaState* state1;
 	bool result = transition(&state1, state0, conflict->m_token);
 	if (!result) {
-		err::setFormatStringError(
+		err::setError(
 			"conflict at %s:%s causes depth overflow, check for left recursion",
 			conflict->m_symbol->m_name.sz(),
 			conflict->m_token->m_name.sz()
@@ -198,7 +198,7 @@ LaDfaBuilder::build(ConflictNode* conflict) {
 					LaDfaState* newState;
 					result = transition(&newState, state, token);
 					if (!result) {
-						err::setFormatStringError(
+						err::setError(
 							"conflict at %s:%s causes depth overflow, check for left recursion",
 							conflict->m_symbol->m_name.sz(),
 							conflict->m_token->m_name.sz()
@@ -230,7 +230,7 @@ LaDfaBuilder::build(ConflictNode* conflict) {
 				tokenSeqString.append(' ');
 			}
 
-			err::setFormatStringError(
+			err::setError(
 				"conflict at %s:%s could not be resolved with %d token lookahead; e.g. %s",
 				conflict->m_symbol->m_name.sz(),
 				conflict->m_token->m_name.sz(),
@@ -252,7 +252,7 @@ LaDfaBuilder::build(ConflictNode* conflict) {
 
 		if (state->m_completeThreadList.getCount() > 1 ||
 			state->m_epsilonThreadList.getCount() > 1) {
-			err::setFormatStringError(
+			err::setError(
 				"conflict at %s:%s: multiple productions complete with %s",
 				conflict->m_symbol->m_name.sz(),
 				conflict->m_token->m_name.sz(),

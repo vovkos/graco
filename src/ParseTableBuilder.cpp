@@ -42,7 +42,7 @@ ParseTableBuilder::build() {
 
 		if (node->m_flags & SymbolNodeFlag_User) {
 			if (node->isNullable() && !(node->m_flags & SymbolNodeFlag_Nullable)) {
-				err::setFormatStringError(
+				err::setError(
 					"'%s': nullable symbols must be explicitly marked as 'nullable'",
 					node->m_name.sz()
 				);
@@ -51,7 +51,7 @@ ParseTableBuilder::build() {
 			}
 
 			if (!node->isNullable() && (node->m_flags & SymbolNodeFlag_Nullable)) {
-				err::setFormatStringError(
+				err::setError(
 					"'%s': not nullable but marked as 'nullable'",
 					node->m_name.sz()
 				);
@@ -62,7 +62,7 @@ ParseTableBuilder::build() {
 
 		if (node->m_flags & SymbolNodeFlag_Pragma) {
 			if (node->isNullable()) {
-				err::setFormatStringError(
+				err::setError(
 					"'%s': pragma cannot be nullable",
 					node->m_name.sz()
 				);
@@ -71,7 +71,7 @@ ParseTableBuilder::build() {
 			}
 
 			if (node->m_firstSet.getBit(1)) {
-				err::setFormatStringError(
+				err::setError(
 					"'%s': pragma cannot start with 'anytoken'",
 					node->m_name.sz()
 				);

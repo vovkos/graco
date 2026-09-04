@@ -101,8 +101,7 @@ bool
 CmdLineParser::finalize() {
 	if (m_cmdLine->m_outputFileNameList.getCount() !=
 		m_cmdLine->m_frameFileNameList.getCount()) {
-		err::setError("output-file-count vs frame-file-count mismatch\n");
-		return false;
+		return err::fail("output-file-count vs frame-file-count mismatch\n");
 	}
 
 	return true;

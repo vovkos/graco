@@ -171,7 +171,7 @@ public:
 		bool result;
 
 		if (token->m_token == -1) {
-			axl::err::setFormatStringError("invalid character '\\x%x'", token->m_data.m_integer);
+			axl::err::setError("invalid character '\\x%x'", token->m_data.m_integer);
 			axl::lex::ensureSrcPosError(m_fileName, token->m_pos);
 			m_tokenPool->put(token);
 			return false;
@@ -405,7 +405,7 @@ protected:
 			// synchronizer token must match (otherwise, it's a bad choice of sync tokens)
 
 			if (m_flags & Flag_RecoveryFailureErrors) {
-				axl::err::setFormatStringError(
+				axl::err::setError(
 					"synchronizer token '%s' didn't match (adjust the 'catch' clause in the grammar)",
 					m_tokenCursor->getName()
 				);
@@ -514,7 +514,7 @@ protected:
 			rand() % _LLK_RANDOM_ERRORS_PROBABILITY)
 			return false;
 
-		axl::err::setFormatStringError("random error: %s", description);
+		axl::err::setError("random error: %s", description);
 		axl::lex::pushSrcPosError(m_fileName, m_tokenCursor->m_pos);
 		return true;
 	}
@@ -543,8 +543,7 @@ protected:
 		if ((m_flags & Flag_TokenMatch) || m_tokenCursor->m_token == T::EofToken)
 			return MatchResult_NextToken;
 
-		axl::err::setFormatStringError("prediction stack empty while parsing '%s'", m_tokenCursor->getName());
-		return MatchResult_Fail;
+		return axl::err::fail(MatchResult_Fail, "prediction stack empty while parsing '%s'", m_tokenCursor->getName());
 	}
 
 	MatchResult
@@ -670,7 +669,7 @@ protected:
 
 			SymbolNode* symbol = getSymbolTop();
 			ASSERT(symbol);
-			axl::err::setFormatStringError(
+			axl::err::setError(
 				"unexpected '%s' in '%s'",
 				m_tokenCursor->getName(),
 				static_cast<T*>(this)->getSymbolName(symbol->m_index)
@@ -791,7 +790,7 @@ protected:
 			if (m_resolverStack.isEmpty()) { // can't rollback so set error
 				SymbolNode* symbol = getSymbolTop();
 				ASSERT(symbol);
-				axl::err::setFormatStringError(
+				axl::err::setError(
 					"unexpected '%s' while trying to resolve a conflict in '%s'",
 					m_tokenCursor->getName(),
 					static_cast<T*>(this)->getSymbolName(symbol->m_index)

@@ -260,10 +260,8 @@ NodeMgr::createQuantifierNode(
 	SequenceNode* tempSeq;
 	SymbolNode* tempAlt;
 
-	if (node->m_nodeKind == NodeKind_Action || node->m_nodeKind == NodeKind_Epsilon) {
-		err::setError("can't apply quantifier to action or epsilon nodes");
-		return NULL;
-	}
+	if (node->m_nodeKind == NodeKind_Action || node->m_nodeKind == NodeKind_Epsilon)
+		return err::fail<GrammarNode*>(NULL, "can't apply quantifier to action or epsilon nodes");
 
 	GrammarNode* resultNode;
 

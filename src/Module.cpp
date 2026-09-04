@@ -37,10 +37,8 @@ Module::build(const CmdLine* cmdLine) {
 
 	m_parseTable.clear();
 
-	if (m_nodeMgr.isEmpty()) {
-		err::setError("grammar is empty");
-		return false;
-	}
+	if (m_nodeMgr.isEmpty())
+		return err::fail("grammar is empty");
 
 	// check reachability from start symbols
 

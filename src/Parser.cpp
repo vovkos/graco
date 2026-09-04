@@ -29,25 +29,21 @@ Parser::parseFile(const sl::StringRef& filePath) {
 	io::MappedFile srcFile;
 
 	result = srcFile.open(filePath, io::FileFlag_ReadOnly);
-	if (!result) {
-		err::setFormatStringError(
+	if (!result)
+		return err::fail(
 			"cannot open '%s': %s",
 			filePath.sz(),
 			err::getLastErrorDescription().sz()
 		);
-		return false;
-	}
 
 	size_t size = (size_t)srcFile.getSize();
 	char* p = (char*)srcFile.view(0, size);
-	if (!p) {
-		err::setFormatStringError(
+	if (!p)
+		return err::fail(
 			"cannot open '%s': %s",
 			filePath.sz(),
 			err::getLastErrorDescription().sz()
 		);
-		return false;
-	}
 
 	return parse(filePath, sl::StringRef(p, size));
 }
@@ -152,13 +148,11 @@ Parser::importStatement() {
 		true
 	);
 
-	if (filePath.isEmpty()) {
-		err::setFormatStringError(
+	if (filePath.isEmpty())
+		return err::fail(
 			"cannot find import file '%s'",
 			token->m_data.m_string.sz()
 		);
-		return false;
-	}
 
 	m_module->m_importList.insertTail(filePath);
 	nextToken();
@@ -197,10 +191,8 @@ Parser::productionSpecifiers(ProductionSpecifiers* specifiers) {
 		const Token* token = getToken();
 		switch (token->m_token) {
 		case TokenKind_Struct:
-			if (isValueSpecified) {
-				err::setError("multiple value specifiers");
-				return false;
-			}
+			if (isValueSpecified)
+				return err::fail("multiple value specifiers");
 
 			nextToken();
 			result = userCode('{', &specifiers->m_valueBlock, &specifiers->m_valueLineCol);
@@ -225,30 +217,24 @@ Parser::productionSpecifiers(ProductionSpecifiers* specifiers) {
 			break;
 
 		case TokenKind_Pragma:
-			if (specifiers->m_flags & SymbolNodeFlag_Pragma) {
-				err::setError("multiple 'pragma' specifiers");
-				return false;
-			}
+			if (specifiers->m_flags & SymbolNodeFlag_Pragma)
+				return err::fail("multiple 'pragma' specifiers");
 
 			nextToken();
 			specifiers->m_flags |= SymbolNodeFlag_Pragma;
 			break;
 
 		case TokenKind_Start:
-			if (specifiers->m_flags & SymbolNodeFlag_Start) {
-				err::setError("multiple 'start' specifiers");
-				return false;
-			}
+			if (specifiers->m_flags & SymbolNodeFlag_Start)
+				return err::fail("multiple 'start' specifiers");
 
 			nextToken();
 			specifiers->m_flags |= SymbolNodeFlag_Start;
 			break;
 
 		case TokenKind_Nullable:
-			if (specifiers->m_flags & SymbolNodeFlag_Nullable) {
-				err::setError("multiple 'nullable' specifiers");
-				return false;
-			}
+			if (specifiers->m_flags & SymbolNodeFlag_Nullable)
+				return err::fail("multiple 'nullable' specifiers");
 
 			nextToken();
 			specifiers->m_flags |= SymbolNodeFlag_Nullable;
@@ -288,8 +274,7 @@ Parser::lookahead() {
 		break;
 
 	default:
-		err::setError("invalid lookahead specified");
-		return -1;
+		return err::fail<size_t>(-1, "invalid lookahead specified");
 	}
 
 	nextToken();
@@ -309,10 +294,8 @@ Parser::lookahead() {
 
 bool
 Parser::lookaheadSpecifier(ProductionSpecifiers* specifiers) {
-	if (specifiers->m_lookaheadLimit) {
-		err::setError("multiple 'lookahead' specifiers");
-		return false;
-	}
+	if (specifiers->m_lookaheadLimit)
+		return err::fail("multiple 'lookahead' specifiers");
 
 	specifiers->m_lookaheadLimit = lookahead();
 	return specifiers->m_lookaheadLimit != -1;
@@ -320,10 +303,8 @@ Parser::lookaheadSpecifier(ProductionSpecifiers* specifiers) {
 
 bool
 Parser::resolverSpecifier(ProductionSpecifiers* specifiers) {
-	if (specifiers->m_resolver) {
-		err::setError("multiple 'resolver' specifiers");
-		return false;
-	}
+	if (specifiers->m_resolver)
+		return err::fail("multiple 'resolver' specifiers");
 
 	specifiers->m_resolver = resolver();
 	return specifiers->m_resolver != NULL;
@@ -370,11 +351,10 @@ Parser::defineStatement() {
 			return userCode('{', &define->m_stringValue, &define->m_srcPos);
 
 		default:
-			err::setFormatStringError(
+			return err::fail(
 				"invalid define value for '%s'",
 				define->m_name.sz()
 			);
-			return false;
 		}
 
 		define->m_srcPos = token->m_pos;
@@ -382,11 +362,10 @@ Parser::defineStatement() {
 		break;
 
 	default:
-		err::setFormatStringError(
+		return err::fail(
 			"invalid define syntax for '%s'",
 			define->m_name.sz()
 		);
-		return false;
 	}
 
 	token = expectToken(';');
@@ -434,14 +413,12 @@ Parser::customizeSymbol(SymbolNode* node) {
 		if (!string)
 			break;
 
-		if (!string->isEmpty()) {
-			err::setFormatStringError(
+		if (!string->isEmpty())
+			return err::fail(
 				"redefinition of '%s'::%s",
 				node->m_name.sz(),
 				token->getName()
 			);
-			return false;
-		}
 
 		nextToken();
 		result = userCode('{', string, lineCol);
@@ -490,10 +467,8 @@ Parser::processParamBlock(SymbolNode* node) {
 		if (!token->m_token)
 			break;
 
-		if (token->m_token == TokenKind_Error) {
-			err::setFormatStringError("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
-			return false;
-		}
+		if (token->m_token == TokenKind_Error)
+			return err::fail("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
 
 		if (token->m_token != TokenKind_Identifier) {
 			lexer.nextToken();
@@ -604,14 +579,11 @@ Parser::processEnterLeaveBlock(
 				break;
 			}
 
-			err::setFormatStringError("undeclared identifier '%s'", token->m_data.m_string.sz());
-			return false;
+			return err::fail("undeclared identifier '%s'", token->m_data.m_string.sz());
 
 		case TokenKind_Integer:
-			if (token->m_data.m_integer != 0) {
-				err::setError("'enter' or 'leave' cannot have indexed references");
-				return false;
-			}
+			if (token->m_data.m_integer != 0)
+				return err::fail("'enter' or 'leave' cannot have indexed references");
 
 			resultString.append(p, token->m_pos.m_p - p);
 			resultString.append('$');
@@ -702,13 +674,11 @@ Parser::production(const ProductionSpecifiers* specifiers) {
 		return false;
 
 	SymbolNode* symbol = m_module->m_nodeMgr.getSymbolNode(token->m_data.m_string);
-	if (!symbol->m_productionArray.isEmpty()) {
-		err::setFormatStringError(
+	if (!symbol->m_productionArray.isEmpty())
+		return err::fail(
 			"redefinition of symbol '%s'",
 			symbol->m_name.sz()
 		);
-		return false;
-	}
 
 	setGrammarNodeSrcPos(symbol, token->m_pos);
 
@@ -994,10 +964,8 @@ Parser::beacon() {
 		break;
 
 	case TokenKind_Integer:
-		if (!token->m_data.m_integer) {
-			err::setError("cannot use a reserved eof token \\00");
-			return NULL;
-		}
+		if (!token->m_data.m_integer)
+			return err::fail<BeaconNode*>(NULL, "cannot use a reserved eof token \\00");
 
 		node = m_module->m_nodeMgr.getTokenNode(token->m_data.m_integer);
 		break;
@@ -1156,8 +1124,7 @@ Parser::userCode(
 	default:
 		ASSERT(false);
 
-		err::setFormatStringError("invalid user code opener '%s'", Token::getName (openBracket));
-		return false;
+		return err::fail("invalid user code opener '%s'", Token::getName (openBracket));
 	}
 
 	const char* begin = token->m_pos.m_p + token->m_pos.m_length;
@@ -1175,8 +1142,7 @@ Parser::userCode(
 			lex::setUnexpectedTokenError("eof", "user-code");
 			return false;
 		} else if (token->m_token == TokenKind_Error) {
-			err::setFormatStringError("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
-			return false;
+			return err::fail("invalid character '\\x%02x'", (uchar_t) token->m_data.m_integer);
 		} else if (token->m_token == openBracket) {
 			level++;
 		} else if (token->m_token == closeBracket) {

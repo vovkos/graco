@@ -22,6 +22,8 @@ if /i "%1" == "i386" goto :x86
 if /i "%1" == "amd64" goto :amd64
 if /i "%1" == "x86_64" goto :amd64
 if /i "%1" == "x64" goto :amd64
+if /i "%1" == "arm64" goto :arm64
+if /i "%1" == "aarch64" goto :arm64
 
 echo Invalid argument: '%1'
 exit -1
@@ -81,6 +83,18 @@ set PROGRAM_FILES_DIR_SUFFIX=
 shift
 goto :loop
 
+:arm64
+set TARGET_CPU=arm64
+set CMAKE_ARCH_SUFFIX=
+set CMAKE_ARCH_OPTIONS=-A ARM64
+set LUA_PLATFORM=ARM64
+set OPENSSL_DIR_SUFFIX=
+set OPENSSL_DLL_SUFFIX=-3-arm64
+set CHOCO_PLATFORM=
+set PROGRAM_FILES_DIR_SUFFIX=
+shift
+goto :loop
+
 :: . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 :finalize
@@ -91,7 +105,7 @@ if "%CONFIGURATION%" == "" (set CONFIGURATION=Release)
 if "%CMAKE_USE_ARCH_OPTIONS%" == "" (set CMAKE_GENERATOR=%CMAKE_GENERATOR%%CMAKE_ARCH_SUFFIX%)
 if not "%CMAKE_USE_ARCH_OPTIONS%" == "" (set CMAKE_OPTIONS=%CMAKE_OPTIONS%%CMAKE_ARCH_OPTIONS%)
 
-set LUA_VERSION=5.4.5
+set LUA_VERSION=5.4.7
 set LUA_DOWNLOAD_URL=https://github.com/walterschell/Lua/archive/refs/tags/v%LUA_VERSION%.zip
 
 set RAGEL_DOWNLOAD_URL=https://github.com/eloraiby/ragel-windows/raw/master/ragel.exe

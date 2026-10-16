@@ -1,0 +1,198 @@
+//..............................................................................
+//
+//  This file is part of the Graco toolkit.
+//
+//  Graco is distributed under the MIT license.
+//  For details see accompanying license.txt file,
+//  the public copy of which is also available at:
+//  http://tibbo.com/downloads/archive/graco/license.txt
+//
+//..............................................................................
+
+// every 'group' entered must be left -- no matter how parsing ends
+
+ParserClassName = EnterLeaveParser;
+SymbolKindName = EnterLeaveSymbolKind;
+
+HeaderFileBegin {
+// test sources are tokenized char by char (spaces are skipped);
+// '?' produces an invalid-character token
+
+enum TokenKind {
+	TokenKind_Eof   = 0,
+	TokenKind_Error = -1,
+};
+
+AXL_LEX_BEGIN_TOKEN_NAME_MAP(TokenName)
+	AXL_LEX_TOKEN_NAME(TokenKind_Eof,   "eof")
+	AXL_LEX_TOKEN_NAME(TokenKind_Error, "error")
+AXL_LEX_END_TOKEN_NAME_MAP();
+
+typedef lex::RagelToken<TokenKind, TokenName, lex::StdTokenData> Token;
+}
+
+Members {
+public:
+	size_t m_enterCount;
+	size_t m_leaveCount;
+	bool m_canRecover;
+
+	EnterLeaveParser();
+
+protected:
+	RecoveryAction
+	processError(ErrorKind errorKind) {
+		return m_canRecover ? RecoveryAction_Synchronize : RecoveryAction_Fail;
+	}
+}
+
+//..............................................................................
+
+start
+nullable
+program
+	:	catch (statement_sync) statement*
+	;
+
+statement
+	:	group ';'
+	|	failing_group ';'
+	|	';'
+	;
+
+statement_sync
+	:	';'
+	;
+
+start
+group
+	enter {
+		m_enterCount++;
+	}
+	leave {
+		m_leaveCount++;
+	}
+	:	'(' item* ')'
+	;
+
+// a symbol whose enter failed was never entered, so it must not be left
+
+start
+failing_group
+	enter {
+		return err::fail("test enter failure");
+	}
+	leave {
+		m_leaveCount++;
+	}
+	:	'[' item* ']'
+	;
+
+item
+	:	'a'
+	|	'x'
+			{
+				return err::fail("test semantic error");
+			}
+	;
+
+//..............................................................................
+
+CppFileEnd {
+EnterLeaveParser::EnterLeaveParser() {
+	m_enterCount = 0;
+	m_leaveCount = 0;
+	m_canRecover = true;
+}
+
+//..............................................................................
+
+namespace {
+
+bool
+parse(
+	EnterLeaveParser* parser,
+	EnterLeaveSymbolKind startSymbol,
+	const char* source
+) {
+	parser->create("test", startSymbol);
+
+	for (const char* p = source;; p++) {
+		if (*p == ' ')
+			continue;
+
+		Token* token = parser->getTokenPool()->get();
+		token->m_token = *p == '?' ? TokenKind_Error : *p;
+		token->m_data.m_integer = *p;
+		token->m_pos.m_line = 0;
+		token->m_pos.m_col = p - source;
+		token->m_pos.m_offset = p - source;
+		token->m_pos.m_p = (char*)p;
+		token->m_pos.m_length = 1;
+
+		bool result = parser->consumeToken(token);
+		if (!result || !*p)
+			return result;
+	}
+}
+
+// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+// a case passes when the parse result matches; a successful parse (recovered or not) must
+// leave every successfully entered symbol exactly once (a hard fail doesn't unwind)
+
+struct TestCase {
+	const char* m_name;
+	EnterLeaveSymbolKind m_startSymbol;
+	const char* m_source;
+	bool m_canRecover; // processError returns synchronize or fail
+	bool m_result;     // expected parse result
+};
+
+const TestCase g_testCaseTable[] = {
+	{ "normal",                          EnterLeaveSymbolKind_program,       "(aa);(a);",  true,  true },
+	{ "synchronize",                     EnterLeaveSymbolKind_program,       "(axa);(a);", true,  true },
+	{ "processError fails",              EnterLeaveSymbolKind_program,       "(axa);",     false, false },
+	{ "invalid character",               EnterLeaveSymbolKind_program,       "(a?a);",     true,  false },
+	{ "semantic error, no catch",        EnterLeaveSymbolKind_group,         "(axa)",      true,  false },
+	{ "syntax error, no catch",          EnterLeaveSymbolKind_group,         "(a;",        true,  false },
+	{ "enter fails, synchronize",        EnterLeaveSymbolKind_program,       "[a];(a);",   true,  true },
+	{ "enter fails, processError fails", EnterLeaveSymbolKind_program,       "[a];",       false, false },
+	{ "enter fails, no catch",           EnterLeaveSymbolKind_failing_group, "[a]",        true,  false },
+};
+
+void
+run() {
+	size_t failCount = 0;
+
+	for (size_t i = 0; i < countof(g_testCaseTable); i++) {
+		const TestCase& test = g_testCaseTable[i];
+
+		EnterLeaveParser parser;
+		parser.m_canRecover = test.m_canRecover;
+		bool result = parse(&parser, test.m_startSymbol, test.m_source);
+		bool isOk = result == test.m_result && (!result || parser.m_enterCount == parser.m_leaveCount);
+
+		printf(
+			"%s: %s (result: %d, enter: %d, leave: %d)\n",
+			test.m_name,
+			isOk ? "ok" : "FAILED",
+			result,
+			(int)parser.m_enterCount,
+			(int)parser.m_leaveCount
+		);
+
+		if (!isOk)
+			failCount++;
+	}
+
+	if (failCount)
+		throw sl::formatString("%d of %d cases failed", (int)failCount, (int)countof(g_testCaseTable));
+}
+
+} // namespace
+
+AXL_TEST_ADD("test_EnterLeave", run)
+}
+
+//..............................................................................

@@ -17,6 +17,7 @@ option(
 
 if(BUILD_GRACO_TESTS)
 	add_subdirectory(llk)
+	add_subdirectory(graco_test_auto)
 endif()
 
 #...............................................................................

@@ -145,6 +145,7 @@ public:
 
 		m_predictionStack.clear();
 		m_symbolStack.clear();
+		m_catchStack.clear();
 		m_resolverStack.clear();
 		m_tokenList.clear();
 		m_tokenCursor = NULL;

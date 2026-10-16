@@ -182,11 +182,8 @@ public:
 			if (matchResult == MatchResult_NextToken) {
 				m_tokenPool->put(token);
 				return true;
-			} else if (matchResult == MatchResult_Fail) {
-				m_tokenPool->put(token);
-				axl::lex::ensureSrcPosError(m_fileName, token->m_pos);
-				return false;
-			}
+			} else
+				ASSERT(matchResult == MatchResult_Continue);
 		}
 
 		m_tokenCursor = m_tokenList.insertTail(token);

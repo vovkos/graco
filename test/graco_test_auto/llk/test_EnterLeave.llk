@@ -57,6 +57,7 @@ program
 statement
 	:	group ';'
 	|	failing_group ';'
+	|	leave_failing_group ';'
 	|	';'
 	;
 
@@ -86,6 +87,19 @@ failing_group
 		m_leaveCount++;
 	}
 	:	'[' item* ']'
+	;
+
+// a symbol whose leave failed was already left, so it must not be left again
+
+leave_failing_group
+	enter {
+		m_enterCount++;
+	}
+	leave {
+		m_leaveCount++;
+		return err::fail("test leave failure");
+	}
+	:	'<' item* '>'
 	;
 
 item
@@ -159,6 +173,7 @@ const TestCase g_testCaseTable[] = {
 	{ "enter fails, synchronize",        EnterLeaveSymbolKind_program,       "[a];(a);",   true,  true },
 	{ "enter fails, processError fails", EnterLeaveSymbolKind_program,       "[a];",       false, false },
 	{ "enter fails, no catch",           EnterLeaveSymbolKind_failing_group, "[a]",        true,  false },
+	{ "leave fails, synchronize",        EnterLeaveSymbolKind_program,       "<a>;(a);",   true,  true },
 };
 
 void

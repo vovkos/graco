@@ -603,6 +603,7 @@ protected:
 #endif
 
 				if (!result) {
+					node->m_leaveIndex = -1; // prevent double-leave on rollback or recovery
 					if (!m_resolverStack.isEmpty())
 						return MatchResult_Fail; // rollback resolver
 
@@ -640,6 +641,8 @@ protected:
 #endif
 
 				if (!result ) {
+					node->m_leaveIndex = -1; // never entered -- don't leave on rollback or recovery
+
 					if (!m_resolverStack.isEmpty())
 						return MatchResult_Fail; // rollback resolver
 

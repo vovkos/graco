@@ -15,12 +15,12 @@ dofile(FrameDir .. "/CppParserUtils.lua")
 $HeaderFileBegin
 //..............................................................................
 
-enum SymbolKind {
+enum $SymbolKindName {
 %{
 for i = 1, NamedSymbolCount do
 	local symbol = SymbolTable[i]
 }
-	SymbolKind_$(symbol.name) = $(i - 1),
+	$(SymbolKindName)_$(symbol.name) = $(i - 1),
 %{
 end -- for
 }

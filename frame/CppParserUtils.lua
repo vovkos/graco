@@ -17,6 +17,10 @@ if TokenClassName == nil then
 	TokenClassName = "Token"
 end
 
+if SymbolKindName == nil then
+	SymbolKindName = "SymbolKind"
+end
+
 if SymbolVariableName == nil then
 	SymbolVariableName  = "__symbol"
 end

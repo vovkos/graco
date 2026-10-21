@@ -28,6 +28,7 @@ jobs:
                     OS:         windows-2022
                 -   TARGET_CPU: arm64
                     OS:         windows-11-arm
+                    TOOLCHAIN:  msvc18 v143
 
         steps:
         -   name: Checkout repo
@@ -36,7 +37,7 @@ jobs:
         -   name: Install
             shell: cmd
             run: |
-                call ci\github-actions\set-env.bat ${{matrix.TARGET_CPU}}
+                call ci\github-actions\set-env.bat ${{matrix.TARGET_CPU}} ${{matrix.TOOLCHAIN}}
                 call ci\github-actions\install-windows.bat
                 git clone --depth 1 https://github.com/vovkos/axl
 
@@ -47,7 +48,7 @@ jobs:
                 set THIS_DIR=%CD%
                 set THIS_DIR_CMAKE=%THIS_DIR:\=/%
 
-                call ci\github-actions\set-env.bat ${{matrix.TARGET_CPU}}
+                call ci\github-actions\set-env.bat ${{matrix.TARGET_CPU}} ${{matrix.TOOLCHAIN}}
                 call axl\ci\github-actions\build-lua.bat
 
                 mkdir axl\build

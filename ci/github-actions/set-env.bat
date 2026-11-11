@@ -27,6 +27,8 @@ if /i "%1" == "msvc18" goto :msvc18
 if /i "%1" == "v142" goto :toolset
 if /i "%1" == "v143" goto :toolset
 if /i "%1" == "v145" goto :toolset
+if /i "%1" == "debug" goto :debug
+if /i "%1" == "release" goto :release
 
 echo Invalid argument: '%1'
 exit -1
@@ -38,18 +40,24 @@ exit -1
 :x86
 set TARGET_CPU=x86
 set CMAKE_ARCH_OPTIONS=-A Win32
+set CHOCO_PLATFORM=--x86
+set PROGRAM_FILES_DIR_SUFFIX= (x86)
 shift
 goto :loop
 
 :amd64
 set TARGET_CPU=amd64
 set CMAKE_ARCH_OPTIONS=-A x64
+set CHOCO_PLATFORM=
+set PROGRAM_FILES_DIR_SUFFIX=
 shift
 goto :loop
 
 :arm64
 set TARGET_CPU=arm64
 set CMAKE_ARCH_OPTIONS=-A ARM64
+set CHOCO_PLATFORM=
+set PROGRAM_FILES_DIR_SUFFIX=
 shift
 goto :loop
 
@@ -76,16 +84,25 @@ goto :loop
 
 :: . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
+:: Configuration
+
+:debug
+set CONFIGURATION=Debug
+shift
+goto :loop
+
+:release
+set CONFIGURATION=Release
+shift
+goto :loop
+
+:: . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
 :finalize
 
 if "%TARGET_CPU%" == "" goto :amd64
 if "%TOOLCHAIN%" == "" goto :msvc17
 if "%CONFIGURATION%" == "" (set CONFIGURATION=Release)
-
-set LUA_VERSION=5.4.7
-set LUA_DOWNLOAD_URL=https://github.com/walterschell/Lua/archive/refs/tags/v%LUA_VERSION%.zip
-
-set RAGEL_DOWNLOAD_URL=https://github.com/eloraiby/ragel-windows/raw/master/ragel.exe
 
 set CMAKE_CONFIGURE_FLAGS=-G "%CMAKE_GENERATOR%" %CMAKE_ARCH_OPTIONS% %CMAKE_TOOLSET_OPTIONS%
 
@@ -95,8 +112,3 @@ set CMAKE_BUILD_FLAGS= ^
 	/nologo ^
 	/verbosity:minimal ^
 	/consoleloggerparameters:Summary
-
-echo ---------------------------------------------------------------------------
-echo LUA_DOWNLOAD_URL:     %LUA_DOWNLOAD_URL%
-echo RAGEL_DOWNLOAD_URL:   %RAGEL_DOWNLOAD_URL%
-echo ---------------------------------------------------------------------------

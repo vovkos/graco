@@ -16,6 +16,15 @@ set DOWNLOAD_DIR_CMAKE=%DOWNLOAD_DIR:\=/%
 
 :: . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
+:: Dependency versions
+
+set LUA_VERSION=5.4.7
+set LUA_DOWNLOAD_URL=https://github.com/walterschell/Lua/archive/refs/tags/v%LUA_VERSION%.zip
+
+set RAGEL_DOWNLOAD_URL=https://github.com/eloraiby/ragel-windows/raw/master/ragel.exe
+
+:: . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
 :: wget
 
 echo Installing wget...
